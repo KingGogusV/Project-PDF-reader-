@@ -1,0 +1,15 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+.cache/
+.pnpm-store/
+.env
+.env.*
+!.env.example
+*.log
+tests/fixtures/generated/
+public/vendor/
+public/demo.pdf
+docs/screenshots/
+*.tsbuildinfo
