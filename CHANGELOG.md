@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- The first Windows release run exposed cargo-about 0.9.2's opt-in CLI binary; installation now requests `--features cli`. The failed run stopped before packaging/publication and is retained as evidence.
 - WebKit IndexedDB rejected Blob-backed documents; portable ArrayBuffer writes now retain read compatibility with earlier Blob records, without resetting storage.
 - Cold signing-test dependency discovery caused page navigation; an isolated preoptimized harness removes that interruption.
 - WebKit automation's network-offline limitation is measured separately with a real isolated-origin outage; Chromium retains actual offline emulation.

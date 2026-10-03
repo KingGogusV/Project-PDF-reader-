@@ -133,7 +133,7 @@ As inspected on **2026-10-03**, `.github/workflows/windows-release.yml` implemen
 The release build uses these actual commands on a suitable Windows runner:
 
 ```sh
-cargo install cargo-about --version 0.9.2 --locked
+cargo install cargo-about --version 0.9.2 --locked --features cli
 node scripts/native-notices.mjs src-tauri/generated-notices
 node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis --config src-tauri/tauri.windows-release.conf.json -- --locked
 ```

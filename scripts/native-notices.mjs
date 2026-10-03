@@ -49,8 +49,11 @@ async function main() {
   try { if ((await readdir(output)).length) throw new Error(`Refusing to mix notices with an existing nonempty output: ${output}`); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
 
-  const cargoAbout = command('cargo', ['about', '--version']);
-  if (cargoAbout !== `cargo-about ${toolVersion}`) throw new Error(`Expected cargo-about ${toolVersion}; got ${cargoAbout}. Install with cargo install cargo-about --version ${toolVersion} --locked.`);
+  const installTool = `cargo install cargo-about --version ${toolVersion} --locked --features cli`;
+  let cargoAbout;
+  try { cargoAbout = command('cargo', ['about', '--version']); }
+  catch (error) { throw new Error(`The cargo-about command is unavailable. Install with ${installTool}; version ${toolVersion} requires the explicit cli feature to install its binary.`, { cause: error }); }
+  if (cargoAbout !== `cargo-about ${toolVersion}`) throw new Error(`Expected cargo-about ${toolVersion}; got ${cargoAbout}. Install with ${installTool}.`);
   const lockPath = join(project, 'src-tauri/Cargo.lock');
   const lockBytes = await readFile(lockPath);
   const locked = lockPackages(lockBytes.toString('utf8'));
@@ -64,15 +67,22 @@ async function main() {
   if (hash(await readFile(lockPath)) !== hash(lockBytes)) throw new Error('Cargo lockfile changed during notice generation.');
 
   const coverage = new Map();
+  const licenseErrors = [];
   for (const license of report.licenses) {
-    if (!license.source_path || typeof license.text !== 'string' || license.text.trim().length < 40) throw new Error(`Missing original license text for ${license.id}: ${(license.used_by || []).map(item => key(item.crate)).join(', ')}. A canonical SPDX fallback is insufficient; add a reviewed, hash-pinned clarification.`);
+    if (!license.source_path || typeof license.text !== 'string' || license.text.trim().length < 40) licenseErrors.push(`Missing original ${license.id} text: ${(license.used_by || []).map(item => key(item.crate)).join(', ')}.`);
     for (const item of license.used_by || []) {
       const id = key(item.crate);
-      if (!allowed.has(license.id) && !(license.id === 'MPL-2.0' && mpl.has(id))) throw new Error(`Unapproved license ${license.id} in ${id}. Review the dependency; do not broaden the allowance automatically.`);
+      if (!allowed.has(license.id) && !(license.id === 'MPL-2.0' && mpl.has(id))) licenseErrors.push(`Unapproved ${license.id} in ${id}.`);
       const list = coverage.get(id) || [];
       list.push(license.id); coverage.set(id, list);
     }
   }
+  for (const entry of report.crates) {
+    const crate = entry.package;
+    if (!crate.source && crate.name === 'folio-desktop') continue;
+    if (!coverage.has(key(crate)) || entry.license === 'Unknown') licenseErrors.push(`No resolved original license covers ${key(crate)}.`);
+  }
+  if (licenseErrors.length) throw new Error(`License review required:\n${[...new Set(licenseErrors)].map(message => `- ${message}`).join('\n')}\nCanonical SPDX fallbacks are insufficient; add reviewed hash-pinned clarifications. Do not broaden license allowances automatically.`);
 
   const records = [];
   for (const entry of report.crates) {
