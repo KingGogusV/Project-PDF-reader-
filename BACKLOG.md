@@ -4,9 +4,9 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## Critical
 
-- Run and inspect the new Windows preview workflow end to end: original native notices/source archives, installer resources, isolated installed-WebView2 smoke, exact main Reader checks, artifact digests and guarded prerelease publication. Do not announce `v0.1.0-preview.1` or its direct EXE until publication and downloaded bytes are verified.
+- Resolve the hosted Windows WebView2 ProcessSingleton startup blocker in a suitable normal-user/interactive test environment. Notice collection, resources, installer build and silent installation passed; complete actual installed PDF workflows, exact main Reader checks, artifact digests and guarded prerelease publication. Do not announce `v0.1.0-preview.1` or its direct EXE until publication and downloaded bytes are verified.
 
-- Keep the now-green upgraded Reader and native CI baselines reproducible. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
+- Keep the verified Reader and native packaging CI baselines reproducible; the separate Windows runtime release gate currently fails. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
 - Complete actual managed sign-in, registration and sign-out. Live anonymous responses, spoofed-header refusal and redirect to the identity provider passed; those checks do not establish a complete account session. Never expose the account worker behind a dispatcher that trusts client headers.
 - The live D1 accounts table is confirmed. Verify real registration/capacity/outage behavior without disrupting existing accounts and document operational backup/recovery. Local SQLite/mock identity checks do not establish deployed account sessions or concurrent load.
 - Preserve save/recovery regression gates: immutable input, pending editor/stroke handling, asynchronous snapshot races, explicit export acknowledgment, ResetForm restrictions, duplicate widgets/radios, per-tab position, quota failures and revision conflicts.
@@ -14,6 +14,8 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 - Keep unsupported signed/encrypted/restricted/form/annotation/document-structure cases fail-closed in each writer. Do not broaden supported documents by suppressing validation failures.
 
 ## High Priority
+
+- Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks; record a source-matched macOS rerun and retain the instance-scoped signal cleanup on future PDF.js upgrades.
 
 - Keep the repaired canonical-redirect cache path under regression coverage; the second deployment passed true Chromium offline reload/recovery. Retain the passed final-source 63-case Reader CI and Windows/macOS packaging evidence; rerun affected gates after consequential changes.
 - Obtain supported host-level HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement. Metadata CSP and no-referrer metadata are active; do not weaken it for host-injected scripts or claim ineffective worker/static-header configuration protects live static responses.
@@ -51,7 +53,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 | Hosted web | Online guest recovery/API boundary passed and D1 table exists; actual account sessions, static security headers and concurrent-request measurement remain |
 | Linux browser | Upgraded Chromium CI passed; interactive desktop, real printer and assistive-technology sessions remain |
 | macOS browser | WebKit CI passed; branded Safari, VoiceOver and real macOS interaction remain |
-| Windows native | Earlier NSIS build passed; new notice/install/WebView2 release gates await execution; signing, associations and broader lifecycle/runtime remain |
+| Windows native | NSIS/notices/silent installation passed; hosted WebView2 startup blocked; signing, associations and broader lifecycle/runtime remain |
 | macOS native | App/DMG build passed; installation/runtime, WKWebView/custom-origin workers, signing/notarization and lifecycle/recovery remain |
 | Physical phone/tablet | Safari/Android file flows, memory pressure, selection/keyboard, OCR, stylus/palm, share/print, storage eviction and screen readers |
 | Linux native | No native package target currently configured; evaluate only after browser/native evidence and product need |

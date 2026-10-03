@@ -74,10 +74,24 @@ Official sources checked 2026-10-03:
 - [Tauri MIT license](https://github.com/tauri-apps/tauri/blob/dev/LICENSE-MIT)
 - [Tauri Apache 2.0 license](https://github.com/tauri-apps/tauri/blob/dev/LICENSE-APACHE-2.0)
 
-Tauri's Rust/CLI components offer MIT OR Apache-2.0 licensing. Their complete
-transitive notices still require collection for a distributed release. Windows
-uses WebView2 and Apple platforms use WKWebView; their version/platform behavior
-must be tested separately. This wrapper is not a verified iOS/Android application.
+Tauri's Rust/CLI components offer MIT OR Apache-2.0 licensing. The Windows native
+notice collector has now been run and independently checked with the committed
+Cargo lockfile, Rust/Cargo 1.99.0 and cargo-about 0.9.2: **226 crates, 110 original
+license texts, 24 platform records and five MPL source archives**. Independent
+verification recomputed 533 output hashes and the unchanged lockfile hash. This
+establishes notice collection; it does not establish native compilation, runtime
+correctness or publication of the planned Windows preview.
+
+`node scripts/native-notices.mjs src-tauri/generated-notices` creates the reviewed
+notices in a fresh output directory. The Windows release configuration bundles
+them as `third-party-notices`; its release workflow gates publication on the
+actual installed-app smoke result and exact-source reader checks. See
+[maintenance](../MAINTENANCE.md#windows-download-release-pipeline) for commands
+and provenance requirements.
+
+Windows uses WebView2 and Apple platforms use WKWebView; their version/platform
+behavior must be tested separately. This wrapper is not a verified iOS/Android
+application.
 
 ## Required native runtime verification
 
@@ -86,6 +100,17 @@ fill forms; annotate; export and independently reopen; close with unsaved work;
 check Blob downloads/print windows and external links; open offline; verify worker
 and WebAssembly loading under the packaged CSP. Test on Windows and macOS
 separately. No successful native runtime test is claimed by these files.
+
+The disposable Windows CI launcher now creates a temporary Users-only account,
+loads its profile using only scoped privileges already assigned to the runner,
+and launches on a private desktop with a separate environment. It checks the
+suspended child's unrestricted, non-elevated Medium token before resuming, then
+checks WebView2's actual data directory/debugging port. Plain `STARTUPINFO` does
+not inherit standard handles; browser logs and owned-process diagnostics are
+retained. Cleanup must empty the owned job, close the private desktop, unload and
+delete the exact temporary profile, and remove the name/SID-matched account.
+The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. Native publication is blocked pending a suitable Windows runtime test environment.
+See the [Windows verification procedure](../docs/windows-installation.md#native-verification-procedure).
 
 The browser service worker, browser account redirects, downloads and popups may
 behave differently under custom WebView origins. Do not weaken CSP or grant broad

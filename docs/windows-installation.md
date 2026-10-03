@@ -5,7 +5,11 @@ Folio 0.1.0 is an experimental desktop release. The Windows package targets
 included. You do not need Node.js, Rust, Visual Studio, a Folio account or a
 ChatGPT account.
 
-1. [Download the Windows installer](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe).
+**Publication status:** native runtime verification and the downloadable prerelease
+are pending. The release links below are the intended destinations; their presence
+in this guide does not mean an installer has been published.
+
+1. Once published, [download the Windows installer](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe).
 2. Open the downloaded installer and follow its steps. The current package uses
    installation for your Windows user account.
 3. Open **Folio** from Start. Try the included demo, or choose a local PDF.
@@ -64,22 +68,25 @@ The workflow installs the package beneath `RUNNER_TEMP` and passes the installed
 node tests/native/windows-smoke.mjs
 ```
 
-The script requires `GITHUB_ACTIONS=true` and `CI=true`, rejects an executable
-outside `RUNNER_TEMP`, and launches only that executable with an isolated
-WebView2 profile and process-scoped loopback debugging. It uses the
+The script requires `GITHUB_ACTIONS=true`, `CI=true` and
+`RUNNER_ENVIRONMENT=github-hosted`, rejects an executable outside `RUNNER_TEMP`,
+and launches only that executable under a fresh temporary standard Windows
+account with an isolated WebView2 data directory and process-scoped loopback
+debugging. It uses the
 [official Playwright WebView2 integration](https://playwright.dev/docs/webview2).
-There is no SDK installation, account substitution, CSP change or permission
-expansion. Generated `form.pdf` and `text-outline.pdf` fixtures must already exist.
+It does not change CSP, application permissions or system security policies.
+Generated `form.pdf` and `text-outline.pdf` fixtures must already exist.
 
 It checks nonblank PDF rendering, form edits, storage refusal/consent, immutable
 original bytes, independently parsed checkpoint content, recovery after reloading
 the native WebView, and search-result navigation. Nonlocal application HTTP and
 WebSocket requests are blocked and treated as failures. This observes app traffic
 from a controlled reload; it does not audit WebView2/OS update traffic or certify
-physical offline behavior. It terminates only its owned process tree and retains
-the isolated profile for debugging.
+physical offline behavior. It terminates only its owned process job. The temporary
+Windows account/profile are removed; the separate WebView2 test data directory
+is retained for debugging on the disposable runner.
 
-Screenshots, a synthetic recovery PDF, process output and `report.json` go to
+Screenshots, a synthetic recovery PDF, helper output, browser logs and `report.json` go to
 `test-results/native-windows/`. The implemented test is **not a passed native
 runtime result** until its actual CI execution succeeds. It does not cover every
 installer dialog, printing, native download handoffs, updates or assistive tools.
@@ -88,31 +95,63 @@ installer dialog, printing, native download handoffs, updates or assistive tools
 
 GitHub's Windows hosted runners run as administrators with UAC disabled. Microsoft
 WebView2 Runtime 150 intentionally ignores environment overrides in elevated hosts.
-The test respects that restriction by reducing its own child's privileges, using
-`CreateRestrictedToken` (`LUA_TOKEN` and `DISABLE_MAX_PRIVILEGE`), Administrators
-deny-only membership, Medium integrity, and `CreateProcessAsUserW`. It checks
-the actual suspended child token before resuming: same user, no elevation, no
-enabled Administrators membership, and exactly Medium integrity. There are no
-registry/policy changes, new accounts or disabled security features. Failure to
-meet any invariant stops the test.
+The launcher creates one temporary local Users-only account and obtains its token
+through `LogonUserW`. It loads that account's Windows profile and uses a private
+window station/desktop. The previous same-user restricted-token route did not
+establish a working native runtime and is no longer the launcher implementation.
+
+Profile loading/unloading temporarily enables only `SeBackupPrivilege` and
+`SeRestorePrivilege` already assigned to the runner; it restores their prior
+states afterward and fails if they are unavailable. It creates an environment
+for the temporary account without inheriting the runner's environment, copying
+only the explicit WebView2 settings and `RUST_BACKTRACE`.
+
+`CreateProcessWithLogonW` uses plain `STARTUPINFO` without inherited standard
+handles or extended attributes. Before resuming the suspended child, the helper
+verifies the created SID, no elevation, exactly Medium integrity, enabled Users
+membership, no Administrators SID, no token restrictions and no restricting SIDs.
+The token decoder handles the actual API return length; genuine CI returned
+`TokenHasRestrictions` length 1 and value 0. This is token evidence, not a native
+application pass. Native stdout/stderr redirection is unavailable in this route;
+browser file logging and owned-process diagnostics remain enabled.
+
+If a write probe reports access denied, the helper may add a Modify rule for
+that exact account only to the fresh, empty, non-reparse WebView2 test directory.
+Existing rules are preserved, and a second probe must succeed. It does not change
+ancestor-directory access or an existing user's profile. System policies and
+application permissions remain unchanged.
 
 Before compiling an installer, CI can check that the runner supports this route
-without launching any app:
+without launching any app (this still creates and cleans up the temporary account,
+profile and private desktop):
 
 ```powershell
 pwsh -NoProfile -File tests/native/windows-token-launch.ps1 -Mode Preflight
 ```
 
 The optional `FOLIO_TOKEN_REPORT` points to a JSON output file in an existing
-test-results directory. The smoke test also records nested CDP errors, WebView2
-version and selected owned-process arguments, and verifies that the actual
-runtime uses the requested isolated profile. Tokens, credentials and complete
-process command lines are not logged. No native runtime pass is implied by a
-successful token preflight.
+test-results directory. It records the created account name/SID and token facts,
+never the generated password or token handles. The smoke test records nested CDP
+errors, WebView2 version and selected owned-process arguments, then verifies the
+actual runtime's isolated data directory and loopback port.
+
+Cleanup empties the owned kill-on-close job before unloading/deleting the exact
+temporary Windows profile and removing the generated account with a name/SID
+match. It also closes the private desktop/window station. A cleanup error fails
+the test. Forced-stop fallback removes only that exact account and does not
+claim successful profile cleanup. A successful preflight does not establish a
+native runtime pass.
+
+Maintainers may manually dispatch `windows-harness.yml` with a diagnostic artifact
+ID, archive SHA-256 and source commit to compare launcher changes against an
+unchanged installer. The script verifies artifact provenance, ancestry and allowed
+source differences; changes to compiled application inputs require a new installer.
+This diagnostic workflow neither publishes a release nor replaces its gates.
 
 Primary references checked on 2026-10-03:
 
 - [GitHub hosted-runner privileges](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 - [Microsoft's Runtime 150 security-hardening explanation](https://github.com/MicrosoftEdge/WebView2Feedback/issues/5640#issuecomment-4923662109)
-- [CreateRestrictedToken](https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createrestrictedtoken)
-- [CreateProcessAsUserW](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessasuserw)
+- [CreateProcessWithLogonW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createprocesswithlogonw)
+- [LoadUserProfileW](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-loaduserprofilew)
+- [CreateEnvironmentBlock](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createenvironmentblock)

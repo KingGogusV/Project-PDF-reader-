@@ -1,8 +1,6 @@
 name: Windows harness diagnostics
 
 on:
-  pull_request:
-    paths: ['tests/native/**', 'scripts/native-diagnostic.mjs', '.github/workflows/windows-harness.yml']
   workflow_dispatch:
     inputs:
       artifact_id:
@@ -21,7 +19,7 @@ permissions:
 
 jobs:
   diagnose:
-    if: github.repository == 'KingGogusV/Project-PDF-reader-' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == 'KingGogusV/Project-PDF-reader-'
     runs-on: windows-latest
     timeout-minutes: 10
     env:
@@ -39,9 +37,9 @@ jobs:
       - name: Verify and reuse existing installer for diagnosis only
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DIAGNOSTIC_ARTIFACT_ID: ${{ inputs.artifact_id || '11265120775' }}
-          DIAGNOSTIC_ARTIFACT_SHA256: ${{ inputs.artifact_sha256 || 'ca131f4a42a4f6965e0d07cdc70174a9992d4363a4293acdfc99307d386606d1' }}
-          DIAGNOSTIC_SOURCE_SHA: ${{ inputs.source_sha || '3d122090cca651e007b0759be72a43be41ac1666' }}
+          DIAGNOSTIC_ARTIFACT_ID: ${{ inputs.artifact_id }}
+          DIAGNOSTIC_ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
+          DIAGNOSTIC_SOURCE_SHA: ${{ inputs.source_sha }}
         run: node scripts/native-diagnostic.mjs
       - name: Read only the checked installer ZIP member
         shell: python

@@ -2,7 +2,109 @@
 
 Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
-## Current local evidence
+## Current verification addendum: reader correction and Windows release gates
+
+The following results concern later Windows release work and the local WebKit
+correction. **Hosted deployment v2 remains unchanged.** The local signal-retention
+fix has not been deployed to the website, and its patched macOS CI has not yet run.
+Earlier results below remain evidence for their stated source revisions.
+
+### WebKit editor lifecycle correction
+
+[Reader run 37098740604](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37098740604)
+at PR head `6c0c5d999b615607d918eb6baad99b2950d8e887` exposed a real error in the
+macOS WebKit job: **62 passed, one failed**, including a failed retry of the Ink
+case. The exact uncaught exception was
+`null is not an object (evaluating 'e.#n.isCancellable')`. A stale PDF.js pointer
+listener threw when Export was pressed after switching to Select. Export/reopen
+assertions still completed, but the strict exception assertion correctly failed
+the workflow.
+
+Local reproduction with Playwright 1.63.0 WebKit 26.6 build 2359 on Windows forced
+garbage collection during a live stroke. The engine collected a composite
+`AbortSignal.any()` needed to remove drawing listeners on abort. The controller
+now retains only its own editor manager's live composite signals until abort or
+document destruction. The regression adds `page.requestGC()` during the existing
+Ink workflow and retains its exception, original-byte, PDF-annotation and fresh
+reopen assertions; no exceptions are suppressed.
+
+| Later local check | Verified result |
+| --- | --- |
+| Forced-GC Ink regression against the unpatched production app | One failed with the exact CI exception |
+| Same regression against the corrected production bundle | Three passed |
+| Windows Edge editor workflows | Six passed; 12.5 seconds |
+| Windows WebKit editor workflows | Six passed; 19.3 seconds |
+| Typecheck and full production client/Worker build | Passed; manifest `4336354ebff242c2` |
+| Unit/fixture tests on the local corrected source | 55 passed; zero skips |
+| Corrected-source macOS CI | Not yet run |
+
+The six browser cases cover forms, free text, text-highlight undo/redo, Ink under
+GC, freehand highlight and canceled dirty close. They retain independent output
+inspection, original-prefix preservation, reopen checks and zero external
+requests/page exceptions. Three repetitions and six scoped cases are not a new
+full-suite or physical Safari certification. The local build is not the hosted
+v2 build.
+
+### Windows installation passed; native runtime failed
+
+[Windows release run 37101691271](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37101691271)
+tested PR merge `a2b7697e7913ff7420a47a48defd54103932892e` (head
+`145942bfd20675418741078d5e947629b92221cc` into
+`6644d304f7a44124658672c82cd18a3d5c0dd947`). Its results are:
+
+| Release gate | Verified result |
+| --- | --- |
+| Isolated standard-user preflight and cleanup | Passed |
+| Native distribution notice generation | Passed |
+| Release extraction boundary tests | Eight passed |
+| Windows installer compilation/packaging | Passed |
+| Silent installation into the disposable runner directory | Passed; installed executable and notices present |
+| Actual installed WebView2 application smoke | Failed |
+| Named release preparation and publication | Skipped; no usable public-release claim |
+
+This establishes an actual CI installation, beyond the older packaging-only
+evidence. It does not establish a working native PDF workflow or a successful
+interactive installation on end-user machines. CI diagnostic installer artifacts
+are not verified public releases.
+
+[Fast diagnostic run 37101691273](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37101691273)
+used the same harness merge and provenance-checked unchanged installer source
+`3d122090cca651e007b0759be72a43be41ac1666`. Installation again passed; the runtime
+diagnostic failed. Under target-account impersonation, creation of a newly
+randomized `Local\` mutex returned access-denied error **5**. The observed
+launcher/token/child session values were all **2**, the fresh test profile's full
+ACL access and child standard-user token were verified, and exact job, account,
+profile and private-desktop cleanup passed. These observations narrow the failure;
+they do not establish its final cause or a working runtime. Genuine token evidence
+also confirms `TokenHasRestrictions` returned length **1**, value **0**.
+
+The final `CreateProcessWithLogonW` comparison,
+[run 37102433709](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102433709),
+also **failed** with the same WebView2 `ProcessSingleton` startup failure before
+CDP became available. Folio exited with code **101**. Its
+[diagnostic artifact 11266003295](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102433709/artifacts/11266003295)
+was downloaded and independently hash-checked:
+`d4d36f47f1b8258a6ea62a56b09d3176813121f0ad6720b207bc2e60b0a1fd6a` (archive SHA-256).
+
+The actual suspended child passed every standard-user token gate: correct account,
+non-elevated Medium integrity, Users enabled, no Administrators SID or token
+restrictions, and session **2**. The target account owned `EBWebView` and had an
+inherited FullControl rule. The random `Local\` mutex probe under helper
+impersonation still returned **5**; that helper probe does not establish the
+child's exact namespace behavior. All five cleanup results were true—owned job
+empty, profile unloaded, profile deleted, account removed and private desktop
+closed—with no cleanup errors.
+
+Launcher retries in this hosted environment have ended. **Native runtime
+verification is blocked here** and next requires a normal interactive Windows
+session or another suitable test environment. These failures do not prove Folio
+fails on ordinary Windows installations. The public Windows release remains
+unpublished. Native PDF workflows and release gates still need actual passing
+evidence; an older diagnostic installer cannot verify the local reader fix or
+other changed application inputs. Corrected-source macOS browser CI also remains
+pending, separately from this native blocker.
+
+## Historical local evidence: upgrade and v2 delivery
 
 Earlier local audit/timing evidence used production build 2e61d5c66548dcdc at http://127.0.0.1:4173 on Windows. The final library regression rerun and successful CI/delivery revisions are recorded separately below.
 
@@ -20,7 +122,7 @@ Earlier local audit/timing evidence used production build 2e61d5c66548dcdc at ht
 | Accessibility | 9 production UI states: zero axe violations; four PDF-content contrast checks incomplete |
 | Runtime npm audit | Zero known advisories returned for 44 runtime/optional dependencies; compiled WASM is not covered |
 
-The final-source complete E2E suite contains 63 tests, including the hosted-redirect regression. The separate core/signing suites contain 16. Suite durations are execution times, not application performance. Windows Edge production audit version154.0.4258.53; Chrome measurement version153.0.8010.54.
+The v2-source complete E2E suite contains 63 tests, including the hosted-redirect regression. The separate core/signing suites contain 16. Suite durations are execution times, not application performance. Windows Edge production audit version154.0.4258.53; Chrome measurement version153.0.8010.54.
 
 ## Verified workflows and safety
 
@@ -58,20 +160,20 @@ Printing verification means a local PDF reaches browser viewer/download handling
 
 Heap samples exclude total browser/native/worker/canvas memory and are not peaks. Single-run values are not benchmark distributions. The earlier measured build had approximately 75.8 KB initial JS (24.6 KB gzip); v2 reports 75.88 KB (24.71 KB gzip). Mandatory offline assets were 8.06 MiB in the measured build. OCR loads its worker, one selected core and English model on request. Large-byte scans, battery and physical low-memory devices remain unmeasured.
 
-## Remote CI and native packaging
+## Historical remote CI and native packaging: v2 application source
 
-GitHub repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). Upgrade branch: `feature/hosted-local-library`; [PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1).
+GitHub repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). At v2 delivery, the upgrade branch was `feature/hosted-local-library`; [PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1).
 
-[Final-source Reader run 37091186897](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186897) **succeeded in all jobs** on application commit `710ff978c4f59b907bce108921ade34b6d2b5326`: 55 unit/fixture checks with zero skips, typecheck/build, 63 E2E cases on Linux Chromium (2.1 minutes), 63 E2E cases on macOS WebKit (4.3 minutes, no flaky marker), seven controller checkpoints (11.5 seconds) and nine signing-core cases (11.7 seconds). These are suite durations. Patched WebKit is not branded Safari or a physical Apple-device test.
+[V2-source Reader run 37091186897](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186897) **succeeded in all jobs** on application commit `710ff978c4f59b907bce108921ade34b6d2b5326`: 55 unit/fixture checks with zero skips, typecheck/build, 63 E2E cases on Linux Chromium (2.1 minutes), 63 E2E cases on macOS WebKit (4.3 minutes, no flaky marker), seven controller checkpoints (11.5 seconds) and nine signing-core cases (11.7 seconds). These are suite durations. Playwright WebKit is not branded Safari or a physical Apple-device test. This historical pass does not supersede the later GC failure or verify its correction.
 
-[Final-source native run 37091186893](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893) **succeeded on Windows and macOS**, producing unsigned NSIS and app/DMG packages with a retained Cargo lockfile. Compilation/packaging does not verify installation, native runtime, signing or notarization.
+[V2-source native run 37091186893](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893) **succeeded on Windows and macOS**, producing unsigned NSIS and app/DMG packages with a retained Cargo lockfile. This run verified compilation/packaging, not installation, native runtime, signing or notarization. Later Windows installation evidence is recorded in the current addendum above.
 
 | Verified artifact | ZIP size | SHA-256 |
 | --- | ---: | --- |
 | [Windows NSIS package](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11262104539) | 13,946,200 bytes | `2a0e6bdc1b459d887e3e77886dba1600c311751ca83e7d2b57e585eea531fc6f` |
 | [macOS app/DMG packages](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11261664576) | 29,792,212 bytes | `e47283997b450e6c32cf072f6911557dfa41fca53f00a5f63025f77d78ccbf38` |
 
-These CI downloads expire **2026-10-17** and may require GitHub access. They are development artifacts, not permanent signed releases. Earlier runs 37088665148/37088665153 exposed signing-harness navigation, WebKit Blob storage and Windows CLI argument-forwarding failures; the final runs above verify their corrections.
+These CI downloads expire **2026-10-17** and may require GitHub access. They are development artifacts, not permanent signed releases. Earlier runs 37088665148/37088665153 exposed signing-harness navigation, WebKit Blob storage and Windows CLI argument-forwarding failures; the listed v2 runs verify those corrections.
 
 ## Hosting and identity
 
@@ -97,9 +199,9 @@ Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` succeeded at 02:37:09 U
 
 The worker now normalizes cached navigation responses. The added regression failed against the old worker, then the two direct/canonical offline cases passed on Edge and WebKit before v2 deployment. The live Chromium pass above verifies the actual hosted repair. WebKit's automated test uses an unavailable origin because its offline-emulation limitation differs; it is not a physical Safari test.
 
-Final-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs, as detailed above.
+V2-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs, as detailed above. The later local editor correction and Windows release diagnostics do not change this deployed source identity.
 
-Historical Reader run 37089902258 passed 62 cases before the added redirect regression; the primary artifact table now refers exclusively to the final-source packages. CI evidence attaches to the tested application commit, not a later documentation-only HEAD. Engineering-record updates do not require republishing unchanged application inputs and must not be described as a separately tested build.
+Historical Reader run 37089902258 passed 62 cases before the added redirect regression; the primary artifact table refers exclusively to the v2-source packages. CI evidence attaches to the tested application commit, not a later documentation-only HEAD. Engineering-record updates do not require republishing unchanged application inputs and must not be described as a separately tested build.
 
 ### Hosting header boundary
 
@@ -109,4 +211,4 @@ Static responses bypass the worker's static-response header code. Restrictive do
 
 OCR's native inventory includes older zlib/libwebp affected by known advisories. Independent review traced Folio's only recognition input to a fresh browser-encoded PNG; production worker interception confirmed PNG IHDR/IDAT/IEND only, fixed same-origin model and bounded actions. The reviewed gzip-header/WebP paths were not found reachable through this interface. This supports constrained experimental OCR, not a patched-binary or production-security claim. A reproducible patched native rebuild and wider advisory review remain stable-release gates; see [OCR research](ocr-research.md).
 
-Physical iOS/Android, Safari itself, native installation/runtime, signing/notarization, physical printing, comprehensive assistive technology, high-byte stress, XFA, broad pre-existing annotation preservation, certificate trust/revocation/timestamping and arbitrary content editing/redaction remain unverified or unimplemented. Browser eviction or a crash before a validated checkpoint can still lose recent work.
+Physical iOS/Android, Safari itself, native PDF runtime workflows, macOS installation, signing/notarization, physical printing, comprehensive assistive technology, high-byte stress, XFA, broad pre-existing annotation preservation, certificate trust/revocation/timestamping and arbitrary content editing/redaction remain unverified or unimplemented. Windows silent installation passed on the disposable runner; that does not cover interactive installation or normal end-user devices. Browser eviction or a crash before a validated checkpoint can still lose recent work.

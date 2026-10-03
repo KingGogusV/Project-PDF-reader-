@@ -19,17 +19,17 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 | Target | Actual status | Limits and verification boundary |
 |---|---|---|
 | Web | Deployed; Windows browser checks and upgraded Linux Chromium/macOS WebKit CI passed | Actual managed account sign-in remains unverified |
-| Windows | Edge/Chrome browser checks; unsigned NSIS package built successfully | Native installer execution/runtime unverified |
+| Windows | Edge/Chrome browser checks; unsigned NSIS package built successfully | Silent installation passed in disposable CI; WebView2 startup blocked, runtime unverified |
 | macOS | 63 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
 | Linux | 63 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
 | Android | Experimental browser target | Physical file pickers, memory, selection, printing and sharing unverified |
 
-Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. Missing local Rust/MSVC/SDK prerequisites still prevent local Windows compilation. These are unsigned development packages, not verified installations or trusted releases.
+Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. Missing local Rust/MSVC/SDK prerequisites still prevent local Windows compilation. These are unsigned development packages, not trusted releases. Silent Windows installation passed in disposable CI; actual installed-reader startup remains blocked there.
 
 ## Windows Preview Delivery
 
-A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication and the new installed-runtime check have not yet been verified. Earlier CI package builds remain separate evidence.
+A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication remains blocked because WebView2 exits before reader startup in the hosted Windows test environment. Silent installation, original notices and token/cleanup preflight passed; installed PDF workflows did not run. Both supported token-based and credential-based launch attempts are recorded in verification. This does not establish behavior on an ordinary interactive Windows session.
 
 The packaged reader needs no ChatGPT account, subscription or Folio registration for local PDFs and opt-in local storage. Optional website accounts use managed ChatGPT/OpenAI sign-in; the desktop app is a guest reader. Device copies remain unencrypted and separate from website browser storage. Initial installation may need internet to obtain WebView2.
 
@@ -108,5 +108,7 @@ Encrypted, signature-bearing, XFA and insufficiently permitted PDFs are conserva
 The 200-account limit is a registration capacity rule, not a 200-concurrent-user load result. Account security depends on a trusted managed dispatcher stripping client-supplied identity headers. Do not expose the worker directly under a host that accepts spoofed identity headers. Certificate integrity verification is not signer identity, legal validity or trust. No complete PDF/UA, PDF/A, Safari, native or physical-mobile certification is established.
 
 ## Important Engineering Decisions
+
+Keep editor cancellation reliable across browser engines: the controller retains active PDF.js composite abort signals until abort/destruction after a reproduced WebKit garbage-collection defect. A deterministic ink/export/reopen regression guards this behavior. Windows Edge and WebKit focused checks passed; updated macOS CI is required before extending that evidence to macOS.
 
 Keep one shared renderer and reader controller; add bounded specialist writers/workers only where PDF.js does not supply the operation. Preserve the reader's incremental editing path while rejecting organizer inputs whose semantics cannot be retained. Store device documents only by explicit consent; isolate account metadata from PDFs. Use a thin native wrapper until platform evidence justifies privileged adapters. Keep original-source licensing, dependency compliance, performance and verified-platform status explicit.

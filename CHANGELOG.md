@@ -4,9 +4,10 @@
 
 ### Added
 
-- Implemented a planned `v0.1.0-preview.1` Windows x64 download pipeline: bundled notices, isolated runner installation, actual installed-WebView2 smoke, and main-only publication after exact-source Reader/artifact/tag validation. No execution or publication success is claimed for this new pipeline yet.
+- Implemented a planned `v0.1.0-preview.1` Windows x64 download pipeline: bundled notices, isolated runner installation, actual installed-WebView2 smoke, and main-only publication after exact-source Reader/artifact/tag validation. Notice generation, compilation and silent installation have passed in later runs; installed-reader workflows and publication remain pending.
 - Added pinned `cargo-about 0.9.2` notice generation with original license texts, checked native archives, exact-version unchanged MPL source distribution and Rust/NSIS/WebView2 notices. Folio's own source remains UNLICENSED.
 - Documented account-free guest PDF reading/device storage in the desktop preview; optional website accounts retain managed ChatGPT/OpenAI sign-in.
+- Added a disposable GitHub-hosted Windows standard-user startup comparison with child-token identity checks, a private desktop/profile and exact-account cleanup. Its runtime result remains pending; it does not weaken the app sandbox or grant system privileges.
 
 - Opt-in local PDF library with immutable originals, validated recovery checkpoints, SHA-256 checks, atomic writes and stale-tab conflict protection.
 - Managed-identity account API and UI, database-enforced maximum of 200 registrations, guest operation and clearly labeled offline account hints.
@@ -24,6 +25,8 @@
 - Release retries now find matching drafts through authenticated release listing; publication jobs are serialized and recheck tag identity before publishing. Existing mismatched source or asset bytes are never replaced.
 - Added exact original-file clarifications after the first native license scan rejected generic fallback texts; retained dpi's combined license obligations and checked registry-archive bytes when Cargo omits per-file checksum metadata.
 - Corrected Rust 1.99 notice locations and retained its referenced license collection. The Windows release job now pins that reviewed compiler. Full local collection passed, including an independent check of 533 generated-file hashes; installer/runtime verification remains separate.
+- Retained PDF.js editor composite abort signals until abort/destruction after WebKit garbage collection left stale ink pointer listeners. The regression now requests collection mid-stroke and retains existing export/reopen and uncaught-error checks; no exceptions are suppressed.
+- Corrected the native CI token inspector's unchecked four-byte read: initialized storage, explicit one/four-byte return handling and recorded diagnostics retain the nonrestricted-token requirement. Run 37100039753 failed preflight; local measurement confirmed only one byte is written and upper sentinel bytes remain unchanged. Corrected runner measurements now pass the standard-user gate; native runtime remains pending.
 - WebKit IndexedDB rejected Blob-backed documents; portable ArrayBuffer writes now retain read compatibility with earlier Blob records, without resetting storage.
 - Cold signing-test dependency discovery caused page navigation; an isolated preoptimized harness removes that interruption.
 - WebKit automation's network-offline limitation is measured separately with a real isolated-origin outage; Chromium retains actual offline emulation.
@@ -33,6 +36,11 @@
 
 ### Verification
 
+- [Reader run 37098740604](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37098740604) exposed the ink lifecycle defect: macOS WebKit 62 passed, one failed after export. Windows WebKit reproduced the exact failure before the fix (1/1); the patched forced-GC regression passed 3/3 and six focused editor cases passed on WebKit and Edge (6/6 each). Typecheck/build and all 55 unit cases passed with zero skips; patched macOS CI remains pending.
+- [Windows run 37096782242](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37096782242) verified privilege reduction but exited before reader assertions. [Run 37097697001](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37097697001) captured WebView2 153 initialization error `RPC_E_DISCONNECTED` despite an honored debugging port and passing profile-write probe. These failures do not establish native reader or release success.
+- [Fast diagnostic run 37100324020](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37100324020) measured one-byte zero restriction values on both parent and standard-user tokens; the full standard-user gate, unchanged-ACL profile-write probe and all five cleanup checks passed. Launch then stopped at `CreateProcessWithTokenW` error 87; subsequent plain-startup evidence follows.
+- [Fast diagnostic run 37101691273](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37101691273) launched a genuine standard-user child with matching session IDs and passed token/profile/cleanup checks, but browser `ProcessSingleton` failure still stopped reader assertions. A random `Local\` mutex probe failed with access denied under target impersonation; this is observed CI-context evidence, not proof of the child failure's cause. The separate bounded `CreateProcessWithLogonW` comparison is recorded below; no shared namespace ACL or policy was relaxed.
+- [Final bounded comparison 37102433709](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102433709) also failed before CDP/reader assertions: genuine standard-user/session checks passed, but the child exited 101 with browser `ProcessSingleton` failure. All cleanup checks passed. The current hosted native-verification environment is a blocker; a normal interactive Windows session or suitable runner is needed. This does not prove normal Windows failure. Fast diagnostics are now manual-only with explicit artifact/digest/source inputs. No further launcher retry, native reader pass or published EXE is claimed.
 - Windows: 55 unit/fixture cases; 62 E2E cases across focused suites; 7 controller and 9 signing-core cases passed.
 - Nine production accessibility states returned zero axe violations, with PDF-content contrast checks still incomplete.
 - Linux Chromium: 55 unit/fixture and 62 E2E cases passed in the first upgrade CI lane.

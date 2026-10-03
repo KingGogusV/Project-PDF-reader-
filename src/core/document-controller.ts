@@ -156,6 +156,7 @@ export class ReaderController {
   private linkService?: PDFLinkService;
   private findController?: PDFFindController;
   private editorManager?: AnnotationEditorUIManager;
+  private readonly editorSignals = new Set<AbortSignal>();
   private readonly lifetime = new AbortController();
   private destroyed = false;
   private openedAt = 0;
@@ -352,7 +353,22 @@ export class ReaderController {
     });
     on('updatefindmatchescount', event => this.publish({ searchCount: event.matchesCount.total, searchCurrent: event.matchesCount.current }));
     on('updatefindcontrolstate', event => this.publish({ searchCount: event.matchesCount.total, searchCurrent: event.matchesCount.current }));
-    on('annotationeditoruimanager', event => { this.editorManager = event.uiManager; });
+    on('annotationeditoruimanager', event => {
+      const manager = this.editorManager = event.uiManager as AnnotationEditorUIManager;
+      const combinedSignal = manager.combinedSignal.bind(manager);
+      manager.combinedSignal = controller => {
+        const signal = combinedSignal(controller);
+        // WebKit 26.6 can collect AbortSignal.any() while event listeners still
+        // depend on it, so aborting a finished stroke leaves stale listeners.
+        // Retain only this manager's live signals until their normal abort.
+        // No global API patch or suppressed editor exceptions are involved.
+        if (!signal.aborted) {
+          this.editorSignals.add(signal);
+          signal.addEventListener('abort', () => this.editorSignals.delete(signal), { once: true });
+        }
+        return signal;
+      };
+    });
     on('annotationlayerrendered', event => {
       // PDFs often omit /TU (the field's alternate name). Preserve supplied
       // labels; otherwise expose the actual field name without guessing meaning.
@@ -570,6 +586,7 @@ export class ReaderController {
     this.thumbnailTask?.cancel();
     // The pinned runtime accepts null here although its generated types do not.
     this._viewer?.setDocument(null as unknown as PDFDocumentProxy);
+    this.editorSignals.clear();
     this.linkService?.setDocument(null);
     this.lifetime.abort();
     await this.loadingTask?.destroy();

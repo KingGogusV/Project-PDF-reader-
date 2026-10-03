@@ -8,15 +8,15 @@ Original repository purpose: "Project to create free pdf reader that does not su
 
 ## Download for Windows
 
-**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe)**
+**Windows download is blocked pending native runtime verification.** The installer builds and installs, but WebView2 exits before the reader opens in the hosted test runner. A public EXE has not been released. Use the web app above in the meantime.
 
-Download the installer, open it, then launch **Folio** from Start. **No ChatGPT account or developer tools are required.** This is an **unsigned development preview for Windows x64**, not a production release. If Windows policy blocks it, use the web app without disabling your security protections.
+Once released, download the installer, open it, then launch **Folio** from Start. **No ChatGPT account or developer tools are required.** This is an **unsigned development preview for Windows x64**, not a production release. If Windows policy blocks it, use the web app without disabling your security protections.
 
-[Release notes and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) · [Installation help](docs/windows-installation.md)
+[GitHub releases](https://github.com/KingGogusV/Project-PDF-reader-/releases) · [Installation help](docs/windows-installation.md)
 
 PDF reading and device storage work without signing in. Only the website's optional account feature currently uses ChatGPT/OpenAI sign-in. Documents remain on your device.
 
-**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Native installation/runtime and actual managed sign-in remain unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
+**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Silent installation passed in disposable Windows CI; native startup is blocked and actual managed sign-in remains unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
 
 ## Available workflows
 
@@ -29,7 +29,7 @@ PDF reading and device storage work without signing in. Only the website's optio
 
 Reading needs no account. Optional **managed ChatGPT sign-in** supports up to **200 registered Folio accounts**; that is a registration cap, not a concurrent-user benchmark. Only account metadata goes to the service. Stored PDFs remain **unencrypted in this device/browser profile**, may be lost if browser storage is cleared/evicted, and do not synchronize between devices.
 
-Original files are preserved. Reader saves and document tools validate output before offering a copy. Protected PDFs are conservatively read-only; page tools reject structures they cannot preserve. Signature integrity does **not** establish certificate trust, revocation status or trusted time. OCR currently produces separate text, not a searchable PDF, and remains experimental pending a patched native dependency rebuild. Local offline checks and live hosted Chromium offline reload/recovery passed. The second deployment fixed the canonical-redirect cache issue; its 63-case Linux/macOS browser CI passed. Final-source Windows/macOS native packages also built successfully.
+Original files are preserved. Reader saves and document tools validate output before offering a copy. Protected PDFs are conservatively read-only; page tools reject structures they cannot preserve. Signature integrity does **not** establish certificate trust, revocation status or trusted time. OCR currently produces separate text, not a searchable PDF, and remains experimental pending a patched native dependency rebuild. Local offline checks and live hosted Chromium offline reload/recovery passed. The second deployment fixed the canonical-redirect cache issue; its 63-case Linux/macOS browser CI passed. Windows/macOS native packages for the deployed v2 source also built successfully.
 
 ## Development
 

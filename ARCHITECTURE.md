@@ -51,6 +51,8 @@ PDFFindController performs local text search and result navigation. OCR text is 
 
 ## Annotations, Forms and Undo/Redo
 
+The document controller retains each PDF.js editor manager's live composite abort signals until normal abort or manager destruction. This bounded instance-level workaround addresses a reproduced WebKit 26.6 garbage-collection defect that otherwise leaves completed drawing listeners active. The ink regression forces garbage collection mid-stroke and still requires clean export, independent reopen and no page exceptions. It does not modify global browser APIs or suppress editor errors.
+
 Authoring supports text/freehand highlight, FreeText and ink. Rendering existing annotations does not imply authoring every subtype; new underline, strikethrough and sticky notes are absent.
 
 Supported AcroForm values use PDF.js annotation storage, including tested text, multiline, checkbox, dropdown and radio workflows. Existing accessible labels are preserved; unnamed widgets receive a field-name fallback. XFA, PDF calculations/scripts and submission remain disabled.
@@ -127,7 +129,7 @@ The inspected Windows environment lacks Rust/cargo/MSVC/Windows SDK prerequisite
 
 ### Windows Release Boundary
 
-The new `windows-release.yml` workflow separates building/installing from publishing. The release-specific Tauri config adds native notices as installer resources and uses current-user installation; it adds no privileged app commands. The planned output is an unsigned x64 EXE under `v0.1.0-preview.1`. This workflow and its installed-app smoke are implemented but not yet evidenced as successful or published.
+The new `windows-release.yml` workflow separates building/installing from publishing. The release-specific Tauri config adds native notices as installer resources and uses current-user installation; it adds no privileged app commands. The planned output is an unsigned x64 EXE under `v0.1.0-preview.1`. Notice collection, installer build and silent installation passed in disposable Windows CI. The installed-app smoke remains blocked at WebView2 ProcessSingleton startup, so publication has not occurred. Standard-user launch uses a temporary account, private desktop, explicit environment and credential-based Win32 launch; token, job and exact-account cleanup checks remain mandatory. See verification for failed environment-specific attempts; no sandbox or shared namespace permissions were relaxed.
 
 The build collects notices with pinned `cargo-about 0.9.2`, original license texts, Cargo checksum validation, exact-version MPL source archives and Rust/NSIS/WebView2 platform notices. It then compiles, installs only beneath a validated disposable runner directory, and tests the actual installed WebView2 application with an isolated profile and process-scoped loopback debugging. Network observation covers app requests from a controlled reload, not OS/runtime update traffic.
 

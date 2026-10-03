@@ -205,6 +205,10 @@ test('pointer ink exports as a real Ink annotation and reopens', async ({ page }
   const y = box!.y + box!.height * 0.5;
   await page.mouse.move(x, y);
   await page.mouse.down();
+  // WebKit can collect a composite AbortSignal during a stroke, leaving its
+  // pointer listeners alive after pointerup. Exercise that lifecycle before
+  // switching tools and exporting; afterEach must still see no page errors.
+  await page.requestGC();
   await page.mouse.move(x + 25, y - 20, { steps: 5 });
   await page.mouse.move(x + 60, y + 15, { steps: 5 });
   await page.mouse.move(x + 95, y - 25, { steps: 5 });
