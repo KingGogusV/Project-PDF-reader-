@@ -19,17 +19,17 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 | Target | Actual status | Limits and verification boundary |
 |---|---|---|
 | Web | Deployed; Windows browser checks and upgraded Linux Chromium/macOS WebKit CI passed | Actual managed account sign-in remains unverified |
-| Windows | Edge/Chrome browser checks; unsigned NSIS package built successfully | Silent installation passed in disposable CI; WebView2 startup blocked, runtime unverified |
+| Windows | Browser checks plus actual installed native reader, form/annotation export and process-restart recovery passed | Revised release CI and public EXE publication pending; unsigned x64 preview only |
 | macOS | 63 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
 | Linux | 63 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
 | Android | Experimental browser target | Physical file pickers, memory, selection, printing and sharing unverified |
 
-Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. Missing local Rust/MSVC/SDK prerequisites still prevent local Windows compilation. These are unsigned development packages, not trusted releases. Silent Windows installation passed in disposable CI; actual installed-reader startup remains blocked there.
+Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. An isolated Rust tool cache exists, but missing MSVC/Windows SDK still prevent local Windows compilation. A downloaded, checksum-verified CI installer can run without those SDKs. Actual Windows native workflows passed; these remain unsigned development packages, not trusted production releases.
 
 ## Windows Preview Delivery
 
-A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication remains blocked because WebView2 exits before reader startup in the hosted Windows test environment. Silent installation, original notices and token/cleanup preflight passed; installed PDF workflows did not run. Both supported token-based and credential-based launch attempts are recorded in verification. This does not establish behavior on an ordinary interactive Windows session.
+A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication is pending the revised CI runtime gate. The previous custom-account CI launch failed, but the same installer passed 12 actual normal-user Windows checks, including PDF download/reopen and full process-restart recovery. Original notice hashes and owned-job cleanup passed. The separate CI test now uses the existing runner account and documented per-executable WebView2 debugging/profile policy only on disposable elevated runners.
 
 The packaged reader needs no ChatGPT account, subscription or Folio registration for local PDFs and opt-in local storage. Optional website accounts use managed ChatGPT/OpenAI sign-in; the desktop app is a guest reader. Device copies remain unencrypted and separate from website browser storage. Initial installation may need internet to obtain WebView2.
 
@@ -91,7 +91,7 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 | Page tools | Extract, reorder, delete, permanent rotation and merge to a verified new copy | Reject forms, annotations, signatures, encryption and unsupported document structures; page-only metadata behavior is explicit |
 | Certificate signing | Local P12/PFX review and invisible RSA/SHA-256 signature; independent byte-range/CMS and preservation checks | No trust-chain, revocation, trusted timestamp, visible-signature or existing-signature validation verdict |
 | Offline | Cached reader/local PDF operation and live hosted Chromium offline recovery verified; optional OCR assets/recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
-| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Windows silent installation passed in CI; native runtime, macOS installation, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
+| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Windows native reader/export/recovery passed; revised release CI, macOS installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
 
 The [original MVP trace](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md) and [verification](docs/verification.md) separate implemented behavior from test evidence.
 
@@ -109,6 +109,6 @@ The 200-account limit is a registration capacity rule, not a 200-concurrent-user
 
 ## Important Engineering Decisions
 
-Keep editor cancellation reliable across browser engines: the controller retains active PDF.js composite abort signals until abort/destruction after a reproduced WebKit garbage-collection defect. A deterministic ink/export/reopen regression guards this behavior. Windows Edge and WebKit focused checks passed; updated macOS CI is required before extending that evidence to macOS.
+Keep editor cancellation reliable across browser engines: the controller retains active PDF.js composite abort signals until abort/destruction after a reproduced WebKit garbage-collection defect. A deterministic ink/export/reopen regression guards this behavior. Windows Edge and WebKit focused checks passed; source-matched macOS CI subsequently passed, as recorded above.
 
 Keep one shared renderer and reader controller; add bounded specialist writers/workers only where PDF.js does not supply the operation. Preserve the reader's incremental editing path while rejecting organizer inputs whose semantics cannot be retained. Store device documents only by explicit consent; isolate account metadata from PDFs. Use a thin native wrapper until platform evidence justifies privileged adapters. Keep original-source licensing, dependency compliance, performance and verified-platform status explicit.

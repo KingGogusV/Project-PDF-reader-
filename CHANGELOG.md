@@ -4,6 +4,10 @@
 
 ### Added
 
+- Added an explicit normal-user Windows installed-app test route and a same-account owned-job launcher. Twelve native checks passed, including actual PDF form/annotation downloads and recovery after full process termination. All 533 installed notice hashes passed.
+- Updated release CI to use documented per-executable WebView2 debugging/profile overrides on its elevated disposable runner, with exact cleanup and unchanged application binaries. The revised remote gate and public release are pending.
+- Strengthened release preparation with installed/build EXE hash, source revision, native workflow and both process/policy cleanup checks.
+
 - Implemented a planned `v0.1.0-preview.1` Windows x64 download pipeline: bundled notices, isolated runner installation, actual installed-WebView2 smoke, and main-only publication after exact-source Reader/artifact/tag validation. Notice generation, compilation and silent installation have passed in later runs; installed-reader workflows and publication remain pending.
 - Added pinned `cargo-about 0.9.2` notice generation with original license texts, checked native archives, exact-version unchanged MPL source distribution and Rust/NSIS/WebView2 notices. Folio's own source remains UNLICENSED.
 - Documented account-free guest PDF reading/device storage in the desktop preview; optional website accounts retain managed ChatGPT/OpenAI sign-in.

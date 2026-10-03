@@ -30,12 +30,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
-      - name: Verify isolated standard-user setup and cleanup
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path test-results/native-windows -Force | Out-Null
-          $env:FOLIO_TOKEN_REPORT = Join-Path $PWD 'test-results/native-windows/token-preflight.json'
-          pwsh -NoProfile -File tests/native/windows-token-launch.ps1 -Mode Preflight
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
         with:
           toolchain: '1.99.0'
@@ -64,7 +58,7 @@ jobs:
           if (-not (Test-Path -LiteralPath $app) -or -not (Test-Path -LiteralPath (Join-Path $target 'third-party-notices'))) { throw 'Installed application or bundled notices are missing.' }
           "FOLIO_NATIVE_EXE=$app" >> $env:GITHUB_ENV
       - name: Verify actual installed WebView2 application
-        run: node tests/native/windows-smoke.mjs
+        run: node tests/native/windows-app-smoke.mjs
       - name: Prepare named download and checksums
         run: node scripts/windows-release.mjs prepare
       - name: Retain installer and release files

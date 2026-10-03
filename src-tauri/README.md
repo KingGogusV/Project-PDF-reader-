@@ -56,16 +56,11 @@ Unsigned development packages are available until **2026-10-17**:
 ZIP sizes and verified SHA-256 hashes are in [verification](../docs/verification.md).
 Downloads may require GitHub access. The earlier run 37088665153 built macOS but
 stopped on Windows before compilation; the final successful run supersedes that
-failure. Installer execution, application runtime, signing and notarization
-remain unverified.
+failure. Subsequent Windows installation and actual reader/export/recovery checks passed as recorded below; macOS runtime, signing and notarization remain unverified.
 
-The Windows work environment inspected on 2026-10-03 has no Rust/cargo, MSVC build
-tools, Windows SDK, or Android SDK at their usual installation paths; commands are
-also absent from PATH. No system SDK installation was attempted. A native binary
-cannot be compiled or manually inspected locally in that environment. GitHub
-hosted Windows/macOS runners can supply the corresponding native build toolchain.
-`pnpm exec tauri info` independently confirmed the missing Rust/MSVC toolchain and
-detected WebView2 154.0.4258.53 on Windows 10.0.22621 x64.
+The Windows environment has WebView2 154.0.4258.53 and an isolated Rust tool cache, but lacks MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. See [verification](../docs/verification.md).
+
+The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. Public publication remains pending revised CI.
 
 Official sources checked 2026-10-03:
 

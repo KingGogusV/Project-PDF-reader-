@@ -8,7 +8,7 @@ Original repository purpose: "Project to create free pdf reader that does not su
 
 ## Download for Windows
 
-**Windows download is blocked pending native runtime verification.** The installer builds and installs, but WebView2 exits before the reader opens in the hosted test runner. A public EXE has not been released. Use the web app above in the meantime.
+**Windows download is pending the revised release CI gate.** The installed app passed actual Windows startup, PDF export/reopen and process-restart recovery checks. The earlier custom-account CI launch failed; the replacement test route has not yet passed remotely. A public EXE has not been released. Use the web app above in the meantime.
 
 Once released, download the installer, open it, then launch **Folio** from Start. **No ChatGPT account or developer tools are required.** This is an **unsigned development preview for Windows x64**, not a production release. If Windows policy blocks it, use the web app without disabling your security protections.
 
@@ -16,7 +16,7 @@ Once released, download the installer, open it, then launch **Folio** from Start
 
 PDF reading and device storage work without signing in. Only the website's optional account feature currently uses ChatGPT/OpenAI sign-in. Documents remain on your device.
 
-**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Silent installation passed in disposable Windows CI; native startup is blocked and actual managed sign-in remains unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
+**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Actual Windows native reader/export/recovery checks passed; revised release CI and actual managed sign-in remain unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
 
 ## Available workflows
 
@@ -58,4 +58,4 @@ TypeScript/DOM + Vite + PDF.js; bounded pdf-lib page operations; local Tesseract
 - [Research](RESEARCH.md), [requirements](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md)
 - [Verification](docs/verification.md), [changelog](CHANGELOG.md), [backlog](BACKLOG.md)
 
-Physical mobile devices, branded Safari, native runtime and printers remain unverified. No general content editor, true redaction, sticky-note/underline/strikethrough creation or trusted-signature validator is included. Original source remains **UNLICENSED** pending the owner's choice; third-party notices, including OCR and FontBox provenance, are distributed separately.
+Physical mobile devices, branded Safari, macOS native runtime and printers remain unverified. No general content editor, true redaction, sticky-note/underline/strikethrough creation or trusted-signature validator is included. Original source remains **UNLICENSED** pending the owner's choice; third-party notices, including OCR and FontBox provenance, are distributed separately.

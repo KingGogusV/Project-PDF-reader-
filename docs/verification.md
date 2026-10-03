@@ -2,12 +2,19 @@
 
 Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
+## Normal-user Windows verification, 2026-10-03
+
+Actual Windows 10.0.22621 x64 / WebView2 154.0.4258.53 verification on 2026-10-03 passed 12 native checks: startup, real rendering, storage refusal/consent, immutable originals, form recovery, search, form download/reopen, text annotation download/reopen, and recovery after full owned-process termination/relaunch. Both process jobs emptied; the normal-user route changed no registry policy. The tested installer came from artifact 11266978801, source `85cc5de6378e64372549fb298d383374c74a488a` (installer SHA-256 `48e755d2e3a9596981a11c0a914ae514455ec533e82eb0e8201e65e219da8c31`). All 533 installed notice hashes also passed.
+
+Public Windows publication remains pending a successful run of the revised CI native gate. The existing hosted custom-account failure does not reproduce in the normal Windows user session.
+
+Initial expanded-test attempts exposed test-only path joining and plain-array parsing mistakes; neither was marked passed. Corrected full verification passed at 10:57:34–10:57:43 UTC, followed by a final launcher rerun. Evidence is summarized in [native-windows-2026-10-03.json](native-windows-2026-10-03.json). File selection was automated through the real HTML input; physical picker/printing and other devices are not established by this result.
+
 ## Current verification addendum: reader correction and Windows release gates
 
 The corrected reader is now live in **deployment v3**. Its complete Linux Chromium
 and macOS WebKit CI passed, and the hosted forced-GC Ink regression passed.
-Windows installation passed, but native runtime verification still failed and
-the public Windows release remains unpublished. Earlier results below remain
+The previous custom-account CI runtime failed; subsequent normal-user Windows native checks passed. The revised remote gate and public Windows release remain pending. Earlier results below remain
 evidence for their stated source revisions; they are not erased by later passes.
 
 ### WebKit editor lifecycle correction

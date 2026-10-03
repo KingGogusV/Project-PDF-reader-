@@ -36,7 +36,12 @@ async function prepare() {
   const bytes = await readFile(join(directory, files[0]));
   if (bytes.length < 1024 * 1024 || bytes.toString('ascii', 0, 2) !== 'MZ') throw new Error('Invalid installer executable.');
   const report = JSON.parse(await readFile('test-results/native-windows/report.json', 'utf8'));
-  if (report.status !== 'passed') throw new Error('Installed native smoke test did not pass.');
+  if (report.status !== 'passed' || report.mode !== 'hosted-ci' || report.sourceCommit !== revision ||
+      report.executable?.sha256 !== sha256(await readFile('src-tauri/target/release/folio-desktop.exe')) ||
+      report.launches?.length !== 2 || !report.launches.every(launch => launch.status === 'stopped' &&
+        launch.cleanup?.ownedJobEmpty && launch.cleanup?.policyRemoved && launch.webview?.profileVerified && launch.webview?.portVerified) ||
+      report.checks?.length < 12 || !report.checks.every(check => check.status === 'passed'))
+    throw new Error('Installed native verification, source/binary identity, or process/policy cleanup did not pass.');
   const manifest = JSON.parse(await readFile('src-tauri/generated-notices/manifest.json', 'utf8'));
   await mkdir(output, { recursive: true });
   if ((await readdir(output)).length) throw new Error('Release output is not empty; refuse stale artifacts.');

@@ -174,3 +174,16 @@ Original source remains **UNLICENSED**, pending owner choice. PDF.js, page write
 Security review must include parser/worker boundaries, account identity dispatch, device-storage expectations and embedded WASM components. An earlier zero-advisory package audit does not establish the upgraded dependency graph's current status; exact new commands/results belong in verification.
 
 Existing initial-reader timings use small synthetic localhost fixtures, not high-byte scans or physical phones. New OCR/signing/organization assets and memory costs require separate measurements. No competitor benchmark, suite duration or account count is presented as application performance evidence.
+
+
+## Normal-user native execution and CI test configuration — 2026-10-03
+
+**FACT:** Actual Windows 10.0.22621 x64 / WebView2 154.0.4258.53 verification on 2026-10-03 passed 12 native checks: startup, real rendering, storage refusal/consent, immutable originals, form recovery, search, form download/reopen, text annotation download/reopen, and recovery after full owned-process termination/relaunch. Both process jobs emptied; the normal-user route changed no registry policy. The tested installer came from artifact 11266978801, source `85cc5de6378e64372549fb298d383374c74a488a` (installer SHA-256 `48e755d2e3a9596981a11c0a914ae514455ec533e82eb0e8201e65e219da8c31`). All 533 installed notice hashes also passed.
+
+**INFERENCE:** The previous custom-account/session failures are specific to that CI launch route; they are not a general Folio startup failure. This does not prove every Windows machine behaves identically.
+
+**FACT:** [Microsoft's WebView2 environment reference](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.3800.47) documents executable-scoped HKLM/HKCU AdditionalBrowserArguments and UserDataFolder overrides, with HKLM checked first. [Playwright documents attaching to actual WebView2](https://playwright.dev/docs/webview2). Prior elevated-host environment-variable rejection remains in the historical evidence.
+
+**DESIGN DECISION:** Keep the shipped app unchanged. Use the runner's existing account for CI, supplying only the documented executable-scoped debugger/profile settings on the disposable elevated machine and removing the exact values afterward. Local normal-user testing uses process environment only. Require verified actual profile/port, owned-job cleanup, original preservation, independent PDF reopen and process-restart recovery. No sandbox switch, shared namespace ACL change or persistent debugging configuration is introduced.
+
+**UNRESOLVED:** Revised CI outcome and public prerelease remain pending; native print/file-picker UI, physical devices and live managed account sessions still require their own evidence.
