@@ -13,6 +13,10 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## High Priority
 
+- Complete physical assistive-technology checks on the accessibility pass: NVDA/JAWS on Windows, VoiceOver in branded Safari/macOS and iOS, TalkBack on Android. Exercise tab switching, focus restoration, search announcements, forms, dialogs, local recovery and export. Retain the 13 shell regressions and all 15 axe states.
+- Validate real browser zoom at 400%, OS font scaling, speech input and braille separately from the passed/recorded viewport and CSS text-scaling emulations. Audit tagged-PDF reading order and keyboard annotation creation without changing document integrity.
+
+
 - Investigate intermittent macOS WebKit OCR cancellation/retry page termination observed in Reader run 37120364985: one page crash, automatic retry passed. Three focused Windows WebKit reruns passed. This does not establish the crash cause or a fix; OCR remains experimental.
 
 - Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks, source-matched macOS CI and hosted ink export/reopen. Retain instance-scoped signal cleanup on future PDF.js upgrades.

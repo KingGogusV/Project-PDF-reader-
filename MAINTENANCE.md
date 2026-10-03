@@ -81,6 +81,14 @@ node scripts/audit-accessibility.mjs
 node scripts/benchmark.mjs
 ```
 
+The CI-gated accessibility pass is part of `pnpm test:e2e`. For a focused production-build check on Linux after installing Playwright Chromium, run:
+
+```sh
+E2E_BROWSER_CHANNEL=chromium E2E_START_SERVER=1 pnpm test:e2e tests/e2e/accessibility.spec.ts
+```
+
+Use `E2E_BROWSER=webkit` for the installed WebKit engine. Keep the baseline PDF workflow tests: focus fixes must not break exports, duplicate-widget isolation, dirty tracking, recovery or phone landscape controls. Inspect the retained screenshots and axe attachments; zero violations does not resolve automated incomplete checks. Use physical NVDA/JAWS/VoiceOver/TalkBack sessions separately.
+
 Audit configuration and incomplete/manual checks are documented in [the accessibility audit](docs/accessibility-audit.md). Record browser/version, build, viewport, CPU emulation, fixture size, warm/cold/cache state and actual timings. Suite execution time is not document latency. Review script defaults before interpreting any new benchmark.
 
 ## Account Schema and Hosted Deployment
@@ -207,3 +215,7 @@ Verify online setup -> worker/cache ready -> offline reload -> local PDF render/
 Before release: frozen install; type/unit/core/signing/E2E checks; production build; output/render/accessibility review; dependency/license/security review; requirements reconciliation and updated verification; coherent commits; actual GitHub synchronization/CI confirmation. Inspect deployed identity/database/header behavior separately. Native signing/notarization/updating, broader platform gates and original-source licensing remain release decisions.
 
 Debug with synthetic reproductions, stack traces, worker errors, browser traces, saved-output inspection and profiler/render comparisons. Do not hide failures, log document contents/credentials or reclassify incomplete checks as passes. Keep factual limitations and remaining work in BACKLOG rather than undocumented chat memory.
+
+### Windows accessibility preview preparation
+
+The next immutable target is `v0.1.1-preview.1`, with `Folio-0.1.1-Windows-x64-Setup.exe` and matching notices. Package, Tauri and Cargo application versions are 0.1.1; engine/dependency versions are unchanged. Release extraction keeps its exact four-file allowlist, and publication still requires exact-source Reader checks, installed Windows workflows, artifact digests and binary identity. The release notes are `docs/releases/windows-preview-2.md`. Keep existing public download links until the new public assets have actually been downloaded and verified; never overwrite the 0.1.0 tag/assets.

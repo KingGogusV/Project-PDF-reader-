@@ -422,7 +422,7 @@ const viewports = [
 for (const viewport of viewports) {
   test.describe(viewport.name, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height }, hasTouch: viewport.touch, isMobile: viewport.touch });
-    test('reader controls stay reachable without hover or horizontal body overflow', async ({ page }) => {
+    test('reader controls stay reachable without hover or horizontal body overflow', async ({ page }, testInfo) => {
       const checkOverflow = async () => {
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
       };
@@ -439,6 +439,7 @@ for (const viewport of viewports) {
       if (viewport.touch) await page.locator('#page-next').tap(); else await page.locator('#page-next').click();
       await expect(page.locator('#page-number')).toHaveValue('2');
       await ready(page, 2);
+      await page.screenshot({ path: testInfo.outputPath('reader.png'), fullPage: true });
       if (viewport.touch) await page.locator('#toggle-search').tap(); else await page.locator('#toggle-search').click();
       await page.getByRole('searchbox', { name: 'Search document' }).fill('amber heron');
       await expect(page.locator('#search-status')).toHaveText(/of 3$/);

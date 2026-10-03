@@ -16,7 +16,7 @@ export interface DeviceLibraryHooks {
   sessions(): LibrarySession[];
   openFile(file: File): Promise<LibrarySession | undefined>;
   activate(id: number): void;
-  dialog(title: string, body: HTMLElement, actions: { label: string; value: string; primary?: boolean }[]): Promise<string>;
+  dialog(title: string, body: HTMLElement, actions: { label: string; value: string; primary?: boolean }[], origin?: HTMLElement): Promise<string>;
   dismissDialog(): void;
   toast(message: string, error?: boolean): void;
   refreshStatus(): void;
@@ -199,7 +199,7 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
     hooks.toast('Stored on this device. Recovery copies are automatic; your original is kept separately.');
   }
 
-  async function storeActive() {
+  async function storeActive(origin?: HTMLElement) {
     await initialize();
     const session = hooks.active();
     if (!session || operationBusy) return;
@@ -227,7 +227,7 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
       body.append(paragraph(`Store ${session.name} in ${owner ? 'this account library' : 'the guest library'} on this browser?`));
       body.append(paragraph('Folio will keep the original and automatically save validated recovery copies locally. PDF contents and passwords are never uploaded. Browser storage can be cleared or evicted; keep an exported backup.'));
       body.append(paragraph('This is not encrypted storage. Someone with access to this browser profile may be able to access locally stored files.'));
-      const answer = await hooks.dialog('Store this PDF on this device?', body, [{ label: 'Not now', value: 'cancel' }, { label: 'Enable local recovery', value: 'store', primary: true }]);
+      const answer = await hooks.dialog('Store this PDF on this device?', body, [{ label: 'Not now', value: 'cancel' }, { label: 'Enable local recovery', value: 'store', primary: true }], origin);
       if (answer === 'store' && hooks.sessions().some(item => item.id === session.id)) await addSession(session);
     } catch (error) { hooks.toast(errorMessage(error), true); }
     finally { operationBusy = false; hooks.refreshStatus(); }
@@ -300,7 +300,7 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
     return button;
   }
 
-  async function showLibrary() {
+  async function showLibrary(origin?: HTMLElement) {
     await initialize();
     try {
       const records = await vault.list();
@@ -331,11 +331,11 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
             { label: 'Keep document', value: 'cancel' }, { label: 'Delete stored copies', value: 'delete', primary: true },
           ]);
           if (answer === 'delete') { await vault.remove(record.id, record.revision); hooks.toast('Stored copies deleted from this browser.'); }
-          await showLibrary();
+          await showLibrary(origin);
         }));
         row.append(buttons); body.append(row);
       }
-      await hooks.dialog('My library', body, [{ label: 'Done', value: 'done', primary: true }]);
+      await hooks.dialog('My library', body, [{ label: 'Done', value: 'done', primary: true }], origin);
     } catch (error) { hooks.toast(errorMessage(error), true); }
   }
 
@@ -349,7 +349,7 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
     return answer === 'leave';
   }
 
-  async function showAccount() {
+  async function showAccount(origin?: HTMLElement) {
     await initialize();
     const body = document.createElement('div');
     const actions: { label: string; value: string; primary?: boolean }[] = [{ label: 'Done', value: 'done' }];
@@ -374,7 +374,7 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
       else body.append(paragraph('Use the hosted website for account access. You can continue reading and storing guest documents locally here.'));
     }
     body.append(paragraph('Local account separation is not device encryption. Protect your browser profile and keep exported backups.'));
-    const result = await hooks.dialog('Your account', body, actions);
+    const result = await hooks.dialog('Your account', body, actions, origin);
     try {
       if (result === 'signin' && await mayNavigate()) location.assign(signInPath);
       else if (result === 'signout' && await mayNavigate()) {

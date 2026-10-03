@@ -215,3 +215,19 @@ Existing initial-reader timings use small synthetic localhost fixtures, not high
 **DESIGN DECISION:** Model only this pinned unsigned packaging transformation in a strict full-byte comparator, record both hashes and offset, and reject any other difference, ambiguous marker or new CLI version. Do not omit the identity gate or normalize arbitrary PE sections. Signed builds need a separate review.
 
 **UNRESOLVED:** Verify revised prepare/publication CI and inspect anonymous public downloads. An unrelated macOS WebKit OCR retry page crash passed on retry and did not reproduce in three local runs; its cause remains unproved.
+
+## Accessibility Interaction Research (2026-10-03)
+
+**FACT:** [WAI-ARIA tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/) associates each tab with a labeled panel and specifies arrow-key navigation, with Home/End optional. Recreating the focused tab is not necessary to update selection.
+
+**FACT:** [WCAG 2.2 reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) uses 320 CSS pixels for vertically scrolling content; document regions that require two-dimensional layout have a scoped exception. [Resize Text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html) addresses 200% text size. [Focus Not Obscured](https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html) requires that author-created content not completely hide the focused component. [Target Size Minimum](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) describes the 24 CSS-pixel minimum and exceptions.
+
+**FACT — observed:** Four pre-fix Chromium regressions reproduced lost tab focus, missing inactive panel targets, absent navigation expanded state and a collapsed canvas at 320 x 256. A later expanded axe scan found nine Document Properties labels at 3.60:1. The replacement label color #52615a on #fdfcf9 calculates to 6.36:1. Application field boundaries #7b8b81 on #f5f5f0 calculate to 3.28:1; selected thumbnail border #52684a on #e7ebdf calculates to 5.05:1. These ratios concern application chrome, not arbitrary PDF content.
+
+**DESIGN DECISION:** Preserve session/tab DOM identity, retain empty panel wrappers while detaching inactive widgets, restore focus at UI transitions, and use persistent status announcements. Reflow application controls separately from PDF page geometry. Use the existing axe dependency as a blocking regression gate; add no runtime dependency.
+
+**UNRESOLVED:** Browser viewport/text/forced-colors emulation is not native zoom, OS text scaling or assistive-technology verification. Physical NVDA/JAWS/VoiceOver/TalkBack, speech input, braille, arbitrary tagged-PDF reading order and accessible annotation authoring require separate evaluation.
+
+**FACT — macOS CI follow-up:** Reader runs 37139250189 and 37139464662 passed Linux Chromium but exposed five WebKit accessibility failures. Pointer-opened dialogs returned to stale focus; the native zoom selector measured only 22 CSS pixels high; default Tab skipped the initial link. [WebKit records that macOS buttons are not mouse-focusable](https://results.webkit.org/commit?id=311768%40main&repository_id=webkit). [Apple documents Option-Tab and Safari’s full Tab navigation setting](https://support.apple.com/en-lamr/guide/safari/cpsh003/mac).
+
+**DESIGN DECISION:** Supply explicit dialog origins for pointer activation, keep the native select semantics/menu with a styled 44-pixel box and CSS arrow, and test the documented Option-Tab gesture for the initial link on macOS WebKit. These changes do not bypass a failing test or replace the native select with a custom widget.

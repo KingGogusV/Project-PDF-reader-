@@ -6,9 +6,9 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { verifyNsisBinaryIdentity } from './native-binary-identity.mjs';
 
 const repository = 'KingGogusV/Project-PDF-reader-';
-const tag = 'v0.1.0-preview.1';
-const exeName = 'Folio-0.1.0-Windows-x64-Setup.exe';
-const noticesName = 'Folio-0.1.0-Third-Party-Notices.zip';
+const tag = 'v0.1.1-preview.1';
+const exeName = 'Folio-0.1.1-Windows-x64-Setup.exe';
+const noticesName = 'Folio-0.1.1-Third-Party-Notices.zip';
 const output = resolve('.cache/windows-release');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const revision = process.env.GITHUB_SHA;
@@ -62,7 +62,7 @@ async function prepare() {
   // The source directory is fixed, generated and checked by the native notice gate.
   const zipScript = "$ErrorActionPreference='Stop'; Compress-Archive -LiteralPath 'src-tauri/generated-notices' -DestinationPath '.cache/windows-release/" + noticesName + "'";
   execFileSync('pwsh', ['-NoProfile', '-Command', zipScript], { stdio: 'inherit' });
-  const provenance = { repository, sourceCommit: revision, tag, version: '0.1.0', architecture: 'Windows x64',
+  const provenance = { repository, sourceCommit: revision, tag, version: '0.1.1', architecture: 'Windows x64',
     runId: Number(process.env.GITHUB_RUN_ID), signed: false, nativeSmoke: report, binaryIdentity, noticeManifest: manifest,
     artifacts: await Promise.all([exeName, noticesName].map(async name => { const data = await readFile(join(output, name)); return { name, bytes: data.length, sha256: sha256(data) }; })) };
   await writeFile(join(output, 'release-provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
@@ -139,8 +139,8 @@ async function publish() {
     if (matches.length > 1) throw new Error('Multiple releases use this tag; refusing ambiguous publication.');
     release = matches[0] || null;
   }
-  const body = (await readFile('docs/releases/windows-preview-1.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
-  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.0', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
+  const body = (await readFile('docs/releases/windows-preview-2.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
+  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.1', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
   if (release.target_commitish !== revision || !release.prerelease) throw new Error('Existing release belongs to different source or channel; refusing replacement.');
   const names = [exeName, noticesName, 'SHA256SUMS.txt', 'release-provenance.json'];
   for (const name of names) {

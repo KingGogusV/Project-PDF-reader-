@@ -91,7 +91,7 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 | Page tools | Extract, reorder, delete, permanent rotation and merge to a verified new copy | Reject forms, annotations, signatures, encryption and unsupported document structures; page-only metadata behavior is explicit |
 | Certificate signing | Local P12/PFX review and invisible RSA/SHA-256 signature; independent byte-range/CMS and preservation checks | No trust-chain, revocation, trusted timestamp, visible-signature or existing-signature validation verdict |
 | Offline | Cached reader/local PDF operation and live hosted Chromium offline recovery verified; optional OCR assets/recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
-| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Windows native reader/export/recovery passed; macOS installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
+| Native/accessibility | Stable keyboard document tabs, panel/dialog/close focus restoration, named panel relationships, live page/unsaved status, enlarged-text/reflow and forced-colors support; Windows/macOS packaging | Automated and manual visual results are recorded in the accessibility audit; physical screen readers, arbitrary PDF reading order and WCAG conformance remain unverified |
 
 The [original MVP trace](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md) and [verification](docs/verification.md) separate implemented behavior from test evidence.
 
@@ -112,3 +112,9 @@ The 200-account limit is a registration capacity rule, not a 200-concurrent-user
 Keep editor cancellation reliable across browser engines: the controller retains active PDF.js composite abort signals until abort/destruction after a reproduced WebKit garbage-collection defect. A deterministic ink/export/reopen regression guards this behavior. Windows Edge and WebKit focused checks passed; source-matched macOS CI subsequently passed, as recorded above.
 
 Keep one shared renderer and reader controller; add bounded specialist writers/workers only where PDF.js does not supply the operation. Preserve the reader's incremental editing path while rejecting organizer inputs whose semantics cannot be retained. Store device documents only by explicit consent; isolate account metadata from PDFs. Use a thin native wrapper until platform evidence justifies privileged adapters. Keep original-source licensing, dependency compliance, performance and verified-platform status explicit.
+
+## Accessibility Pass — 2026-10-03
+
+The shell keeps document tabs mounted during render/search updates. Inactive tab panels retain valid accessibility relationships while their PDF widget DOM stays detached. Navigation controls expose expanded/current state, modal dialogs and closed documents return focus, and phone navigation closes when focus enters the PDF. Controls reflow at 320 CSS pixels and 200% application text size; short windows scroll instead of losing the canvas. PDF-authored page geometry and form metrics are unchanged.
+
+The pass adds 13 behavioral accessibility regressions and axe scans of 15 interface states to the existing Chromium/macOS WebKit CI suite. It is not a screen-reader or PDF/UA certification. See [accessibility evidence and manual gates](docs/accessibility-audit.md). Version 0.1.1 is prepared for a separate Windows preview; the existing 0.1.0 release remains intact until the new release is verified.
