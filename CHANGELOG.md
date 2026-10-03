@@ -21,6 +21,9 @@
 
 - The first Windows release run exposed cargo-about 0.9.2's opt-in CLI binary; installation now requests `--features cli`. The failed run stopped before packaging/publication and is retained as evidence.
 - The subsequent run reached the installed CLI and exposed its PowerShell pipe guard. The collector now uses its UTF-8 output-file option and retains notice diagnostics; it does not suppress the guard or alter license policy.
+- Release retries now find matching drafts through authenticated release listing; publication jobs are serialized and recheck tag identity before publishing. Existing mismatched source or asset bytes are never replaced.
+- Added exact original-file clarifications after the first native license scan rejected generic fallback texts; retained dpi's combined license obligations and checked registry-archive bytes when Cargo omits per-file checksum metadata.
+- Corrected Rust 1.99 notice locations and retained its referenced license collection. The Windows release job now pins that reviewed compiler. Full local collection passed, including an independent check of 533 generated-file hashes; installer/runtime verification remains separate.
 - WebKit IndexedDB rejected Blob-backed documents; portable ArrayBuffer writes now retain read compatibility with earlier Blob records, without resetting storage.
 - Cold signing-test dependency discovery caused page navigation; an isolated preoptimized harness removes that interruption.
 - WebKit automation's network-offline limitation is measured separately with a real isolated-origin outage; Chromium retains actual offline emulation.

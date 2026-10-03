@@ -150,6 +150,8 @@ The installer lets guests read/store local PDFs without ChatGPT or a Folio accou
 
 ## Platform Test Procedure
 
+The Windows release job pins Rust **1.99.0**, whose compiler and standard-library notice layout was inspected. The complete collector passed locally with isolated, checksum-verified Rust/Cargo 1.99.0 and cargo-about 0.9.2: 226 crates, 110 original license texts, 24 platform files and five MPL archives. Independent output verification recomputed 533 file hashes and the unchanged Cargo lock hash. This verifies notice collection, not native compilation or runtime. The temporary metadata tooling lives only in ignored workspace cache; it did not install a system toolchain or MSVC. Future native builders should use the documented supported toolchain setup rather than depend on that cache.
+
 Record OS, browser/version, headless/manual mode and input emulation. Layout classes include desktop 1600x1000, laptop 1280x800, tablet landscape 1024x768, tablet portrait 768x1024, phone portrait 390x844 and phone landscape 844x390. These are viewport checks, not physical-device certifications.
 
 Cover open/navigation/close; search/results/clear; annotation/form export-reopen; duplicate widgets/radios; dirty close; protected/damaged input; print/download handoff; local library/recovery/conflicts/quota; account availability/capacity; OCR recognize/cancel/offline; organization output/refusal; certificate signing/cancel/tamper. Monitor external requests and uncaught errors. Inspect saved outputs with independent parsers/renderers and actual screenshots.

@@ -32,7 +32,7 @@ jobs:
           node-version: '24'
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
         with:
-          toolchain: stable
+          toolchain: '1.99.0'
       - name: Install pinned tools and dependencies
         run: |
           npm install --global pnpm@11.25.0
@@ -95,6 +95,9 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.repository == 'KingGogusV/Project-PDF-reader-'
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    concurrency:
+      group: folio-windows-preview-publication
+      cancel-in-progress: false
     permissions:
       contents: write
       actions: read

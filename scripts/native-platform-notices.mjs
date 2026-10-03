@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rmdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rmdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 
@@ -93,7 +93,16 @@ async function rustNotices(output) {
   const release = version.match(/^release: ([0-9]+\.[0-9]+\.[0-9]+)$/m)?.[1];
   if (!commit || !release) throw new Error('Native notices require an identifiable stable Rust compiler release.');
   const result = [];
-  for (const name of ['COPYRIGHT-library.html', 'LICENSE-MIT', 'LICENSE-APACHE']) {
+  // Rust 1.99 ships the standard-library copyright inventory and referenced
+  // license collection in the installed component; top-level root licenses are
+  // in the distribution archive instead. Keep the actual component layout.
+  const licenseDirectory = join(sysroot, 'share', 'doc', 'rust', 'licenses');
+  const licenseEntries = await readdir(licenseDirectory, { withFileTypes: true });
+  if (!licenseEntries.length) throw new Error('The exact build compiler has no license collection.');
+  for (const entry of licenseEntries) {
+    if (!entry.isFile() || !/^[A-Za-z0-9.-]+\.txt$/.test(entry.name)) throw new Error(`Unexpected Rust license entry: ${entry.name}.`);
+  }
+  for (const name of ['COPYRIGHT-library.html', ...licenseEntries.map(entry => `licenses/${entry.name}`)]) {
     const source = join(sysroot, 'share', 'doc', 'rust', name);
     let info;
     try { info = await stat(source); }
@@ -104,7 +113,17 @@ async function rustNotices(output) {
       url: `https://github.com/rust-lang/rust/tree/${commit}`,
       compiler: version,
       sourceRelativePath: `share/doc/rust/${name}`,
-      provenance: 'Copied without alteration from the running build compiler sysroot; COPYRIGHT-library.html includes standard-library dependency notices, not just the Rust top-level licenses.',
+      provenance: 'Copied without alteration from the running build compiler sysroot. This conservative license collection does not imply that every listed component is linked on Windows; COPYRIGHT-library.html contains the standard-library attribution inventory.',
+    }));
+  }
+  for (const [name, expectedHash] of [
+    ['LICENSE-MIT', 'b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1'],
+    ['LICENSE-APACHE', '62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a'],
+  ]) {
+    const asset = { name: `Rust ${release} original ${name}`, url: `https://raw.githubusercontent.com/rust-lang/rust/${commit}/${name}`, sha256: expectedHash, maxBytes: 32 * 1024 };
+    result.push(await save(output, `platform/rust/${name}`, await download(asset), {
+      name: asset.name, url: asset.url, compiler: version,
+      provenance: 'Original root license from the exact compiler commit; reviewed SHA-256 values were independently checked against the official Rust 1.99 compiler archive. License changes require review.',
     }));
   }
   return result;
@@ -166,7 +185,7 @@ export async function collectPinnedWindowsNotices({ output, target, packages }) 
       companionNoticeCoverage: pluginCoverage.map(({ name, version }) => ({ name, version })),
       limitation: 'Upstream supplies no Cargo.lock or exact compiler manifest for this precompiled plugin. It uses no_std with Rust core/alloc, its own plugin API, semver and Windows bindings. Companion notices cover those projects, but app crate versions do not establish exact versions linked into the upstream DLL.',
     }));
-    const readme = `Windows native platform notice scope\n\nRust notices come from the exact compiler sysroot used for this build. Full original WebView2 SDK, NSIS and installer-plugin notices accompany them. Archive and individual notice hashes are recorded in manifest.json.\n\nWebView2 SDK ${sdkVersion}: webview2-com-sys 0.39.1 statically links the Microsoft loader. The reviewed x64 loader is byte-identical to the SDK archive and is covered by the SDK BSD license and NOTICE. The current installer uses Evergreen downloadBootstrapper if the runtime is absent; a fixed WebView2/Chromium runtime is not embedded. Microsoft's runtime installation remains separate.\n\nNSIS 3.11: full COPYING and Modern UI/NSISdl notices are retained. Unchanged upstream v311 source accompanies them at ../sources/nsis-3.11-source.tar.gz. Default LZMA includes a CPL linking exception; Folio does not modify that component. The source is available in this distribution under its original terms. No additional promises or warranty are made on behalf of its contributors.\n\nnsis-tauri-utils 0.5.3: the original MIT notice and companion project notices are retained. This precompiled no_std plugin uses Rust core/alloc, its plugin API, Windows bindings and semver. Its upstream release does not supply an exact dependency lockfile/compiler inventory. The application dependency versions are not claimed to be that plugin's build provenance.\n\nMicrosoft C runtime: Tauri CLI 2.12.1 defaults build.windows.staticVCRuntime=true and bundle.windows.bundleVCRuntime=false. This application therefore uses static Microsoft runtime components rather than intentionally adding separate CRT DLLs. The Windows build environment supplies the MSVC/Windows SDK toolchain under its applicable Microsoft terms. Do not label the entire executable as containing only permissively licensed Rust code. See https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170 .\n\nThis is the reviewed Windows x64 inventory. It does not establish a native security audit, runtime verification, a license for Folio's own code, or notice completeness for another platform/build configuration.\n`;
+    const readme = `Windows native platform notice scope\n\nRust notices come from the exact compiler sysroot used for this build and the original root licenses at its recorded source commit. Full original WebView2 SDK, NSIS and installer-plugin notices accompany them. Archive and individual notice hashes are recorded in manifest.json.\n\nWebView2 SDK ${sdkVersion}: webview2-com-sys 0.39.1 statically links the Microsoft loader. The reviewed x64 loader is byte-identical to the SDK archive and is covered by the SDK BSD license and NOTICE. The current installer uses Evergreen downloadBootstrapper if the runtime is absent; a fixed WebView2/Chromium runtime is not embedded. Microsoft's runtime installation remains separate.\n\nNSIS 3.11: full COPYING and Modern UI/NSISdl notices are retained. Unchanged upstream v311 source accompanies them at ../sources/nsis-3.11-source.tar.gz. Default LZMA includes a CPL linking exception; Folio does not modify that component. The source is available in this distribution under its original terms. No additional promises or warranty are made on behalf of its contributors.\n\nnsis-tauri-utils 0.5.3: the original MIT notice and companion project notices are retained. This precompiled no_std plugin uses Rust core/alloc, its plugin API, Windows bindings and semver. Its upstream release does not supply an exact dependency lockfile/compiler inventory. The application dependency versions are not claimed to be that plugin's build provenance.\n\nMicrosoft C runtime: Tauri CLI 2.12.1 defaults build.windows.staticVCRuntime=true and bundle.windows.bundleVCRuntime=false. This application therefore uses static Microsoft runtime components rather than intentionally adding separate CRT DLLs. The Windows build environment supplies the MSVC/Windows SDK toolchain under its applicable Microsoft terms. Do not label the entire executable as containing only permissively licensed Rust code. See https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170 .\n\nThis is the reviewed Windows x64 inventory. It does not establish a native security audit, runtime verification, a license for Folio's own code, or notice completeness for another platform/build configuration.\n`;
     result.push(await save(destination, 'platform/README.txt', Buffer.from(readme), {
       name: 'Windows platform inventory and limits',
       url: 'https://github.com/tauri-apps/tauri/tree/tauri-cli-v2.12.1',

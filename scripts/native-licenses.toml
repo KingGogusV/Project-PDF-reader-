@@ -45,3 +45,134 @@ override-git-commit = "dffa41a8a46d3f5565eefbff2de57d38d399f158"
 [[webview2-com-macros.clarify.git]]
 path = "LICENSE"
 checksum = "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+
+# Reviewed alternatives whose canonical fallback omitted packaged attributions.
+# Version guards live in native-notices.mjs; these hashes preserve original bytes.
+[dunce.clarify]
+license = "CC0-1.0"
+[[dunce.clarify.files]]
+path = "LICENSE"
+checksum = "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+
+[brotli-decompressor.clarify]
+license = "BSD-3-Clause"
+[[brotli-decompressor.clarify.files]]
+path = "LICENSE"
+checksum = "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae"
+
+[cargo_toml.clarify]
+license = "MIT"
+[[cargo_toml.clarify.files]]
+path = "LICENSE"
+checksum = "ee874098519e956c23a3c5c7e20581f8e9b1d70aa05eb178f983be9775090a2f"
+
+# dpi's libm-derived code adds MIT obligations to the Apache-licensed crate.
+[dpi.clarify]
+license = "Apache-2.0 AND MIT"
+[[dpi.clarify.files]]
+path = "LICENSE"
+license = "Apache-2.0"
+checksum = "6dc0e068dcf3a5bc8e054205b85b7720e1d49265bbc64bf515d2cf79197df69a"
+[[dpi.clarify.files]]
+path = "LICENSE-LIBM-MIT"
+license = "MIT"
+checksum = "9eff396a99bafd208e7126602420d6864f6066c08b84485a5b032320a9c01997"
+
+# This subcrate omits the repository-root original BSD notice.
+[alloc-stdlib.clarify]
+license = "BSD-3-Clause"
+override-git-commit = "0a81fd6928ea3b33c8cd484aa4575d50ffb98012"
+[[alloc-stdlib.clarify.git]]
+path = "LICENSE"
+checksum = "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae"
+
+# Microsoft ships indented original MIT notices; supply exact packaged text.
+[windows-collections.clarify]
+license = "MIT"
+[[windows-collections.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-core.clarify]
+license = "MIT"
+[[windows-core.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-future.clarify]
+license = "MIT"
+[[windows-future.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-implement.clarify]
+license = "MIT"
+[[windows-implement.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-interface.clarify]
+license = "MIT"
+[[windows-interface.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-link.clarify]
+license = "MIT"
+[[windows-link.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-numerics.clarify]
+license = "MIT"
+[[windows-numerics.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-result.clarify]
+license = "MIT"
+[[windows-result.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-strings.clarify]
+license = "MIT"
+[[windows-strings.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-sys.clarify]
+license = "MIT"
+[[windows-sys.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-targets.clarify]
+license = "MIT"
+[[windows-targets.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-threading.clarify]
+license = "MIT"
+[[windows-threading.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows-version.clarify]
+license = "MIT"
+[[windows-version.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows.clarify]
+license = "MIT"
+[[windows.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+
+[windows_x86_64_msvc.clarify]
+license = "MIT"
+[[windows_x86_64_msvc.clarify.files]]
+path = "license-mit"
+checksum = "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"

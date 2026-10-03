@@ -107,6 +107,20 @@ async function publish() {
   await verifyTag(true);
   let response = await api(`/releases/tags/${tag}`, {}, [404]);
   let release = response.status === 404 ? null : await response.json();
+  if (!release) {
+    // The tag endpoint is documented for published releases. Authenticated
+    // listing also exposes drafts left behind by a failed asset upload.
+    const matches = [];
+    for (let page = 1; page <= 10; page++) {
+      const releases = await (await api(`/releases?per_page=100&page=${page}`)).json();
+      if (!Array.isArray(releases)) throw new Error('Unexpected release listing.');
+      matches.push(...releases.filter(item => item.tag_name === tag));
+      if (releases.length < 100) break;
+      if (page === 10) throw new Error('Release listing exceeded the review limit; refusing duplicate publication.');
+    }
+    if (matches.length > 1) throw new Error('Multiple releases use this tag; refusing ambiguous publication.');
+    release = matches[0] || null;
+  }
   const body = (await readFile('docs/releases/windows-preview-1.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
   if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.0', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
   if (release.target_commitish !== revision || !release.prerelease) throw new Error('Existing release belongs to different source or channel; refusing replacement.');
@@ -127,6 +141,7 @@ async function publish() {
       if (asset.size !== bytes.length || asset.digest !== 'sha256:' + sha256(bytes)) throw new Error('Uploaded asset digest mismatch. Release remains draft.');
     }
   }
+  await verifyTag(true);
   if (release.draft) release = await (await api(`/releases/${release.id}`, { method: 'PATCH', body: JSON.stringify({ draft: false, prerelease: true, make_latest: 'false', body }) })).json();
   const published = await (await api(`/releases/${release.id}`)).json();
   if (published.draft || !published.prerelease || names.some(name => !published.assets?.find(a => a.name === name && a.state === 'uploaded'))) throw new Error('Published release verification failed.');
