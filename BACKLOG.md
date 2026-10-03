@@ -4,7 +4,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## Critical
 
-- Finish native OS-close safety verification, diagnose release validation and publish the verified Windows preview. Actual normal-user native rendering, export/reopen, search and full-process checkpoint recovery passed. The replacement same-account CI route uses documented executable-scoped WebView2 settings; its 12 native checks and cleanup passed in run 37118654858, but preparation failed an aggregate validation check. Use the granular diagnostics to resolve it without weakening source/binary checks; verify the new real OS-close tests, exact main Reader checks and artifact digests before publication. Do not announce `v0.1.0-preview.1` or its direct EXE until publication and downloaded bytes are verified.
+- Complete the corrected NSIS identity gate and publish the verified Windows preview. Native OS-close safety passed locally and in CI. Actual normal-user native rendering, export/reopen, search and full-process checkpoint recovery passed. The replacement same-account CI route uses documented executable-scoped WebView2 settings; its 12 native checks and cleanup passed in run 37118654858, but preparation failed an aggregate validation check. The next run passed 14 native checks; installed bytes differ only in the pinned Tauri NSIS marker. Retain the exact-byte comparator, source-matched main Reader checks and artifact digests before publication. Do not announce `v0.1.0-preview.1` or its direct EXE until publication and downloaded bytes are verified.
 
 - Keep the verified Reader and native packaging CI baselines reproducible; the separate Windows runtime release gate currently fails. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
 - Complete actual managed sign-in, registration and sign-out. Live anonymous responses, spoofed-header refusal and redirect to the identity provider passed; those checks do not establish a complete account session. Never expose the account worker behind a dispatcher that trusts client headers.
@@ -14,6 +14,8 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 - Keep unsupported signed/encrypted/restricted/form/annotation/document-structure cases fail-closed in each writer. Do not broaden supported documents by suppressing validation failures.
 
 ## High Priority
+
+- Investigate intermittent macOS WebKit OCR cancellation/retry page termination observed in Reader run 37120364985: one page crash, automatic retry passed. Three focused Windows WebKit reruns passed. This does not establish the crash cause or a fix; OCR remains experimental.
 
 - Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks, source-matched macOS CI and hosted ink export/reopen. Retain instance-scoped signal cleanup on future PDF.js upgrades.
 
@@ -53,7 +55,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 | Hosted web | Online guest recovery/API boundary passed and D1 table exists; actual account sessions, static security headers and concurrent-request measurement remain |
 | Linux browser | Upgraded Chromium CI passed; interactive desktop, real printer and assistive-technology sessions remain |
 | macOS browser | WebKit CI passed; branded Safari, VoiceOver and real macOS interaction remain |
-| Windows native | Reader/export/recovery passed locally and in CI; native close-safety verification and release validation pending; signing, associations and broader lifecycle remain |
+| Windows native | Reader/export/recovery passed locally and in CI; release validation pending; signing, associations and broader lifecycle remain |
 | macOS native | App/DMG build passed; installation/runtime, WKWebView/custom-origin workers, signing/notarization and lifecycle/recovery remain |
 | Physical phone/tablet | Safari/Android file flows, memory pressure, selection/keyboard, OCR, stylus/palm, share/print, storage eviction and screen readers |
 | Linux native | No native package target currently configured; evaluate only after browser/native evidence and product need |

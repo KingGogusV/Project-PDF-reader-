@@ -188,7 +188,7 @@ Existing initial-reader timings use small synthetic localhost fixtures, not high
 
 **FACT:** Revised CI runtime passed 12 checks and exact cleanup in run 37118654858; preparation validation failed and publication was skipped.
 
-**UNRESOLVED:** Native close-safety, release validation and public prerelease remain pending; native print/file-picker UI, physical devices and live managed account sessions still require their own evidence.
+**UNRESOLVED:** Release validation and public prerelease remain pending; native print/file-picker UI, physical devices and live managed account sessions still require their own evidence.
 
 ## Native close safety and API dependency - 2026-10-03
 
@@ -201,3 +201,11 @@ Existing initial-reader timings use small synthetic localhost fixtures, not high
 **DESIGN DECISION:** Prevent native closure first, then reuse the shared validated per-document workflow. Only `finish_close` is granted to the local main window; no filesystem/shell/network permission is added. The wrapper fails closed if the frontend cannot respond. Browser bridge simulations test UI only; release verification must also send actual OS-close requests and prove cancel-preservation and confirmed clean exit.
 
 **UNRESOLVED:** Compile and execute the corrected native binary, then resolve the independent release identity/cleanup validation using explicit diagnostics; never remove a gate to conceal its failure.
+
+## NSIS executable identity - 2026-10-03
+
+**FACT:** The exact [Tauri CLI 2.12.1 bundler source](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.12.1/crates/tauri-bundler/src/bundle.rs), downloaded SHA-256 `91c8387ccb2e52388cdcfeccfd23f69dac5439aba397d464b1d5446153fdc82e`, patches the first bundle marker from UNK to NSS and restores the original build EXE afterward. Run 37120364964 logged different raw hashes; an independently downloaded/installed copy reproduced the original build hash after reversing exactly those three bytes. Native close passed 14 cases both remotely and locally.
+
+**DESIGN DECISION:** Model only this pinned unsigned packaging transformation in a strict full-byte comparator, record both hashes and offset, and reject any other difference, ambiguous marker or new CLI version. Do not omit the identity gate or normalize arbitrary PE sections. Signed builds need a separate review.
+
+**UNRESOLVED:** Verify revised prepare/publication CI and inspect anonymous public downloads. An unrelated macOS WebKit OCR retry page crash passed on retry and did not reproduce in three local runs; its cause remains unproved.

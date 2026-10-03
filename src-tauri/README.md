@@ -97,7 +97,7 @@ fill forms; annotate; export and independently reopen; close with unsaved work;
 check Blob downloads/print windows and external links; open offline; verify worker
 and WebAssembly loading under the packaged CSP. Test on Windows and macOS
 separately. Actual Windows reader/export/recovery tests passed locally and in CI;
-rebuilt native close-safety and release validation remain pending.
+rebuilt release validation remain pending.
 
 The historical, superseded Windows CI launcher created a temporary Users-only account,
 loads its profile using only scoped privileges already assigned to the runner,
@@ -107,7 +107,7 @@ checks WebView2's actual data directory/debugging port. Plain `STARTUPINFO` does
 not inherit standard handles; browser logs and owned-process diagnostics are
 retained. Cleanup must empty the owned job, close the private desktop, unload and
 delete the exact temporary profile, and remove the name/SID-matched account.
-The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. These historical failures were superseded by the same-account owned-job route: its 12 native checks and cleanup passed. Native close-safety and release validation now block publication.
+The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. These historical failures were superseded by the same-account owned-job route: its 12 native checks and cleanup passed. Native close safety subsequently passed; release validation still blocks publication.
 See the [Windows verification procedure](../docs/windows-installation.md#developer-verification).
 
 The browser service worker, browser account redirects, downloads and popups may

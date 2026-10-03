@@ -8,7 +8,7 @@ Original repository purpose: "Project to create free pdf reader that does not su
 
 ## Download for Windows
 
-**Windows download is pending close-safety and release validation.** Actual Windows reader/export/recovery checks passed locally and in CI. A separate OS-close check found an unsaved-edits bug; the implemented correction awaits rebuilt native verification. A public EXE has not been released. Use the web app above in the meantime.
+**Windows download is pending release validation.** All 14 actual Windows reader/export/recovery and OS-close checks passed locally and in CI. The packaging identity correction is awaiting its release run. A public EXE has not been released. Use the web app above in the meantime.
 
 Once released, download the installer, open it, then launch **Folio** from Start. **No ChatGPT account or developer tools are required.** This is an **unsigned development preview for Windows x64**, not a production release. If Windows policy blocks it, use the web app without disabling your security protections.
 
@@ -16,7 +16,7 @@ Once released, download the installer, open it, then launch **Folio** from Start
 
 PDF reading and device storage work without signing in. Only the website's optional account feature currently uses ChatGPT/OpenAI sign-in. Documents remain on your device.
 
-**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Actual Windows native reader/export/recovery checks passed; native close-safety/release validation and actual managed sign-in remain unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
+**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Actual Windows native reader/export/recovery checks passed; release validation and actual managed sign-in remain unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
 
 ## Available workflows
 

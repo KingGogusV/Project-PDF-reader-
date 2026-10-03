@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import { verifyNsisBinaryIdentity } from './native-binary-identity.mjs';
 
 const repository = 'KingGogusV/Project-PDF-reader-';
 const tag = 'v0.1.0-preview.1';
@@ -36,14 +37,20 @@ async function prepare() {
   const bytes = await readFile(join(directory, files[0]));
   if (bytes.length < 1024 * 1024 || bytes.toString('ascii', 0, 2) !== 'MZ') throw new Error('Invalid installer executable.');
   const report = JSON.parse(await readFile('test-results/native-windows/report.json', 'utf8'));
-  const builtExecutableSha256 = sha256(await readFile('src-tauri/target/release/folio-desktop.exe'));
+  const builtExecutable = await readFile('src-tauri/target/release/folio-desktop.exe');
+  const builtExecutableSha256 = sha256(builtExecutable);
   console.log(JSON.stringify({ nativeStatus: report.status, nativeMode: report.mode,
     reportSource: report.sourceCommit, expectedSource: revision,
     installedExecutableSha256: report.executable?.sha256, builtExecutableSha256,
     launches: report.launches?.map(launch => ({ status:launch.status, cleanup:launch.cleanup, webview:launch.webview })),
     checks: report.checks?.length, allChecksPassed: report.checks?.every(check => check.status === 'passed') }));
+  if (!process.env.FOLIO_NATIVE_EXE || resolve(report.executable?.path || '') !== resolve(process.env.FOLIO_NATIVE_EXE))
+    throw new Error('Native report does not identify the installed executable.');
+  const cli = JSON.parse(await readFile('node_modules/@tauri-apps/cli/package.json', 'utf8'));
+  const binaryIdentity = verifyNsisBinaryIdentity(builtExecutable, await readFile(process.env.FOLIO_NATIVE_EXE), cli.version);
+  console.log(JSON.stringify({ binaryIdentity }));
   if (report.status !== 'passed' || report.mode !== 'hosted-ci' || report.sourceCommit !== revision ||
-      report.executable?.sha256 !== builtExecutableSha256 ||
+      report.executable?.sha256 !== binaryIdentity.installedSha256 ||
       report.launches?.length !== 2 || !report.nativeCloseConfirmed || !report.launches.every(launch => ['stopped','closed'].includes(launch.status) &&
         launch.cleanup?.ownedJobEmpty && launch.cleanup?.policyRemoved && launch.webview?.profileVerified && launch.webview?.portVerified) ||
       report.checks?.length < 14 || !report.checks.every(check => check.status === 'passed'))
@@ -56,7 +63,7 @@ async function prepare() {
   const zipScript = "$ErrorActionPreference='Stop'; Compress-Archive -LiteralPath 'src-tauri/generated-notices' -DestinationPath '.cache/windows-release/" + noticesName + "'";
   execFileSync('pwsh', ['-NoProfile', '-Command', zipScript], { stdio: 'inherit' });
   const provenance = { repository, sourceCommit: revision, tag, version: '0.1.0', architecture: 'Windows x64',
-    runId: Number(process.env.GITHUB_RUN_ID), signed: false, nativeSmoke: report, noticeManifest: manifest,
+    runId: Number(process.env.GITHUB_RUN_ID), signed: false, nativeSmoke: report, binaryIdentity, noticeManifest: manifest,
     artifacts: await Promise.all([exeName, noticesName].map(async name => { const data = await readFile(join(output, name)); return { name, bytes: data.length, sha256: sha256(data) }; })) };
   await writeFile(join(output, 'release-provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
   const sums = [...provenance.artifacts, { name: 'release-provenance.json', sha256: sha256(await readFile(join(output, 'release-provenance.json'))) }];

@@ -19,7 +19,7 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 | Target | Actual status | Limits and verification boundary |
 |---|---|---|
 | Web | Deployed; Windows browser checks and upgraded Linux Chromium/macOS WebKit CI passed | Actual managed account sign-in remains unverified |
-| Windows | Browser checks plus actual installed native reader, form/annotation export and process-restart recovery passed | Native close-safety verification and release validation pending; unsigned x64 preview only |
+| Windows | Browser checks plus actual installed native reader, form/annotation export and process-restart recovery passed | Native close safety passed; release validation pending; unsigned x64 preview only |
 | macOS | 63 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
 | Linux | 63 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
@@ -29,9 +29,9 @@ Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI 
 
 ## Windows Preview Delivery
 
-A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication is pending native close-safety and release validation. The previous custom-account CI launch failed, but the same installer passed 12 actual normal-user Windows checks, including PDF download/reopen and full process-restart recovery. Original notice hashes and owned-job cleanup passed. The separate CI test now uses the existing runner account and documented per-executable WebView2 debugging/profile policy only on disposable elevated runners.
+A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication is pending release validation. The previous custom-account CI launch failed, but the same installer passed 12 actual normal-user Windows checks, including PDF download/reopen and full process-restart recovery. Original notice hashes and owned-job cleanup passed. The separate CI test now uses the existing runner account and documented per-executable WebView2 debugging/profile policy only on disposable elevated runners.
 
-The revised same-account CI route passed 12 actual native checks in run 37118654858, including both process/policy cleanup records. Release preparation then failed its source/binary/cleanup validation; the exact predicate needs the newly added diagnostics. A separate actual OS-close check exposed silent loss of unsaved edits. The close handshake is implemented with local unit/browser tests; rebuilt native close verification and public publication remain pending.
+The close correction passed 14 actual installed Windows checks both in CI (run 37120364964, WebView2 153.0.4234.48) and a normal local session (WebView2 154.0.4258.53), including cancel-preservation and confirmed clean exit. The remaining release checksum mismatch was reproduced: Tauri patches only its three-byte NSIS marker and restores the unpatched build file. The strict comparator now verifies that exact transformation and every remaining byte; revised release validation and publication are pending.
 
 The packaged reader needs no ChatGPT account, subscription or Folio registration for local PDFs and opt-in local storage. Optional website accounts use managed ChatGPT/OpenAI sign-in; the desktop app is a guest reader. Device copies remain unencrypted and separate from website browser storage. Initial installation may need internet to obtain WebView2.
 
@@ -93,7 +93,7 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 | Page tools | Extract, reorder, delete, permanent rotation and merge to a verified new copy | Reject forms, annotations, signatures, encryption and unsupported document structures; page-only metadata behavior is explicit |
 | Certificate signing | Local P12/PFX review and invisible RSA/SHA-256 signature; independent byte-range/CMS and preservation checks | No trust-chain, revocation, trusted timestamp, visible-signature or existing-signature validation verdict |
 | Offline | Cached reader/local PDF operation and live hosted Chromium offline recovery verified; optional OCR assets/recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
-| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Windows native reader/export/recovery passed; native close-safety/release validation, macOS installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
+| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Windows native reader/export/recovery passed; release validation, macOS installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
 
 The [original MVP trace](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md) and [verification](docs/verification.md) separate implemented behavior from test evidence.
 

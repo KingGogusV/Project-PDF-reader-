@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added a narrow native close handshake that reuses each document's save/discard flow, coalesces duplicate OS-close requests and displays the affected background tab. Added race/error unit tests, explicitly simulated browser UI tests, and real owned-window close assertions to the native release gate. Rebuilt native verification is pending.
+- Added a narrow native close handshake that reuses each document's save/discard flow, coalesces duplicate OS-close requests and displays the affected background tab. Added race/error unit tests, explicitly simulated browser UI tests, and real owned-window close assertions to the native release gate. Rebuilt native verification subsequently passed all 14 cases locally and in CI; see the evidence below.
 - Added granular release identity/cleanup diagnostics after runtime passed but aggregate preparation validation failed.
 
 - Added an explicit normal-user Windows installed-app test route and a same-account owned-job launcher. Twelve native checks passed, including actual PDF form/annotation downloads and recovery after full process termination. All 533 installed notice hashes passed.
@@ -26,6 +26,9 @@
 - Complete OCR native/runtime and LibPDF FontBox distribution notices with pinned provenance.
 
 ### Fixed
+
+- Verified the native close correction with 14 installed-app checks locally and in CI; cancellation preserves edits and explicit discard closes cleanly.
+- Traced the release identity failure to Tauri's exact three-byte NSIS bundle marker and added a strict full-byte comparator with version/ambiguity/tamper guards. Four focused tests passed; revised release CI is pending.
 
 - The first Windows release run exposed cargo-about 0.9.2's opt-in CLI binary; installation now requests `--features cli`. The failed run stopped before packaging/publication and is retained as evidence.
 - The subsequent run reached the installed CLI and exposed its PowerShell pipe guard. The collector now uses its UTF-8 output-file option and retains notice diagnostics; it does not suppress the guard or alter license policy.

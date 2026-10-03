@@ -128,7 +128,7 @@ The inspected Windows environment has an isolated Rust tool cache but lacks MSVC
 
 ## Windows Download Release Pipeline
 
-The planned unsigned x64 prerelease is `v0.1.0-preview.1`. Normal-user and revised CI native reader checks passed; publication remains pending native close-safety verification and release validation. Use:
+The planned unsigned x64 prerelease is `v0.1.0-preview.1`. Normal-user and revised CI native reader checks passed; publication remains pending release validation. Use:
 
 ```sh
 cargo install cargo-about --version 0.9.2 --locked --features cli
@@ -150,7 +150,7 @@ Local mode refuses elevation, verifies the executable and temporary-path boundar
 
 The shared test checks real rendering, form fields, storage consent, immutable originals, search, form/annotation PDF downloads and independent reopen. It terminates the entire owned app/WebView job after a verified form checkpoint, restarts it, and checks recovery. This establishes completed-checkpoint recovery, not recovery of unfinished drafts or writes. The current gate additionally sends OS close requests to the exact owned process and requires cancellation to preserve edits, then explicit discard to exit cleanly. Natural exit is permitted only after the test marks an expected confirmed close. Printing and native file-picker UI interaction remain separate tests; file selection uses Playwright's real input mechanism.
 
-Release preparation checks the installed EXE hash against the just-built EXE, exact source revision, native pass and both cleanup records. Main-only publication also checks exact-source Reader CI, archive digest, bounded payload inventory, checksums and tag identity. Draft retries never overwrite conflicting assets. Verify anonymous downloads before adding a direct link to README. The old `windows-smoke.mjs`/temporary-account route and manual diagnostic workflow remain historical evidence, not a local invocation path.
+Release preparation compares every installed/build EXE byte with only the pinned Tauri NSIS marker transformation permitted, exact source revision, native pass and both cleanup records. Main-only publication also checks exact-source Reader CI, archive digest, bounded payload inventory, checksums and tag identity. Draft retries never overwrite conflicting assets. Verify anonymous downloads before adding a direct link to README. The old `windows-smoke.mjs`/temporary-account route and manual diagnostic workflow remain historical evidence, not a local invocation path.
 
 Use the supported Sites workflow only when the served app changes; native test/documentation changes do not require republishing unchanged web assets.
 
