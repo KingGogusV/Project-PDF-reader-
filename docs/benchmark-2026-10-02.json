@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-03T00:17:09.468Z",
+  "platform": "win32",
+  "browser": "153.0.8010.54",
+  "runs": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "cpu": 1,
+      "startupMs": 113,
+      "openWorkflowMs": 503,
+      "firstPageStatus": "Ready · first page 229 ms",
+      "searchMs": 446,
+      "search": "1 of 1",
+      "fixtureBytes": 342975,
+      "pages": 200,
+      "canvasCount": 4,
+      "canvasPixels": 7222996,
+      "jsHeapUsedBytes": 10536891
+    },
+    {
+      "name": "phone-emulation",
+      "width": 390,
+      "height": 844,
+      "cpu": 4,
+      "startupMs": 303,
+      "openWorkflowMs": 1096,
+      "firstPageStatus": "Ready · first page 516 ms",
+      "searchMs": 572,
+      "search": "1 of 1",
+      "fixtureBytes": 342975,
+      "pages": 200,
+      "canvasCount": 6,
+      "canvasPixels": 949200,
+      "jsHeapUsedBytes": 11542087
+    }
+  ],
+  "offline": {
+    "shellReload": true,
+    "localPdfRead": true,
+    "cachedPdfUrls": []
+  }
+}

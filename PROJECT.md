@@ -1,46 +1,82 @@
 # Folio — product record
 
-Updated: 2026-10-02. Status: initial implementation in progress; no platform verified yet.
+Updated: **2026-10-02, America/Los_Angeles**. Status: functioning development reader, with recorded Windows browser and Linux Chromium CI verification and remaining platform/fidelity gaps; not production-ready certification.
 
 ## Product Overview
-An original, local-first PDF reader for everyday reading, navigation, annotation and form workflows. The authoritative repository is `KingGogusV/Project-PDF-reader-`. The original repository purpose was “Project to create free pdf reader that does not suck.”
+
+An original local-first PDF application for everyday reading, review, form completion and safe output across browser, pointer, keyboard and touch environments. No account or document upload is required.
+
+Authoritative repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). Original purpose: “Project to create free pdf reader that does not suck.” Folio is provisional, not trademark clearance.
 
 ## Product Principles
-Cross-platform design; local document processing; no account or document telemetry; accurate rendering; safe export; responsive keyboard, pointer and touch interfaces; accessible controls; fast startup and bounded rendering.
+
+Cross-platform design; local processing; fast startup; accurate rendering; privacy; low friction; original-document preservation; understandable adaptive UI; keyboard/pointer/touch access; accessible controls; evidence-based support claims.
 
 ## Platform Strategy
-| Platform | Status | Delivery |
-| --- | --- | --- |
-| Web | In development | Responsive browser application |
-| Windows | Planned verification | Browser; native packaging deferred |
-| macOS | Not tested | Browser; native packaging deferred |
-| Linux | Not tested | Browser; native packaging deferred |
-| iOS/iPadOS | Experimental target, not tested | Safari compatibility to verify |
-| Android | Experimental target, not tested | Modern browser compatibility to verify |
+
+| Target | Actual status | Delivery/limits |
+|---|---|---|
+| Web | Implemented; Windows Edge/Chrome and Linux Chromium verified | Exact completed checks and coverage gaps in verification |
+| Windows | Browser workflows tested | No native installer, associations or update system |
+| macOS | Not tested | Browser target; Safari compatibility unverified |
+| Linux | Headless Chromium CI verified | No native package; interactive desktop/printing not tested |
+| iOS/iPadOS | Experimental, physical devices untested | Desktop tablet/phone emulation is not Safari/device verification |
+| Android | Experimental, physical devices untested | Mobile selection, memory, sharing/printing unverified |
+
+[Verification](docs/verification.md) controls final counts, CI status and platform claims.
 
 ## Current Technology Stack
-Selected after research: TypeScript, Vite, modular native DOM UI, Mozilla PDF.js 6.3.289 and its viewer/editor components. PDF.js owns PDF parsing, rendering and supported incremental saving. pdf-lib is for synthetic test fixture generation only. Playwright verifies browser workflows. No server/database, OCR engine or native packaging is selected.
 
-## Architecture Summary
-Adaptive UI calls a document controller, which owns the PDF.js viewer/worker. Browser adapters own local file selection, safe output downloads, print delegation and local settings. See ARCHITECTURE.md.
+| Concern | Actual choice |
+|---|---|
+| UI | TypeScript 7.0.2, modular DOM, original adaptive CSS/SVG |
+| PDF engine/mutation | PDF.js 6.3.289 matching legacy display/viewer/worker; supported incremental serialization |
+| Persistence | localStorage for bounded recent metadata/preferences; service-worker app cache |
+| Build | Vite 8.3.2, Node 24, pnpm 11.25.0, lockfile |
+| Tests | Node runner, PDF.js, pdf-lib fixture/independent checks, Playwright 1.63.0 |
+| Packaging | Static browser build; no native package |
+| OCR/database/server | None |
 
-## Document Lifecycle
-Open (file adapter) → parse (PDF.js worker) → render (viewer) → interact (UI/controller) → modify (PDF.js annotation storage/editor) → export a new copy (controller + file adapter). Original files must remain untouched.
+pdf-lib is a development fixture/checking dependency, not production mutation. Original application source is UNLICENSED pending an owner decision; dependencies retain their notices.
 
-## Platform Abstraction
-Document/search/editor logic is shared. File picking, downloads, printing and browser storage belong to browser adapters. Native filesystem, menus, mobile share sheets and installers are planned; no native support claim.
+## Architecture Summary and Document Lifecycle
 
-## Feature Status
-Implementation is in progress. No proposed feature is marked implemented or verified. Final status will be recorded after actual testing.
+Adaptive shell → per-document controller → PDF.js viewer/worker → supported edits → immutable export snapshot → incremental serialization → fresh-parser preservation/persistence checks → new-copy download → explicit saved-copy acknowledgment.
 
-## Non-Negotiable Requirements
-Never corrupt originals or silently discard edits. Do not bypass encryption or usage restrictions. Local processing by default. No proprietary Adobe/RevPDF source or assets. Preserve behavior, and report actual platform verification. Prefer tested capabilities over feature count.
-
-## Known Limitations
-Native packaging and physical mobile testing are not available yet. Commercial-quality PDF compatibility, assistive reading order, certificate signatures, OCR and advanced content editing require further work.
-
-## Important Engineering Decisions
-Use one browser-capable core to avoid separate engines per platform. Use established PDF.js viewer/editor primitives instead of writing a PDF renderer. Preserve original bytes and use new-file export. Working name Folio is provisional and not a trademark clearance.
+Original bytes remain retained. Inactive document hosts are detached to isolate matching form names/widget IDs. Browser adapters own file selection, output windows/downloads and local metadata. No upload endpoint exists.
 
 ## Important Directories
-`src/` application; `src/core/` document controller; `src/platform/` browser adapters; `scripts/` fixture/build utilities; `tests/` automated tests; `docs/` evidence and verification records; `public/` original static assets.
+
+src/main.ts: shell/sessions; src/core/: document safety; src/platform/: browser integration; src/ui/ and src/style.css: presentation; scripts/: assets/fixtures/cache generation; tests/: unit/browser evidence; public/: original/generated static resources; docs/: research/requirements/verification.
+
+## Platform Abstraction
+
+Shared: document rendering, search, navigation, supported annotations/forms, dirty state and export verification. Browser-specific: picker, downloads, app cache, localStorage, print-copy windows, selection/clipboard. Native filesystem/atomic writes, menus, associations, installers, share sheets and stylus/palm behavior remain deferred or unverified.
+
+## Feature Status
+
+| Category | State |
+|---|---|
+| Reader | Open, navigation, scroll/single-page, thumbnails, outlines, search, zoom/fit, view rotation, properties and adaptive controls implemented with recorded browser checks |
+| Mutation | Highlight including freehand, FreeText, ink, text/multiline/checkbox/dropdown/radio values verified in final-shell export/reopen; exact coverage in verification |
+| Output | Validated new-copy export and explicit save acknowledgment; browser print-copy handoff, not physical print confirmation |
+| History | Metadata only; file must be selected again |
+| Offline | Cached production shell reload and local PDF open verified offline on Windows Edge/Chrome and Linux Chromium; no user PDFs cached |
+| Partial | Broader document fidelity/fonts, accessibility, physical touch/mobile, real printing and large-byte memory behavior |
+| Deferred | Underline/strikethrough/sticky-note creation, signature workflow/cryptography, OCR and advanced destructive editing |
+
+See the [37-item trace](docs/requirements.md) for precise evidence and remaining gaps.
+
+## Non-Negotiable Requirements
+
+Never corrupt originals, silently discard edits or bypass restrictions. Do not claim disk writes, printing, signature validity or platform support without evidence. Local processing by default. No proprietary Adobe/RevPDF source/assets. Avoid duplicated PDF stacks and forced platform uniformity.
+
+## Known Limitations
+
+Protective limits: 150 MB per input and three documents; these are not verified capacity guarantees. The 200-page timing fixture is only about 343 KB. Encrypted/signature-bearing/XFA/restricted PDFs are conservatively read-only. PDF scripting, launch and embedded-media execution are disabled.
+
+No persistent document recovery exists; OS/browser termination may bypass unload warnings. No actual signed-document trust validation, native distribution, deployment, Safari/macOS/physical-mobile certification, or full assistive reading-order assurance is established.
+
+## Important Engineering Decisions
+
+Use one browser-capable PDF.js stack and thin adapters. Preserve originals; prefer validated incremental output over broad rewriting. Keep unsupported tools absent. Separate original-source licensing from dependency compliance. Exact benchmark methodology and completed CI outcomes and remaining coverage gaps live in verification.
