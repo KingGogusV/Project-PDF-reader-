@@ -57,11 +57,9 @@ try {
     if (-not $exe.StartsWith($temp, [StringComparison]::OrdinalIgnoreCase) -or [System.IO.Path]::GetFileName($exe) -ne 'folio-desktop.exe') {
       throw 'Executable must be installed folio-desktop.exe beneath RUNNER_TEMP.'
     }
-    if (-not $env:FOLIO_NATIVE_LOG_PATH) { throw 'Owned native log path required.' }
-    $logParent = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath ([System.IO.Path]::GetDirectoryName($env:FOLIO_NATIVE_LOG_PATH))).Path)
-    if (-not $logParent.StartsWith($temp,[StringComparison]::OrdinalIgnoreCase)) { throw 'Native log directory must be beneath RUNNER_TEMP.' }
-    $nativeLog = Join-Path $logParent 'native-process.log'
-    if ($nativeLog -ne [System.IO.Path]::GetFullPath($env:FOLIO_NATIVE_LOG_PATH)) { throw 'Expected a new native-process.log in the owned profile.' }
+    if (-not $env:FOLIO_NATIVE_PROFILE) { throw 'Owned native profile required.' }
+    $logParent = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $env:FOLIO_NATIVE_PROFILE).Path)
+    if (-not $logParent.StartsWith($temp,[StringComparison]::OrdinalIgnoreCase)) { throw 'Native profile must be beneath RUNNER_TEMP.' }
     $profileItem = Get-Item -LiteralPath $logParent
     if (($profileItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or
         -not $profileItem.Name.StartsWith('folio-native-profile-',[StringComparison]::Ordinal) -or
@@ -89,7 +87,8 @@ try {
     Save-Report
     if (-not $result.profileAccess.afterProbe.Writable) { throw 'Standard user still cannot write its own test profile.' }
     if (-not $env:FOLIO_NATIVE_STOP_FILE) { throw 'Owned stop signal path is required for account cleanup.' }
-    $launcher.Launch($exe,[System.IO.Path]::GetDirectoryName($exe),$nativeLog)
+    $result.nativeOutput = @{ available=$false; reason='Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' }
+    $launcher.Launch($exe,[System.IO.Path]::GetDirectoryName($exe))
     $result.childPid = $launcher.Pid
     $result.childToken = $launcher.Child
     $result.status = 'launched'

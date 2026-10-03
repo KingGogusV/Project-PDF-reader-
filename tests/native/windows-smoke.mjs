@@ -29,7 +29,6 @@ let browser;
 let page;
 let overallTimer;
 let processOutput = '';
-let nativeLogPath;
 let browserLogPath;
 let stopFilePath;
 
@@ -225,7 +224,7 @@ async function workflow() {
   const profile = await mkdtemp(join(runnerTemp, 'folio-native-profile-'));
   assert.ok(inside(runnerTemp, await realpath(profile)));
   report.retainedProfile = profile;
-  nativeLogPath = join(profile,'native-process.log');
+  report.nativeOutput = { available:false, reason:'Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' };
   browserLogPath = join(profile,'webview-debug.log');
   stopFilePath = join(output,`${basename(profile)}.stop`);
   const port = await freePort();
@@ -235,7 +234,7 @@ async function workflow() {
     cwd: dirname(executable), shell: false, windowsHide: true, stdio: ['ignore','pipe','pipe'],
     env: { ...process.env,
       FOLIO_TOKEN_REPORT: tokenReportPath,
-      FOLIO_NATIVE_LOG_PATH: nativeLogPath,
+      FOLIO_NATIVE_PROFILE: profile,
       FOLIO_NATIVE_STOP_FILE: stopFilePath,
       RUST_BACKTRACE: '1',
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1 --enable-logging --v=1 --log-file="${browserLogPath}"`,
@@ -427,8 +426,7 @@ try {
       report.fallbackAccountCleanup={ status:result.status,output:`${result.stdout || ''}${result.stderr || ''}`.slice(0,4000) };
     }
   }
-  if (nativeLogPath) {
-    report.nativeOutput = await retainLog(nativeLogPath,'native-process.log',256_000);
+  if (browserLogPath) {
     report.browserOutput = await retainLog(browserLogPath,'webview-debug.log',1_000_000);
     // Only metadata is retained for crash dumps; their binary contents are not uploaded.
     report.crashFiles = await crashMetadata();
