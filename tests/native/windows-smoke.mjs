@@ -224,7 +224,7 @@ async function workflow() {
   const profile = await mkdtemp(join(runnerTemp, 'folio-native-profile-'));
   assert.ok(inside(runnerTemp, await realpath(profile)));
   report.retainedProfile = profile;
-  report.nativeOutput = { available:false, reason:'Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' };
+  report.nativeOutput = { available:false, reason:'Plain CreateProcessWithLogonW startup uses no inherited standard handles; browser file logging remains enabled.' };
   browserLogPath = join(profile,'webview-debug.log');
   stopFilePath = join(output,`${basename(profile)}.stop`);
   const port = await freePort();

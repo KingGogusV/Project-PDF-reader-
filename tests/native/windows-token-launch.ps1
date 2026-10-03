@@ -123,7 +123,8 @@ try {
     Save-Report
     if (-not $result.profileAccess.afterProbe.Writable) { throw 'Standard user still cannot write its own test profile.' }
     if (-not $env:FOLIO_NATIVE_STOP_FILE) { throw 'Owned stop signal path is required for account cleanup.' }
-    $result.nativeOutput = @{ available=$false; reason='Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' }
+    $result.launchApi = 'CreateProcessWithLogonW'
+    $result.nativeOutput = @{ available=$false; reason='Plain CreateProcessWithLogonW startup uses no inherited standard handles; browser file logging remains enabled.' }
     $result.singletonDiagnostics = [ordered]@{
       coverage='Upstream Chromium mutex-name probe may not match Edge. Random mutex tests the impersonated helper namespace, not necessarily the child namespace. File probe is metadata-only, not write/delete access.'
       beforeMutex=$launcher.ProbeUpstreamSingletonMutex()

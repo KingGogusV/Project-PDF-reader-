@@ -59,7 +59,7 @@ namespace FolioNativeSmoke {
       public uint faults,totalProcesses,activeProcesses,terminatedProcesses;
     }
     [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Unicode)] struct UserInfo {
-      public string name,password; public uint passwordAge,privilege; public string home,comment;
+      public string name; public IntPtr password; public uint passwordAge,privilege; public string home,comment;
       public uint flags; public string script;
     }
     [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Unicode)] struct ProfileInfo {
@@ -100,12 +100,12 @@ namespace FolioNativeSmoke {
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool GetTokenInformation(IntPtr token, int kind, IntPtr data, int size, out int needed);
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool ImpersonateLoggedOnUser(IntPtr token);
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool RevertToSelf();
-    [DllImport("advapi32.dll", EntryPoint="CreateProcessWithTokenW", CharSet=CharSet.Unicode, SetLastError=true)]
-    static extern bool CreateProcessWithToken(IntPtr token, uint logonFlags, string app, StringBuilder command,
+    [DllImport("advapi32.dll", EntryPoint="CreateProcessWithLogonW", CharSet=CharSet.Unicode, SetLastError=true)]
+    static extern bool CreateProcessWithLogon(string username, string domain, IntPtr password, uint logonFlags, string app, StringBuilder command,
       uint flags, IntPtr environment, string directory,
       ref StartupInfo startup, out ProcessInfo process);
     [DllImport("advapi32.dll", EntryPoint="LogonUserW", CharSet=CharSet.Unicode, SetLastError=true)]
-    static extern bool LogonUser(string name,string domain,string password,uint logonType,uint provider,out IntPtr token);
+    static extern bool LogonUser(string name,string domain,IntPtr password,uint logonType,uint provider,out IntPtr token);
     [DllImport("advapi32.dll",EntryPoint="ConvertStringSecurityDescriptorToSecurityDescriptorW",CharSet=CharSet.Unicode,SetLastError=true)]
     static extern bool ConvertDescriptor(string text,uint revision,out IntPtr descriptor,IntPtr size);
     [DllImport("netapi32.dll",CharSet=CharSet.Unicode)] static extern uint NetUserAdd(string server,uint level,ref UserInfo user,out uint parameter);
@@ -128,6 +128,8 @@ namespace FolioNativeSmoke {
     [DllImport("user32.dll",SetLastError=true)] static extern bool CloseDesktop(IntPtr desktop);
 
     IntPtr targetToken, process, job, station, desktop, profile, environment;
+    IntPtr passwordBuffer;
+    const int PasswordCharacters=36;
     readonly Dictionary<uint,IntPtr> observedRuntime=new Dictionary<uint,IntPtr>();
     string user;
     string accountName,desktopPath;
@@ -253,6 +255,25 @@ namespace FolioNativeSmoke {
     static uint ReadProcessSession(uint pid) {
       uint session; Check(ProcessIdToSessionId(pid,out session),"ProcessIdToSessionId owned process"); return session;
     }
+    void GenerateCredential() {
+      // Credential text exists only in this private unmanaged UTF-16 buffer, never in a managed string.
+      byte[] entropy=new byte[PasswordCharacters-4];
+      try {
+        using (var random=RandomNumberGenerator.Create()) random.GetBytes(entropy);
+        passwordBuffer=Marshal.AllocHGlobal((PasswordCharacters+1)*2);
+        const string alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        const string categories="Aa1!";
+        for (int i=0;i<4;i++) Marshal.WriteInt16(passwordBuffer,i*2,(short)categories[i]);
+        for (int i=0;i<entropy.Length;i++) Marshal.WriteInt16(passwordBuffer,(i+4)*2,(short)alphabet[entropy[i]&63]);
+        Marshal.WriteInt16(passwordBuffer,PasswordCharacters*2,0);
+      } finally { Array.Clear(entropy,0,entropy.Length); }
+    }
+    void ClearCredential() {
+      if (passwordBuffer==IntPtr.Zero) return;
+      // Explicit writes ensure the unmanaged password is erased before freeing, including its terminator.
+      for (int i=0;i<=PasswordCharacters;i++) Marshal.WriteInt16(passwordBuffer,i*2,0);
+      Marshal.FreeHGlobal(passwordBuffer); passwordBuffer=IntPtr.Zero;
+    }
     public StandardUserProcess(Action<string,string> accountReceipt) {
       if (Environment.OSVersion.Platform!=PlatformID.Win32NT || Environment.GetEnvironmentVariable("GITHUB_ACTIONS")!="true" ||
           Environment.GetEnvironmentVariable("CI")!="true" || Environment.GetEnvironmentVariable("RUNNER_ENVIRONMENT")!="github-hosted")
@@ -261,11 +282,8 @@ namespace FolioNativeSmoke {
       try {
         Parent=CurrentToken();
         accountName="FolioCI_"+Guid.NewGuid().ToString("N").Substring(0,12);
-        byte[] entropy=new byte[32];
-        using (var random=RandomNumberGenerator.Create()) random.GetBytes(entropy);
-        string password="Aa1!"+Convert.ToBase64String(entropy);
-        Array.Clear(entropy,0,entropy.Length);
-        var info=new UserInfo { name=accountName,password=password,privilege=1,flags=0x201,comment="Disposable Folio native CI test" };
+        GenerateCredential();
+        var info=new UserInfo { name=accountName,password=passwordBuffer,privilege=1,flags=0x201,comment="Disposable Folio native CI test" };
         try {
           uint parameter; uint status=NetUserAdd(null,1,ref info,out parameter);
           if (status!=0) throw new Win32Exception((int)status,"NetUserAdd temporary standard account (parameter "+parameter+")");
@@ -282,8 +300,8 @@ namespace FolioNativeSmoke {
             status=NetLocalGroupAddMembers(null,group,0,ref sid,1);
             if (status!=0 && status!=1378) throw new Win32Exception((int)status,"NetLocalGroupAddMembers Users only");
           } finally { Marshal.FreeHGlobal(sid); }
-          Check(LogonUser(accountName,Environment.MachineName,password,2,0,out targetToken),"LogonUser standard account");
-        } finally { info.password=null; password=null; }
+          Check(LogonUser(accountName,Environment.MachineName,passwordBuffer,2,0,out targetToken),"LogonUser standard account");
+        } finally { info.password=IntPtr.Zero; }
         Standard=Inspect(targetToken,user); RequireStandard(Standard);
         var loaded=new ProfileInfo { size=(uint)Marshal.SizeOf(typeof(ProfileInfo)),flags=1,username=accountName };
         ProfileOperation(()=>{ bool ok=LoadUserProfile(targetToken,ref loaded); if (ok) profile=loaded.profile; return ok; },"LoadUserProfile temporary account");
@@ -388,7 +406,9 @@ namespace FolioNativeSmoke {
       } finally { Check(RevertToSelf(),"Revert read-only singleton file probe impersonation"); }
     }
     public void Launch(string executable, string directory) {
+      try {
       if (process!=IntPtr.Zero) throw new InvalidOperationException("Only one owned child is allowed.");
+      if (passwordBuffer==IntPtr.Zero) throw new InvalidOperationException("One-time native launch credential is unavailable.");
       job=CreateJobObject(IntPtr.Zero,null);
       if (job==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error(),"CreateJobObject");
       var limits=new JobLimits { basic=new JobBasicLimits { flags=0x2000 } }; // KILL_ON_JOB_CLOSE
@@ -398,8 +418,15 @@ namespace FolioNativeSmoke {
       // Plain documented startup; no STARTF_USESTDHANDLES, no caller handles, no extended attributes.
       // CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT | CREATE_SUSPENDED.
       // Browser file logging is retained; native stdout/stderr redirection is deliberately unavailable.
-      Check(CreateProcessWithToken(targetToken,0,executable,new StringBuilder("\""+executable+"\""),
-        0x08000404,environment,directory,ref startup,out child),"CreateProcessWithToken plain startup on private desktop");
+      // Logon flags zero: the exact user's profile is already loaded; no duplicate load or network-only token.
+      bool created;
+      int launchError;
+      try {
+        created=CreateProcessWithLogon(accountName,Environment.MachineName,passwordBuffer,0,executable,new StringBuilder("\""+executable+"\""),
+          0x08000404,environment,directory,ref startup,out child);
+        launchError=Marshal.GetLastWin32Error();
+      } finally { ClearCredential(); }
+      if (!created) throw new Win32Exception(launchError,"CreateProcessWithLogon plain startup on private desktop");
       process=child.process; Pid=child.pid;
       try {
         // Closing the helper, including any exception, kills only this assigned child tree.
@@ -410,6 +437,7 @@ namespace FolioNativeSmoke {
         if (ResumeThread(child.thread)==0xffffffff) throw new Win32Exception(Marshal.GetLastWin32Error(),"ResumeThread");
       } catch { TerminateProcess(process,1); throw; }
       finally { CloseHandle(child.thread); }
+      } finally { ClearCredential(); }
     }
     public bool Wait(uint milliseconds) {
       uint value=WaitForSingleObject(process,milliseconds);
@@ -466,6 +494,7 @@ namespace FolioNativeSmoke {
       return LookupLocalSid(name)==null;
     }
     public void Dispose() {
+      ClearCredential();
       if (cleaned) return;
       cleaned=true;
       if (job!=IntPtr.Zero) {
