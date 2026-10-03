@@ -77,6 +77,17 @@ jobs:
           path: test-results/native-windows/
           if-no-files-found: warn
           retention-days: 30
+      - name: Retain native notice diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-notice-evidence-${{ github.run_id }}
+          path: |
+            .cache/native-license-report.json
+            src-tauri/generated-notices/manifest.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
 
   publish:
     name: Publish verified Windows EXE

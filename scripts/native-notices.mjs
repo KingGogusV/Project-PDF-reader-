@@ -62,7 +62,12 @@ async function main() {
   for (const crate of locked.values()) {
     if (clarifiedVersions.has(crate.name) && clarifiedVersions.get(crate.name) !== crate.version) throw new Error(`Review the license clarification for changed ${crate.name}@${crate.version}.`);
   }
-  const report = JSON.parse(command('cargo', ['about', 'generate', '--manifest-path', 'src-tauri/Cargo.toml', '--config', 'scripts/native-licenses.toml', '--target', target, '--locked', '--fail', '--format', 'json']));
+  // cargo-about deliberately rejects piped stdout under PowerShell. Its own
+  // output-file option writes UTF-8 without shell redirection/encoding changes.
+  const reportPath = join(project, '.cache', 'native-license-report.json');
+  await mkdir(dirname(reportPath), { recursive: true });
+  command('cargo', ['about', 'generate', '--manifest-path', 'src-tauri/Cargo.toml', '--config', 'scripts/native-licenses.toml', '--target', target, '--locked', '--fail', '--format', 'json', '--output-file', reportPath]);
+  const report = JSON.parse(await readFile(reportPath, 'utf8'));
   if (!Array.isArray(report.crates) || !report.crates.length || !Array.isArray(report.licenses) || !report.licenses.length) throw new Error('cargo-about returned an empty or unrecognized report.');
   if (hash(await readFile(lockPath)) !== hash(lockBytes)) throw new Error('Cargo lockfile changed during notice generation.');
 
