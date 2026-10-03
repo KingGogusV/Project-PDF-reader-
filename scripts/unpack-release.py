@@ -5,7 +5,7 @@ import zipfile
 
 archive, destination = map(pathlib.Path, sys.argv[1:3])
 allowed = {
-    "Folio-0.1.0-Windows-x64-Setup.exe", "Folio-0.1.0-Third-Party-Notices.zip",
+    "Folio-0.1.1-Windows-x64-Setup.exe", "Folio-0.1.1-Third-Party-Notices.zip",
     "SHA256SUMS.txt", "release-provenance.json",
 }
 destination.mkdir(parents=True, exist_ok=True)

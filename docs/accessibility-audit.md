@@ -3,9 +3,26 @@
 Checked 2026-10-03 UTC. This is a targeted engineering audit, not a WCAG
 conformance certification or a screen-reader compatibility claim.
 
-## Latest result
+## Current accessibility pass — 2026-10-03
 
-The final production-preview audit completed at 2026-10-03 01:58 UTC in Microsoft
+The new `tests/e2e/accessibility.spec.ts` adds 13 regression cases. They cover stable keyboard tabs; valid panel references with detached inactive PDF widgets; open/close and panel/dialog focus; phone navigation; skip links and keyboard form export/reopen with original-byte preservation; unsaved descriptions/status; 320 x 256 CSS-pixel reflow; doubled application text at phone/laptop sizes; forced-colors/reduced-motion emulation; and 15 axe states. The existing six viewport workflows now retain reader screenshots.
+
+Pre-fix tests reproduced four failures: tab focus was lost, inactive panel references were missing, expanded state was absent, and the canvas failed to render at 320 x 256 because chrome consumed the viewport. Expanding the scan to Properties subsequently identified nine 3.60:1 label-contrast failures. Repairs are described in ARCHITECTURE/CHANGELOG; final run evidence belongs below and in verification.
+
+The axe gate scans welcome; help, library and account dialogs; multiple documents; document tools; OCR, organization and certificate dialogs; Properties; search; interactive forms; local-storage consent; phone reader and phone actions. It excludes no rules or document content and fails on reported violations. Full `incomplete` results are retained in the test attachment.
+
+
+## Verified local result for this pass
+
+2026-10-03 UTC, Linux, Google Chrome for Testing **153.0.8010.12**, Playwright 1.63.0. Frozen dependency installation, type checking, 63 unit/fixture tests (zero skips), production client/account-worker build, **79 browser workflows**, seven core/checkpoint cases, nine signing cases and eight release-extraction cases passed. After the final footer layout adjustment, all **19 affected accessibility/responsive cases** passed again. No retries or skips were needed for the final local browser suite.
+
+All **15 axe states reported zero violations**. `color-contrast` remained incomplete in the welcome footer, PDF/text/canvas states, and some clipped/overlapping content reported in OCR, signing and phone-actions dialogs. These incomplete checks were retained, not suppressed or relabeled as passes. Application Properties labels improved from 3.60:1 to 6.36:1. Screenshot review covered desktop 1600 x 1000, laptop 1280 x 800, tablet 1024 x 768 and 768 x 1024, phone 390 x 844 and 844 x 390, 320 x 256 reflow, doubled text and forced colors.
+
+The local production shell JavaScript is **79.16 kB / 25.73 kB gzip**, compared with the inspected baseline 76.69 kB / 25.02 kB gzip. This is a build-size measurement, not a device-speed benchmark. No new runtime dependency was added. GitHub/macOS/native results and publication must be checked separately against their actual source revisions.
+
+## Earlier verified audit (before this pass)
+
+The earlier production-preview audit completed at 2026-10-03 01:58 UTC in Microsoft
 Edge 154.0.4258.53 on Windows, against `http://127.0.0.1:4173`. The inspected build
 has service-worker manifest version `2e61d5c66548dcdc`; the audit context blocked
 service workers to avoid stale cached assets. All nine scanned states had zero
@@ -97,14 +114,14 @@ Safari, and cannot drive branded Safari. macOS-hosted WebKit is a closer proxy
 than Windows/Linux WebKit for platform behavior. `.github/workflows/checks.yml`
 now defines a `macos-latest` lane that installs the repository-pinned Playwright
 WebKit build and runs the browser workflow suite, including responsive viewport
-configurations. A configured lane is not a verified run. Passing that lane should
+configurations. The earlier Reader CI run 37121666271 passed 66 cases in that lane. Each new source revision still needs its own run. Passing that lane should
 be labeled **WebKit on macOS**, not Safari, iPhone, iPad, or VoiceOver verification.
 
 The current Tauri wrapper shares the web UI/document engine. Its Windows WebView2
 and Apple WKWebView need their own runtime tests; native installer compilation
-does not establish reader correctness or accessibility. The inspected Windows
-machine has WebView2 154.0.4258.53 but lacks Rust, cargo, MSVC and the Windows SDK;
-`tauri info` confirmed those blockers. No system SDK installation was performed.
+does not establish reader correctness or accessibility. During the earlier audit, the inspected Windows
+machine had WebView2 154.0.4258.53 but lacked Rust, cargo, MSVC and the Windows SDK;
+`tauri info` confirmed those blockers. Subsequent remote installer builds and actual Windows reader checks passed; see verification for exact revisions. This does not establish native accessibility conformance.
 See `src-tauri/README.md` for exact build commands and native verification gates.
 
 ## Sources and dependency licensing
@@ -125,3 +142,16 @@ The MPL dependency is used unmodified for development audits. Any redistribution
 of its covered files must preserve its license obligations; do not silently copy
 it into the application bundle. The test dependency license does not constitute
 a licensing decision for the product's own source.
+
+## Repeat the current gate
+
+```sh
+pnpm build
+E2E_BROWSER_CHANNEL=chromium E2E_START_SERVER=1 pnpm test:e2e tests/e2e/accessibility.spec.ts
+```
+
+The 320 x 256 viewport models the CSS layout space available at high zoom, not a real 400% browser/OS zoom session. `:root { font-size: 200% }` checks application text resizing without scaling PDF-authored form/text metrics. Forced-colors and reduced motion use Playwright media emulation. Screenshots are visually inspected in addition to assertions. The legacy audit script remains diagnostic and covers fewer states; the new E2E case is the CI acceptance gate.
+
+## Manual acceptance work still required
+
+Use NVDA/JAWS with Windows Chromium/WebView2, VoiceOver with branded macOS/iOS Safari, and Android TalkBack. Confirm announced names, selected/expanded/current and unsaved state; reading order; dialog focus; search announcements; field editing and errors; export/recovery; and focus visibility under native zoom/high contrast. Include tagged, untagged, scanned and complex form PDFs. The synthetic keyboard form test is not evidence that arbitrary PDFs have correct labels or reading order.

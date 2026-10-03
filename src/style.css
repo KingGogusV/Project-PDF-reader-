@@ -49,3 +49,46 @@ textarea.dialog-input{min-height:190px;resize:vertical;font-family:inherit;line-
 @media(max-width:760px){.topbar{gap:5px;padding-inline:10px}.topbar .button{font-size:.875rem}.topbar .brand{margin-right:auto}.toolbar{gap:2px;padding:5px}.toolbar .edit-group{order:3;justify-content:space-evenly;gap:0}.edit-group .icon-button{width:42px;min-width:42px}.scale-select{max-width:98px;font-size:.875rem}.zoom-group{gap:0}.toolbar .zoom-group .icon-button{width:36px;min-width:36px}.toolbar .save-label{display:none}.statusbar .status-detail{font-size:.75rem}.welcome .intro,.dialog-copy{font-size:1rem}.welcome h1{font-size:2.4rem}.recovery-status{padding:5px 10px;font-size:.75rem}.dialog-heading{top:-20px}.dialog-heading h2{font-size:1.4rem}.search-status{font-size:.8125rem}.tool-hint,.notice-bar{font-size:.8125rem}}
 @media(max-width:380px){.brand{font-size:24px}.brand-mark{display:none}.topbar .button{padding-inline:8px}.toolbar .edit-group .icon-button{width:40px;min-width:40px}.scale-select{max-width:88px}.toolbar .tool-separator{display:none}}
 @media(max-height:520px) and (max-width:950px){.toolbar .edit-group{order:3;flex:1;border-top:1px solid var(--line)}.topbar{min-height:48px}.statusbar{min-height:44px}}
+
+/* Accessibility: keep the shell usable at high zoom without changing PDF metrics. */
+.document-panel{position:absolute;inset:0}
+.skip-link:not(:focus){width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%)}
+.topbar,.toolbar,.statusbar,.tab-strip,.searchbar,.notice-bar,.tool-hint,.recovery-status{flex-shrink:0}
+.topbar,.toolbar,.tool-group,.statusbar{flex-wrap:wrap}
+.topbar{padding-block:8px}
+.tool-group{min-width:0}
+.toolbar .edit-group{flex-wrap:wrap}
+.toolbar .edit-group .icon-button{flex-shrink:0}
+.reader-body{min-height:160px}
+.app-shell{overflow:auto}
+.reader{flex-shrink:0}
+.tab>button:focus-visible{outline-offset:-3px}
+.stage:focus-visible,.welcome:focus-visible{outline:3px solid #298788;outline-offset:-4px}
+textarea:focus-visible,[contenteditable=true]:focus-visible{outline:3px solid #298788;outline-offset:3px}
+.dialog-heading{position:static;align-items:flex-start}
+.dialog-heading h2{overflow-wrap:anywhere;min-width:0}
+.dialog-heading .icon-button{flex-shrink:0}
+.property-list dt{color:#52615a}
+.dialog-input,.scale-select,.view-select,.page-input,.search-field input{border-color:#7b8b81}
+.icon-button[aria-pressed=true]{box-shadow:inset 0 -3px 0 currentColor}
+.thumb-button.active canvas{border-color:#52684a}
+.thumb-button.active span{font-weight:700;text-decoration:underline}
+.dialog-actions .button{white-space:normal;overflow-wrap:anywhere}
+.search-field{min-width:0;flex-basis:160px}
+.searchbar{scroll-margin-block:8px}
+.statusbar{padding-block:3px}
+.page-control{flex-shrink:0}
+.statusbar .status-detail{flex:1;min-width:0;max-width:none;margin-left:0;text-align:right}
+.scale-select{width:7em;max-width:none}
+.page-input{width:4ch;min-width:44px}
+.toast{pointer-events:none}
+@media(max-width:900px){.toolbar .edit-group{flex:1 0 100%}.toolbar .edit-group .icon-button{min-width:38px;width:38px}.toolbar .edit-group .tool-separator{display:none}}
+@media(max-width:400px){.topbar .top-spacer{display:none}.topbar .brand{margin-right:auto}.toolbar .edit-group{justify-content:space-between}.property-list{grid-template-columns:1fr;gap:4px}.property-list dd{margin-bottom:8px}}
+@media(max-height:600px) and (min-width:600px){.toolbar .edit-group{order:initial;flex:0 1 auto;border:0;margin:0;padding:0}.topbar{padding-block:2px}.reader-body{min-height:120px}}
+@media(max-height:350px){.app-shell{height:auto;min-height:100dvh;overflow:visible}.welcome{overflow:visible}.reader{min-height:0}.reader-body{flex:none;height:60dvh;min-height:220px}}
+@media(forced-colors:active){
+ .icon-button[aria-pressed=true],.icon-button.active,.thumb-button.active,.tab.active{outline:2px solid Highlight;outline-offset:-2px}
+ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.viewer-container:focus-visible,.stage:focus-visible,.welcome:focus-visible{outline-color:Highlight}
+ .button,.icon-button,.tab,.outline-item{border-color:ButtonText}
+ .dirty-dot{background:CanvasText;forced-color-adjust:none}
+}

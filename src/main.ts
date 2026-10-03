@@ -43,7 +43,7 @@ app.innerHTML = `
  </main>
  <main id="reader" class="reader" hidden>
   <div class="tab-strip"><div id="tabs" class="tabbar" role="tablist" aria-label="Open documents"></div>${btn('close-active-document','close','Close active document')}</div>
-  <div class="toolbar" role="toolbar" aria-label="Document tools">
+  <div class="toolbar" role="group" aria-label="Document tools">
    <div class="tool-group">${btn('toggle-sidebar','pages','Show page navigation')}${btn('toggle-search','search','Find in document (Ctrl or Command F)')}</div>
    <div class="tool-separator mobile-tool-separator"></div>
    <div class="tool-group edit-group">
@@ -56,7 +56,7 @@ app.innerHTML = `
    <div class="tool-separator desktop-tools"></div><button id="export" class="button accent" title="Export a PDF copy (Ctrl or Command S)">${icon('download')}<span class="save-label">Export copy</span><span class="offscreen">Export PDF copy</span></button>
   </div>
   <div id="searchbar" class="searchbar" hidden><div class="search-field"><input id="search-input" type="search" placeholder="Find a word or phrase…" aria-label="Search document" autocomplete="off"></div><span id="search-status" class="search-status" aria-live="polite">Type to search</span>${btn('search-prev','chevron','Previous search result','previous-icon')}${btn('search-next','chevron','Next search result')}${btn('search-close','close','Close search')}</div>
-  <div id="notice" class="notice-bar" role="status" hidden></div><div id="tool-hint" class="tool-hint" hidden></div><div id="recovery-status" class="recovery-status" role="status" aria-live="polite" hidden></div>
+  <div id="notice" class="notice-bar" role="status" hidden></div><div id="tool-hint" class="tool-hint" role="status" hidden></div><div id="recovery-status" class="recovery-status" role="status" aria-live="polite" hidden></div>
   <div class="reader-body">
    <aside id="sidebar" class="sidebar" aria-label="Document navigation"><div class="sidebar-tabs">${btn('nav-pages','pages','Page thumbnails','active')}${btn('nav-outline','outline','Document outline')}${btn('nav-info','info','Document information')}${btn('sidebar-close','close','Hide navigation')}</div><div id="sidebar-content" class="sidebar-content"></div></aside>
    <section id="stage" class="stage" aria-label="PDF pages" tabindex="-1"><div id="loading" class="loading-overlay" hidden><span class="spinner"></span><span>Opening your document…</span></div></section>
@@ -64,14 +64,18 @@ app.innerHTML = `
   <footer class="statusbar"><div class="page-control">${btn('page-prev','chevron','Previous page','previous-icon')}<label for="page-number" class="offscreen">Page number</label><input id="page-number" class="page-input" type="number" min="1" value="1"><span id="page-total">of 1</span>${btn('page-next','chevron','Next page')}</div><span class="privacy-pill">${icon('shield')} Local document</span><span id="status-detail" class="status-detail">Ready</span>${btn('mobile-more','info','Document actions')}</footer>
  </main>
 </div>
-<div id="toast" class="toast" role="status" hidden></div>
+<div id="toast" class="toast" aria-hidden="true" hidden></div>
+<div id="notification-status" class="offscreen" role="status" aria-atomic="true"></div>
+<div id="reader-status" class="offscreen" role="status" aria-atomic="true"></div>
+<span id="unsaved-description" class="offscreen">Changes not confirmed saved</span>
 <dialog id="dialog" aria-labelledby="dialog-title"><div class="dialog-heading"><h2 id="dialog-title"></h2><button class="icon-button" id="dialog-close" aria-label="Close dialog">${icon('close')}</button></div><div id="dialog-body"></div><div id="dialog-actions" class="dialog-actions"></div></dialog>
 <div id="drag-overlay" class="drag-overlay" hidden>Drop a PDF to open it</div>
 `;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-type Session = { id: number; name: string; file: File; host: HTMLDivElement; controller: ReaderController; state?: ReaderState; closing?: boolean; position?: { page: number; top: number; left: number; width: number } };
+type Session = { id: number; name: string; file: File; panel: HTMLDivElement; host: HTMLDivElement; controller: ReaderController; state?: ReaderState; closing?: boolean; position?: { page: number; top: number; left: number; width: number } };
 const sessions: Session[] = [];
+const tabElements = new Map<number, HTMLDivElement>();
 let activeId = 0;
 let nextId = 1;
 let navMode: 'pages' | 'outline' | 'info' = 'pages';
@@ -86,17 +90,22 @@ let closingApplication = false;
 let cancelDialog: (()=>void)|undefined;
 const active = () => sessions.find(s => s.id === activeId);
 const errorText = (e: unknown) => e instanceof Error ? e.message : 'The operation could not be completed. Please try again.';
+function setText(id: string, text: string) { const el=$(id);if(el.textContent!==text)el.textContent=text; }
+function focusWorkspace() { if(!$<HTMLDialogElement>('dialog').open)(active()?.host||$('choose')).focus(); }
+function canFocus(el: HTMLElement | null): el is HTMLElement { return !!el?.isConnected&&el.getClientRects().length>0&&!el.closest('[hidden],[inert]')&&!el.matches(':disabled'); }
 function toast(message: string, error = false) {
  clearTimeout(toastTimer); const el = $('toast'); el.textContent = message; el.classList.toggle('error', error); el.hidden = false;
+ setText('notification-status',message);
  toastTimer = setTimeout(() => { el.hidden = true; }, error ? 10000 : 6500);
 }
 function on(id: string, fn: () => unknown) { $(id).addEventListener('click', () => { Promise.resolve().then(fn).catch(e => toast(errorText(e), true)); }); }
 function dialog(title: string, body: HTMLElement, actions: {label: string; value: string; primary?: boolean}[]): Promise<string> {
  const el = $<HTMLDialogElement>('dialog'); cancelDialog?.();
+ const returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
  $('dialog-title').textContent = title; $('dialog-body').replaceChildren(body); $('dialog-actions').replaceChildren();
  return new Promise(resolve => {
   let settled = false;
-  const finish = (value: string) => { if(settled) return; settled = true; el.close(); el.removeEventListener('cancel', cancel); $('dialog-close').onclick = null; cancelDialog=undefined; resolve(value); };
+  const finish = (value: string) => { if(settled) return; settled = true; el.close(); el.removeEventListener('cancel', cancel); $('dialog-close').onclick = null; cancelDialog=undefined;if(canFocus(returnFocus))returnFocus.focus();else focusWorkspace();resolve(value); };
   const cancel = (event: Event) => { event.preventDefault(); finish('cancel'); };
   el.addEventListener('cancel', cancel); $('dialog-close').onclick = () => finish('cancel');
   cancelDialog=()=>finish('cancel');
@@ -109,7 +118,7 @@ const featureHooks = {
  active, sessions: () => sessions,
  async openFile(file: File) { await openFiles([file]); return sessions.find(session => session.file === file); },
  activate, dialog, dismissDialog: () => cancelDialog?.(), toast,
- refreshStatus() { const s=active(); const text=s ? deviceLibrary.status(s.id) : ''; $('recovery-status').textContent=text; $('recovery-status').hidden=!text; },
+ refreshStatus() { const s=active(); const text=s ? deviceLibrary.status(s.id) : ''; $('recovery-status').hidden=!text;setText('recovery-status',text); },
 };
 const deviceLibrary = createDeviceLibrary(featureHooks);
 const documentTools = createDocumentTools(featureHooks);
@@ -130,10 +139,24 @@ function renderRecents() {
  }catch(e){holder.append(copy('Recent history is unavailable in this browser. You can still open and read PDFs.'));}
 }
 function renderTabs() {
- const holder=$('tabs');holder.replaceChildren();
- for(const s of sessions){const tab=document.createElement('div');tab.className=`tab ${s.id===activeId?'active':''}`;const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-selected',String(s.id===activeId));b.setAttribute('aria-controls',`document-${s.id}`);b.id=`tab-${s.id}`;b.tabIndex=s.id===activeId?0:-1;b.textContent=s.name;b.title=s.name;b.onclick=()=>activate(s.id);b.onkeydown=e=>{const index=sessions.indexOf(s);const target=e.key==='ArrowRight'?sessions[(index+1)%sessions.length]:e.key==='ArrowLeft'?sessions[(index-1+sessions.length)%sessions.length]:e.key==='Home'?sessions[0]:e.key==='End'?sessions.at(-1):undefined;if(target){e.preventDefault();activate(target.id);$(`tab-${target.id}`).focus();}};tab.append(b);
- if(s.controller.dirty){const dot=document.createElement('span');dot.className='dirty-dot';dot.title='Changes not confirmed saved';dot.setAttribute('aria-label','Unsaved changes');tab.append(dot);}
- tab.setAttribute('role','presentation');holder.append(tab);}
+ const holder=$('tabs');
+ // Keep tab buttons mounted: PDF rendering/search emits frequent state updates.
+ for(const [id,tab] of tabElements)if(!sessions.some(s=>s.id===id)){tab.remove();tabElements.delete(id);}
+ for(const s of sessions){
+  let tab=tabElements.get(s.id);
+  if(!tab){
+   tab=document.createElement('div');tab.setAttribute('role','presentation');
+   const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-controls',`document-${s.id}`);b.id=`tab-${s.id}`;b.textContent=s.name;b.title=s.name;
+   b.onclick=()=>activate(s.id);
+   b.onkeydown=e=>{const index=sessions.indexOf(s);const target=e.key==='ArrowRight'?sessions[(index+1)%sessions.length]:e.key==='ArrowLeft'?sessions[(index-1+sessions.length)%sessions.length]:e.key==='Home'?sessions[0]:e.key==='End'?sessions.at(-1):undefined;if(target){e.preventDefault();activate(target.id);$(`tab-${target.id}`).focus();}};
+   tab.append(b);holder.append(tab);tabElements.set(s.id,tab);
+  }
+  tab.className=`tab ${s.id===activeId?'active':''}`;
+  const b=tab.firstElementChild as HTMLButtonElement;b.setAttribute('aria-selected',String(s.id===activeId));b.tabIndex=s.id===activeId?0:-1;
+  if(s.controller.dirty)b.setAttribute('aria-describedby','unsaved-description');else b.removeAttribute('aria-describedby');
+  const dot=tab.querySelector('.dirty-dot');
+  if(s.controller.dirty&&!dot){const marker=document.createElement('span');marker.className='dirty-dot';marker.title='Changes not confirmed saved';marker.setAttribute('aria-hidden','true');tab.append(marker);}else if(!s.controller.dirty)dot?.remove();
+ }
  const current=active();const close=$<HTMLButtonElement>('close-active-document');close.disabled=!current||!!current.state?.loading||!!current.closing;close.setAttribute('aria-label',current?`Close ${current.name}`:'Close active document');
 }
 function applyState(session: Session, state: ReaderState) {
@@ -144,8 +167,8 @@ function applyState(session: Session, state: ReaderState) {
  $<HTMLButtonElement>('undo').disabled=!state.canUndo;$<HTMLButtonElement>('redo').disabled=!state.canRedo;
  for(const tool of ['highlight','text','draw'])$<HTMLButtonElement>(`tool-${tool}`).disabled=!!state.readOnlyReason||state.loading;
  $<HTMLButtonElement>('print').disabled=state.canPrint===false;
- $('notice').hidden=!state.readOnlyReason;$('notice').textContent=state.readOnlyReason||'';
-  $('search-status').textContent=state.searchCount?`${state.searchCurrent||0} of ${state.searchCount}`:$<HTMLInputElement>('search-input').value?'No results':'Type to search';
+ $('notice').hidden=!state.readOnlyReason;setText('notice',state.readOnlyReason||'');
+ setText('search-status',state.searchCount?`${state.searchCurrent||0} of ${state.searchCount}`:$<HTMLInputElement>('search-input').value?'No results':'Type to search');
  setToolUI(state.tool);
  const scale=$<HTMLSelectElement>('scale');const scaleValue=session.controller.viewer?.currentScaleValue;
  if(scaleValue==='page-width'||scaleValue==='page-fit')scale.value=scaleValue;
@@ -154,7 +177,8 @@ function applyState(session: Session, state: ReaderState) {
  if(state.notice&&state.notice!==lastNotice){lastNotice=state.notice;toast(state.notice);}
  $('status-detail').textContent=state.dirty?'Changes not confirmed saved':state.renderMs?`Ready · first page ${Math.round(state.renderMs)} ms`:'Ready';
  if(state.error)toast(state.error,true);
- for(const el of document.querySelectorAll<HTMLButtonElement>('.thumb-button'))el.classList.toggle('active',Number(el.dataset.page)===state.page);
+ for(const el of document.querySelectorAll<HTMLButtonElement>('.thumb-button')){const selected=Number(el.dataset.page)===state.page;el.classList.toggle('active',selected);if(selected)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');}
+ if(!state.loading&&state.pages)setText('reader-status',`${session.name}. Page ${state.page} of ${state.pages}.${state.dirty?' Changes not confirmed saved.':''}`);
  renderTabs();
  featureHooks.refreshStatus();
 }
@@ -165,11 +189,11 @@ function activate(id: number) {
  const skip=document.querySelector<HTMLAnchorElement>('.skip-link');if(skip)skip.href=current?'#stage':'#welcome';
  // PDF.js form widgets resolve some fields through document-wide queries.
  // Keep only one document DOM attached, so identical PDF field IDs cannot cross tabs.
- for(const s of sessions)if(s.id!==id)s.host.remove();
- if(current){current.host.hidden=false;if(!current.host.isConnected)$('stage').prepend(current.host);}
+ for(const s of sessions){s.panel.hidden=s.id!==id;if(s.id!==id)s.host.remove();}
+ if(current){current.host.hidden=false;if(!current.host.isConnected)current.panel.append(current.host);}
  renderTabs();
  if(current){current.controller.refresh();if(current.position){const position=current.position;current.controller.goToPage(position.page);if(current.host.clientWidth===position.width){current.host.scrollTop=position.top;current.host.scrollLeft=position.left;}current.controller.refresh();}if(current.state)applyState(current,current.state);void renderSidebar(); document.title=`${current.name} — Folio`;}
- else{document.title='Folio — your documents, your space';renderRecents();}
+ else{document.title='Folio — your documents, your space';setText('reader-status','No document open.');renderRecents();}
  $('tool-hint').hidden=true;
  $<HTMLInputElement>('search-input').value='';current?.controller.clearSearch();
  setToolUI('select');
@@ -183,11 +207,12 @@ async function openFiles(files: File[]) {
  try { const {ReaderController}=await import('./core/document-controller');for(const file of files){
   if(!/\.pdf$/i.test(file.name)){toast('Choose a PDF file to open in Folio.',true);continue;}
   if(sessions.length>=3){toast('Up to three documents can stay open. Close a tab before opening another.',true);break;}
-  const id=nextId++;const host=document.createElement('div');host.className='document-host viewer-container';host.id=`document-${id}`;host.tabIndex=0;host.setAttribute('role','tabpanel');host.setAttribute('aria-labelledby',`tab-${id}`);$('stage').prepend(host);
-  const s={} as Session;Object.assign(s,{id,name:file.name,file,host});
+  const id=nextId++;const panel=document.createElement('div');panel.className='document-panel';panel.id=`document-${id}`;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',`tab-${id}`);
+  const host=document.createElement('div');host.className='document-host viewer-container';host.tabIndex=0;host.setAttribute('role','document');host.setAttribute('aria-label',`${file.name}, PDF pages`);panel.append(host);$('stage').prepend(panel);
+  const s={} as Session;Object.assign(s,{id,name:file.name,file,panel,host});
   s.controller=new ReaderController(host,state=>{if(s.controller)applyState(s,state);});sessions.push(s);activate(id);$('loading').hidden=false;
-  try { await s.controller.open(file,askPassword);try{rememberRecent(file);}catch(e){toast(errorText(e),true);}await renderSidebar(); }
-  catch(e){const index=sessions.indexOf(s);if(index>=0)sessions.splice(index,1);await s.controller.destroy();host.remove();activate(sessions.at(-1)?.id||0);toast(errorText(e),true);}
+  try { await s.controller.open(file,askPassword);try{rememberRecent(file);}catch(e){toast(errorText(e),true);}await renderSidebar();if(activeId===id&&!document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))focusWorkspace(); }
+  catch(e){const index=sessions.indexOf(s);if(index>=0)sessions.splice(index,1);await s.controller.destroy();panel.remove();activate(sessions.at(-1)?.id||0);focusWorkspace();toast(errorText(e),true);}
   finally{$('loading').hidden=true;}
  }}finally{opening=false;}
 }
@@ -199,7 +224,7 @@ async function closeSession(id: number) {
  s.closing=true;s.host.inert=true;
  try { await deviceLibrary.beforeClose(s,discard); }
  catch(error){s.closing=false;s.host.inert=false;throw error;}
- sessions.splice(sessions.indexOf(s),1);await s.controller.destroy();s.host.remove();if(id===activeId)activate(sessions.at(-1)?.id||0);else renderTabs();
+ sessions.splice(sessions.indexOf(s),1);await s.controller.destroy();s.host.remove();s.panel.remove();if(id===activeId){activate(sessions.at(-1)?.id||0);if(active())$(`tab-${activeId}`).focus();else focusWorkspace();}else renderTabs();
 }
 async function prepareNativeClose(): Promise<boolean> {
  if(opening||exporting||sessions.some(s=>s.closing)||$<HTMLDialogElement>('dialog').open){toast('Finish or cancel the current task before closing Folio.');return false;}
@@ -215,7 +240,13 @@ async function prepareNativeClose(): Promise<boolean> {
 }
 if(isTauri())registerNativeCloseGuard(window,prepareNativeClose,()=>invoke<void>('finish_close'),error=>{closingApplication=false;toast(`Folio remains open. ${errorText(error)}`,true);});
 function setToolUI(tool: string) {for(const name of ['select','highlight','text','draw']){const b=$(`tool-${name}`);b.classList.toggle('active',name===tool);b.setAttribute('aria-pressed',String(name===tool));}}
-function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!s)return;s.controller.setTool(tool);setToolUI(tool);const hints={select:'',highlight:'Select text on the page to highlight it. Choose Select text to return to reading.',text:'Click or tap the page to add text. Use the editor controls to change size and color.',draw:'Draw on the page with a pointer or stylus. Switch to Select text to scroll normally.'};$('tool-hint').textContent=hints[tool];$('tool-hint').hidden=!hints[tool];}
+function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!s)return;s.controller.setTool(tool);setToolUI(tool);const hints={select:'',highlight:'Select text on the page to highlight it. Choose Select text to return to reading.',text:'Click or tap the page to add text. Use the editor controls to change size and color.',draw:'Draw on the page with a pointer or stylus. Switch to Select text to scroll normally.'};$('tool-hint').hidden=!hints[tool];setText('tool-hint',hints[tool]);}
+function setSidebar(show: boolean, focus: 'toggle'|'document'|'navigation'|false = false) {
+ $('sidebar').hidden=!show;$('toggle-sidebar').setAttribute('aria-expanded',String(show));$('toggle-sidebar').setAttribute('aria-controls','sidebar');
+ $('toggle-sidebar').setAttribute('aria-label',show?'Hide page navigation':'Show page navigation');
+ active()?.controller.refresh();
+ if(focus==='toggle')$('toggle-sidebar').focus();else if(focus==='document')focusWorkspace();else if(focus==='navigation')$(`nav-${navMode==='pages'?'pages':navMode==='outline'?'outline':'info'}`).focus();
+}
 async function renderSidebar() {
  thumbnailObserver?.disconnect();thumbnailObserver=undefined;
  const token=++sidebarToken;const s=active();const content=$('sidebar-content');for(const canvas of content.querySelectorAll('canvas')){canvas.width=0;canvas.height=0;}content.replaceChildren();if(!s||!s.controller.pageCount||$('sidebar').hidden)return;
@@ -223,10 +254,10 @@ async function renderSidebar() {
  const title=document.createElement('h2');title.className='sidebar-title';title.textContent=navMode==='pages'?`${s.controller.pageCount} pages`:navMode==='outline'?'Document outline':'Document details';content.append(title);
  if(navMode==='pages'){
   const observer=thumbnailObserver=new IntersectionObserver(entries=>{for(const entry of entries){const b=entry.target as HTMLButtonElement;const canvas=b.querySelector('canvas')!;b.dataset.visible=String(entry.isIntersecting);if(!entry.isIntersecting){if(!b.dataset.rendering){canvas.width=0;canvas.height=0;}continue;}if(b.dataset.rendering||canvas.width)continue;b.dataset.rendering='true';void s.controller.renderThumbnail(Number(b.dataset.page),canvas).catch(()=>{b.title='Preview unavailable; select to navigate';}).finally(()=>{delete b.dataset.rendering;if(token!==sidebarToken||b.dataset.visible!=='true'){canvas.width=0;canvas.height=0;}});}},{root:content,rootMargin:'150px'});
-  for(let p=1;p<=s.controller.pageCount;p++){if(token!==sidebarToken){observer.disconnect();return;}const b=document.createElement('button');b.className='thumb-button';b.style.minHeight='207px';b.dataset.page=String(p);b.setAttribute('aria-label',`Go to page ${p}`);const c=document.createElement('canvas');c.width=0;c.height=0;c.style.width='140px';c.style.height='175px';const label=document.createElement('span');label.textContent=String(p);b.append(c,label);b.onclick=()=>{s.controller.goToPage(p);if(innerWidth<760){$('sidebar').hidden=true;s.controller.refresh();}};content.append(b);observer.observe(b);}
+  for(let p=1;p<=s.controller.pageCount;p++){if(token!==sidebarToken){observer.disconnect();return;}const b=document.createElement('button');b.className='thumb-button';b.style.minHeight='207px';b.dataset.page=String(p);b.setAttribute('aria-label',`Go to page ${p}`);if(p===s.controller.currentPage){b.classList.add('active');b.setAttribute('aria-current','page');}const c=document.createElement('canvas');c.width=0;c.height=0;c.style.width='140px';c.style.height='175px';c.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=String(p);b.append(c,label);b.onclick=()=>{s.controller.goToPage(p);if(innerWidth<760)setSidebar(false,'document');};content.append(b);observer.observe(b);}
  }else if(navMode==='outline'){
   const outline=await s.controller.getOutline();if(token!==sidebarToken)return;
-  const add=(items: typeof outline,level=0)=>{for(const item of items||[]){const b=document.createElement('button');b.className='outline-item';b.style.paddingLeft=`${8+Math.min(level,5)*12}px`;b.textContent=item.title||'Untitled section';b.onclick=()=>{if(item.dest)void s.controller.goToDestination(item.dest);if(innerWidth<760)$('sidebar').hidden=true;};content.append(b);if(item.items?.length)add(item.items,level+1);}};
+  const add=(items: typeof outline,level=0)=>{for(const item of items||[]){const b=document.createElement('button');b.className='outline-item';b.style.paddingLeft=`${8+Math.min(level,5)*12}px`;b.textContent=item.title||'Untitled section';b.onclick=()=>{if(item.dest)void s.controller.goToDestination(item.dest);if(innerWidth<760)setSidebar(false,'document');};content.append(b);if(item.items?.length)add(item.items,level+1);}};
   if(outline?.length)add(outline);else{const p=copy('This PDF has no outline. Use page thumbnails or search to find your place.');p.className='sidebar-empty';content.append(p);}
  }else{
   content.append(copy(s.name));content.append(copy(`${s.controller.pageCount} pages · ${(s.file.size/1024).toFixed(0)} KB`));const b=document.createElement('button');b.className='button';b.textContent='View properties';b.onclick=()=>void showProperties();content.append(b);
@@ -250,13 +281,15 @@ async function printCopy() {
  let reserved:Window|undefined;
  try{reserved=reservePrintWindow();const bytes=await s.controller.exportBytes();const result=printPdf(bytes,s.name,reserved);toast(result.message);}catch(e){reserved?.close();toast(errorText(e),true);}finally{exporting=false;}
 }
-function toggleSearch(show=!$('searchbar').hidden?false:true){$('searchbar').hidden=!show;if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();$('toggle-search').focus();}}
+function toggleSearch(show=!$('searchbar').hidden?false:true){clearTimeout(searchTimer);$('searchbar').hidden=!show;$('toggle-search').setAttribute('aria-expanded',String(show));if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();$('toggle-search').focus();}}
 function runSearch(previous=false){const query=$<HTMLInputElement>('search-input').value;active()?.controller.search(query,previous);}
 on('open',choose);on('choose',choose);on('clear-recent',()=>{clearRecent();renderRecents();});
 on('library',()=>deviceLibrary.showLibrary());on('account',()=>deviceLibrary.showAccount());on('store-local',()=>deviceLibrary.storeActive());on('document-tools',()=>documentTools.showTools());
 on('close-active-document',async()=>{const s=active();if(s)await closeSession(s.id);});
 on('demo',async()=>{const r=await fetch(`${import.meta.env.BASE_URL}demo.pdf`);if(!r.ok)throw new Error('The field guide could not load. You can open a local PDF instead.');await openFiles([new File([await r.blob()],'Folio field guide.pdf',{type:'application/pdf'})]);});
-on('toggle-sidebar',()=>{$('sidebar').hidden=!$('sidebar').hidden;active()?.controller.refresh();void renderSidebar();});on('sidebar-close',()=>{$('sidebar').hidden=true;active()?.controller.refresh();});
+on('toggle-sidebar',()=>{const show=!!$('sidebar').hidden;setSidebar(show,show?'navigation':'toggle');return renderSidebar();});on('sidebar-close',()=>setSidebar(false,'toggle'));
+$('sidebar').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();setSidebar(false,'toggle');}});
+$('stage').addEventListener('focusin',()=>{if(innerWidth<760&&!$('sidebar').hidden)setSidebar(false);});
 on('nav-pages',()=>{navMode='pages';return renderSidebar();});on('nav-outline',()=>{navMode='outline';return renderSidebar();});on('nav-info',()=>{navMode='info';return renderSidebar();});
 on('toggle-search',()=>toggleSearch());on('search-close',()=>toggleSearch(false));on('search-next',()=>runSearch());on('search-prev',()=>runSearch(true));
 $('search-input').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{try{runSearch();}catch(e){toast(errorText(e),true);}},180);});
@@ -271,11 +304,11 @@ on('properties',showProperties);on('export',exportCopy);
 // Printing must reserve its tab directly in the user's gesture before PDF serialization.
 $('print').addEventListener('click',()=>void printCopy());
 on('mobile-more',async()=>{const body=document.createElement('div');body.append(copy('Choose a document action. Printing opens a local PDF copy in your browser.'));
- const actions=[{label:'Rotate view',value:'rotate'},{label:'Properties',value:'properties'},{label:'Reading mode',value:'mode'},{label:'Print copy',value:'print'}];
- const result=await dialog('Document actions',body,actions);if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties();if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();});
+ const actions=[{label:'Rotate view',value:'rotate'},{label:'Properties',value:'properties'},{label:'Reading mode',value:'mode'},{label:'Print copy',value:'print'},{label:'Keyboard shortcuts and help',value:'help'}];
+ const result=await dialog('Document actions',body,actions);if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties();if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();if(result==='help')$('help').click();});
 on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only. Choose Keep on this device to enable a local library and recovery copies. Export important work regularly; clearing browser data removes local files.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. Document tools include local English OCR, safe page organization and certificate signing. Signing checks document integrity; certificate trust and revocation are not verified. PDF JavaScript remains disabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
 document.addEventListener('keydown',e=>{
- if($<HTMLDialogElement>('dialog').open)return;const target=e.target as HTMLElement;const editing=target.matches('input,textarea,select,[contenteditable="true"]')||target.closest('[contenteditable="true"]');const mod=e.ctrlKey||e.metaKey;
+ if(e.defaultPrevented||$<HTMLDialogElement>('dialog').open)return;const target=e.target as HTMLElement;const editing=target.matches('input,textarea,select,[contenteditable="true"]')||target.closest('[contenteditable="true"]');const mod=e.ctrlKey||e.metaKey;
  if(mod&&e.key.toLowerCase()==='o'){e.preventDefault();void choose();return;}
  const s=active();if(!s)return;
  if(mod&&e.key.toLowerCase()==='f'){e.preventDefault();toggleSearch(true);return;}
@@ -297,8 +330,9 @@ document.addEventListener('dragleave',()=>{dragDepth=Math.max(0,dragDepth-1);if(
 document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;$('drag-overlay').hidden=true;if(e.dataTransfer?.files.length)void openFiles([...e.dataTransfer.files]);});
 window.addEventListener('beforeunload',e=>{for(const s of sessions)s.controller.flushPendingEdits();if(sessions.some(s=>s.controller.dirty)){e.preventDefault();e.returnValue='';}});
 window.addEventListener('resize',()=>active()?.controller.refresh());
-matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(event.matches){$('sidebar').hidden=true;active()?.controller.refresh();void renderSidebar();}});
-if(innerWidth<900)$('sidebar').hidden=true;
+matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(event.matches){setSidebar(false,$('sidebar').contains(document.activeElement)?'toggle':false);void renderSidebar();}});
+setSidebar(innerWidth>900);
+$('toggle-search').setAttribute('aria-expanded','false');$('toggle-search').setAttribute('aria-controls','searchbar');
 renderRecents();
 void deviceLibrary.initialize().catch(e=>toast(errorText(e),true));
 if(import.meta.env.PROD&&'serviceWorker'in navigator)navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>toast('Offline app caching is unavailable. Local PDF reading still works in this open tab.'));

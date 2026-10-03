@@ -12,8 +12,8 @@ import zipfile
 PROJECT = pathlib.Path(__file__).resolve().parents[2]
 EXTRACTOR = PROJECT / "scripts" / "unpack-release.py"
 PAYLOAD = {
-    "Folio-0.1.0-Windows-x64-Setup.exe": b"MZ synthetic installer fixture\x00\x01",
-    "Folio-0.1.0-Third-Party-Notices.zip": b"opaque synthetic notice archive",
+    "Folio-0.1.1-Windows-x64-Setup.exe": b"MZ synthetic installer fixture\x00\x01",
+    "Folio-0.1.1-Third-Party-Notices.zip": b"opaque synthetic notice archive",
     "SHA256SUMS.txt": b"synthetic checksum fixture\n",
     "release-provenance.json": b'{"synthetic":true}\n',
 }

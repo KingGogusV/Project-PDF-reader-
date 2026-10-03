@@ -2,6 +2,15 @@
 
 ## 2026-10-03
 
+### Accessibility pass
+
+- Kept document-tab buttons stable during renderer updates; separated Home/End tab navigation from PDF page shortcuts and retained named inactive panel wrappers without attaching inactive form widgets.
+- Added focus restoration for document open/close, dialogs and navigation; exposed navigation expanded/current state and persistent page/unsaved announcements. Phone navigation closes before covering a focused PDF field, and phone actions expose help.
+- Improved 320-pixel/short-window reflow, doubled-text zoom labels, application control/Properties contrast, focus indicators and forced-colors selected states. PDF-authored metrics remain unchanged.
+- Added 13 accessibility behavior tests and a 15-state axe gate, plus retained screenshots for six standard viewport classes. Baseline defects and verification limits are recorded in the accessibility audit.
+- Prepared a separately versioned Windows 0.1.1 preview with the existing strict installed-reader and release-integrity gates. Existing published assets and download links are preserved pending verification.
+
+
 ### Published preview
 
 - [Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.
