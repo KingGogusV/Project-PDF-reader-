@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "Folio — Private PDF Reader",
+  "short_name": "Folio",
+  "description": "Read and work with PDFs locally on your device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f3ef",
+  "theme_color": "#173a35",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

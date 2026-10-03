@@ -1,0 +1,27 @@
+{
+  "name": "folio-pdf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "assets": "node scripts/copy-assets.mjs",
+    "fixtures": "node scripts/generate-fixtures.mjs",
+    "dev": "node scripts/copy-assets.mjs && node scripts/generate-fixtures.mjs && vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/generate-fixtures.mjs && node --test tests/unit/*.test.mjs",
+    "test:e2e": "playwright test",
+    "build": "node scripts/copy-assets.mjs && node scripts/generate-fixtures.mjs && tsc --noEmit && vite build && node scripts/create-sw.mjs",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": { "pdfjs-dist": "6.3.289" },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24.0.0",
+    "pdf-lib": "1.17.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.2"
+  }
+}
