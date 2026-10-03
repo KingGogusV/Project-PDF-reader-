@@ -7,6 +7,8 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), '..', 'fixtures',
 
 test.use({ serviceWorkers: 'allow' });
 
+for (const canonicalShellRedirect of [false, true]) test.describe(canonicalShellRedirect ? 'hosted canonical index redirect' : 'direct index response', () => {
+test.use({ canonicalShellRedirect });
 test('installed application reloads and reads local PDFs during network or origin loss without caching document bytes', async ({ page, context, networkOutage }, testInfo) => {
   const externalRequests: string[] = [];
   const errors: string[] = [];
@@ -20,6 +22,14 @@ test('installed application reloads and reads local PDFs during network or origi
   await expect(page.locator('#choose')).toBeVisible();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+  if (canonicalShellRedirect) {
+    expect(networkOutage.shellRedirects, 'precache must follow a real canonical HTTP redirect').toBeGreaterThan(0);
+    const cachedShell = await page.evaluate(async () => {
+      const response = await caches.match(new URL('index.html', location.href).href);
+      return { redirected: response?.redirected, status: response?.status };
+    });
+    expect(cachedShell).toEqual({ redirected: true, status: 200 });
+  }
 
   await networkOutage.begin(page);
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -55,4 +65,5 @@ test('installed application reloads and reads local PDFs during network or origi
   expect(externalRequests).toEqual([]);
   expect(errors).toEqual([]);
   await testInfo.attach('offline-cache-urls', { body: JSON.stringify(cachedUrls, null, 2), contentType: 'application/json' });
+});
 });

@@ -5,15 +5,26 @@ import { request as httpsRequest } from 'node:https';
 interface NetworkOutage {
   baseURL: string;
   mode: 'browser-offline' | 'origin-unavailable';
+  shellRedirects: number;
   begin(page: Page): Promise<void>;
 }
 
 /** A dedicated origin lets WebKit test real server loss without touching the shared preview. */
-async function outageOrigin(upstreamURL: string) {
+async function outageOrigin(upstreamURL: string, canonicalShellRedirect = false) {
   const upstream = new URL(upstreamURL);
+  const shell = new URL('index.html', new URL('./', upstream));
+  let shellRedirects = 0;
   const pending = new Set<ClientRequest>();
   const server = createServer((incoming, outgoing) => {
     const requested = new URL(incoming.url || '/', upstream);
+    // Hosted static sites commonly canonicalize /index.html to /. Use a real
+    // HTTP redirect, including for SW precaching, rather than mocking a Response.
+    if (canonicalShellRedirect && requested.pathname === shell.pathname) {
+      shellRedirects++;
+      outgoing.writeHead(308, { location: new URL('./', shell).pathname, 'cache-control': 'no-store' });
+      outgoing.end();
+      return;
+    }
     const target = new URL(upstream);
     target.pathname = requested.pathname;
     target.search = requested.search;
@@ -40,6 +51,7 @@ async function outageOrigin(upstreamURL: string) {
   if (!address || typeof address === 'string') throw new Error('The isolated outage origin did not start.');
   return {
     baseURL: `http://127.0.0.1:${address.port}${upstream.pathname}`,
+    get shellRedirects() { return shellRedirects; },
     async stop() {
       if (!server.listening) return;
       const closed = new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
@@ -51,22 +63,24 @@ async function outageOrigin(upstreamURL: string) {
   };
 }
 
-export const test = base.extend<{ networkOutage: NetworkOutage }>({
-  networkOutage: async ({ browserName, baseURL, context }, use, testInfo) => {
+export const test = base.extend<{ networkOutage: NetworkOutage; canonicalShellRedirect: boolean }>({
+  canonicalShellRedirect: [false, { option: true }],
+  networkOutage: async ({ browserName, baseURL, context, canonicalShellRedirect }, use, testInfo) => {
     if (!baseURL) throw new Error('Offline tests require the production preview baseURL.');
     // Playwright 1.63 WebKit's offline flag fails before service-worker fulfillment:
     // https://github.com/microsoft/playwright/issues/42775
     // Retain Chromium's disconnected-network test. WebKit tests server unavailability;
     // this does not claim to simulate an actual disconnected Safari device.
-    const isolated = browserName === 'webkit' ? await outageOrigin(baseURL) : null;
-    const mode = isolated ? 'origin-unavailable' : 'browser-offline';
+    const isolated = browserName === 'webkit' || canonicalShellRedirect ? await outageOrigin(baseURL, canonicalShellRedirect) : null;
+    const mode = browserName === 'webkit' ? 'origin-unavailable' : 'browser-offline';
     testInfo.annotations.push({ type: 'outage-mode', description: mode });
     try {
       await use({
         baseURL: isolated?.baseURL || baseURL,
         mode,
+        get shellRedirects() { return isolated?.shellRedirects || 0; },
         async begin(page) {
-          if (isolated) await isolated.stop();
+          if (mode === 'origin-unavailable') await isolated!.stop();
           else await context.setOffline(true);
           // A unique non-allowlisted request cannot come from the app's SW or HTTP cache.
           // Its failure proves the test did not simply keep using a live origin.

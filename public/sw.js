@@ -38,7 +38,14 @@ self.addEventListener('fetch', event => {
       // Keep shell and stable vendor URLs on the same active version. A newer
       // worker waits for old documents to close before activating its complete cache.
       const shell = await caches.match(shellUrl, { cacheName: CACHE_NAME });
-      if (shell) return shell;
+      if (shell) {
+        // Static hosts may redirect index.html to the directory URL during precache.
+        // Navigations use redirect mode "manual" and reject a redirected Response,
+        // even when its final status is 200. Recreate this allowlisted shell response
+        // without its fetch redirect history; keep its actual body and headers.
+        if (shell.redirected) return new Response(shell.body, { status: shell.status, statusText: shell.statusText, headers: shell.headers });
+        return shell;
+      }
       return fetch(request);
     })());
     return;

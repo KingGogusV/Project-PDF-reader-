@@ -23,8 +23,8 @@ signing arrangements remain a release decision.
   are not required for these initial desktop targets.
 
 The CLI is pinned in the root package manifest; direct Rust crates are pinned in
-`Cargo.toml`. Commit the generated Cargo lockfile after the first verified native
-build. Native CI build success establishes compilation/packaging, not runtime
+`Cargo.toml`. The verified generated `Cargo.lock` is now retained in source;
+preserve it and review any dependency-resolution change. Native CI build success establishes compilation/packaging, not runtime
 document correctness, installer trust or release readiness.
 
 `.github/workflows/native-build.yml` defines Windows and macOS jobs using Node 24,
@@ -39,19 +39,25 @@ CI run, causing argument parsing to fail before compilation.
 The workflow collects `src-tauri/target/release/bundle/nsis/*.exe` on Windows and
 `src-tauri/target/release/bundle/dmg/*.dmg` on macOS. It archives the `.app` as a
 tarball to preserve executable permissions. Cargo's lockfile and resolved
-dependency metadata are separate artifacts for inspection; retain the verified
-lockfile in source control after a successful reproducible build. The workflow
-definition alone does not establish that these jobs ran or artifacts were built.
+dependency metadata are separate artifacts for inspection. The successful final
+run below establishes compilation and package availability; it does not establish
+installer execution or application runtime.
 These are unsigned development packages; no signing credentials are configured.
 
 ## Prerequisites and current evidence
 
-The macOS job in [native build run 37088665153](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37088665153/job/111104088555)
-completed release compilation and app/DMG packaging. The Windows job in that run
-stopped before compilation because of the argument-forwarding issue described
-above; the corrected direct-Node command requires a fresh CI run. No installer
-execution, application runtime, signing or notarization claim follows from the
-macOS packaging result.
+[Native run 37089902268](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268)
+succeeded on both Windows and macOS after the direct-Node argument-forwarding fix.
+Unsigned development packages are available until **2026-10-17**:
+
+- [Windows NSIS artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262491712)
+- [macOS app/DMG artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262072022)
+
+ZIP sizes and verified SHA-256 hashes are in [verification](../docs/verification.md).
+Downloads may require GitHub access. The earlier run 37088665153 built macOS but
+stopped on Windows before compilation; the final successful run supersedes that
+failure. Installer execution, application runtime, signing and notarization
+remain unverified.
 
 The Windows work environment inspected on 2026-10-03 has no Rust/cargo, MSVC build
 tools, Windows SDK, or Android SDK at their usual installation paths; commands are

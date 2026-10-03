@@ -8,7 +8,7 @@ Folio is an original, local-first PDF workspace for everyday reading, annotation
 
 Authoritative repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). Original purpose: "Project to create free pdf reader that does not suck." Folio remains a provisional name, not trademark clearance.
 
-An optional hosted account service supports **up to 200 registered accounts**. Account metadata is the only server-side application data. PDFs and recovery copies remain in the current device/browser profile. Hosted deployment, managed authentication and the upgraded remote CI results remain pending until explicitly recorded in verification; no public URL is claimed here.
+An optional hosted account service supports **up to 200 registered accounts**. Account metadata is the only server-side application data. PDFs and recovery copies remain in the current device/browser profile. Deployment succeeded at [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site); the live database has an accounts table. Online hosted local-form storage/edit/reload recovery, anonymous responses, spoofed-header rejection and sign-in redirect passed. Actual managed sign-in/registration remains unverified; the first hosted offline reload failed and is under repair. The upgraded Reader and native build CI runs passed; exact source identities and evidence are in verification.
 
 ## Product Principles
 
@@ -18,14 +18,14 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 
 | Target | Actual status | Limits and verification boundary |
 |---|---|---|
-| Web | Implemented; original reader verified in Windows browsers and Linux Chromium; upgrade checks recorded separately | Hosted account integration and deployment need their own evidence |
-| Windows | Edge/Chrome reader checks; local upgrade workflow checks available | Experimental Tauri source exists; no verified installer/native runtime |
-| macOS | Browser/native targets experimental | Safari, WKWebView and native packaging remain unverified |
-| Linux | Original reader verified in headless Chromium CI | Upgraded CI pending; interactive desktop and physical printing unverified; no Linux native package configured |
+| Web | Deployed; Windows browser checks and upgraded Linux Chromium/macOS WebKit CI passed | Actual managed account sign-in remains unverified |
+| Windows | Edge/Chrome browser checks; unsigned NSIS package built successfully | Native installer execution/runtime unverified |
+| macOS | 62 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
+| Linux | 62 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
 | Android | Experimental browser target | Physical file pickers, memory, selection, printing and sharing unverified |
 
-The Tauri wrapper currently targets Windows NSIS and macOS app/DMG outputs. Missing local Rust/MSVC/SDK prerequisites prevent a local native build. A wrapper source tree is not a released application.
+Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. Missing local Rust/MSVC/SDK prerequisites still prevent local Windows compilation. These are unsigned development packages, not verified installations or trusted releases.
 
 ## Current Technology Stack
 
@@ -78,12 +78,12 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 | Review/forms | Text/freehand highlight, FreeText, ink; supported text, multiline, checkbox, dropdown and radio fields; editor undo/redo | No new sticky-note, underline or strikethrough tools; no PDF scripts/XFA |
 | Output | Validated new-copy download and explicit saved-copy acknowledgment; browser print/open/download handoff | Download initiation is not confirmed disk persistence; physical printing unverified |
 | Device library | Opt-in immutable originals plus latest verified revision, recovery reopening, hash checks, quota handling and conflict refusal | Unencrypted browser-profile storage; eviction/termination can still lose uncheckpointed edits |
-| Accounts | Account-only API/UI, identity-dependent registration, database-enforced 200-account cap, guest operation | Managed-host authentication and deployed database not yet verified; no cross-device PDF sync |
+| Accounts | Account-only API/UI, identity-dependent registration, database-enforced 200-account cap, guest operation | Live accounts table confirmed; actual managed sign-in/account sessions and live capacity/load unverified; no cross-device PDF sync |
 | OCR | English recognition, progress/cancel, separate text output and `.txt` download | Recognition estimates; no handwriting/multilingual guarantee, searchable-PDF export or layout reconstruction |
 | Page tools | Extract, reorder, delete, permanent rotation and merge to a verified new copy | Reject forms, annotations, signatures, encryption and unsupported document structures; page-only metadata behavior is explicit |
 | Certificate signing | Local P12/PFX review and invisible RSA/SHA-256 signature; independent byte-range/CMS and preservation checks | No trust-chain, revocation, trusted timestamp, visible-signature or existing-signature validation verdict |
 | Offline | Cached reader/local PDF operation; optional OCR assets and offline recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
-| Native/accessibility | Shared Tauri wrapper and targeted accessibility repairs/audit tooling | Native build/runtime, physical assistive technology and conformance remain unverified |
+| Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Native installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
 
 The [original MVP trace](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md) and [verification](docs/verification.md) separate implemented behavior from test evidence.
 
@@ -95,7 +95,7 @@ Never corrupt originals, silently discard modifications or bypass permissions/en
 
 Protective limits are not capacity guarantees: reader inputs are capped at 150 MiB with three open documents; a device library permits 500 records and 512 MiB combined stored PDF bytes per owner partition, subject to lower browser quotas; organization permits 50 MiB/500 source pages/10 files; OCR permits 50 pages with bounded raster/text output; signing permits 20 MiB and 200 pages, with a 1 MiB P12/PFX input cap.
 
-Encrypted, signature-bearing, XFA and insufficiently permitted PDFs are conservatively read-only in the reader. Document tools impose their own stricter checks. Local PDF storage is unencrypted: account partitions are organizational separation, not protection from code or people accessing the same browser profile. Browser storage clearing/eviction removes copies; unfinished strokes/editor drafts and recent edits before checkpoint completion are not guaranteed recoverable. Keep external backups.
+Encrypted, signature-bearing, XFA and insufficiently permitted PDFs are conservatively read-only in the reader. Document tools impose their own stricter checks. Local PDF storage is unencrypted: account partitions are organizational separation, not protection from code or people accessing the same browser profile. OCR's older embedded native dependencies still require a patched reproducible rebuild before stable production support; constrained PNG input does not remediate those binaries. Browser storage clearing/eviction removes copies; unfinished strokes/editor drafts and recent edits before checkpoint completion are not guaranteed recoverable. Keep external backups.
 
 The 200-account limit is a registration capacity rule, not a 200-concurrent-user load result. Account security depends on a trusted managed dispatcher stripping client-supplied identity headers. Do not expose the worker directly under a host that accepts spoofed identity headers. Certificate integrity verification is not signer identity, legal validity or trust. No complete PDF/UA, PDF/A, Safari, native or physical-mobile certification is established.
 

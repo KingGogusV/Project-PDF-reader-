@@ -27,9 +27,18 @@
 - Windows: 55 unit/fixture cases; 62 E2E cases across focused suites; 7 controller and 9 signing-core cases passed.
 - Nine production accessibility states returned zero axe violations, with PDF-content contrast checks still incomplete.
 - Linux Chromium: 55 unit/fixture and 62 E2E cases passed in the first upgrade CI lane.
-- macOS arm64 release compilation and app/DMG packaging succeeded; installation/runtime and notarization remain unverified.
-- Remote signing harness navigation and Windows packaging failures are tracked with their corrective work in the verification record.
+- Final Reader CI run 37089902258 passed all jobs: 55 unit cases, 62 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint and nine signing cases.
+- Final native run 37089902268 built Windows NSIS and macOS app/DMG successfully; installation/runtime and signing/notarization remain unverified.
+- Final Windows library rerun passed 23 cases in 27.5 seconds after portable ArrayBuffer writes, including legacy Blob read compatibility.
+- Earlier signing-harness navigation, WebKit Blob storage and Windows CLI forwarding failures were fixed and verified by the successful final runs.
 - New performance samples and hosted delivery status are recorded in docs/verification.md.
+
+### Delivery
+
+- Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` succeeded at https://folio-local-pdf.gogoi-ronnie.chatgpt.site on 2026-10-03 at 02:37:09 UTC; live D1 accounts table confirmed.
+- Published Site commit `f7734929de58e05f280b536fbcd20b875a423221` and GitHub commit `6033dbf3546b0eef776507bc50b14ee354ca6273` have verified identical source trees with different ancestry. Preserve/reconcile both histories for future publishing; do not force-push.
+- Hosted online form/local-storage/edit/reload recovery, anonymous API response, forged-header rejection, sign-in redirect and phone layout passed. Actual account sign-in remains unverified.
+- Hosted offline reload exposed a failure under repair. Static-host HTTP CSP/referrer-header enforcement remains a platform gap; document metadata CSP was confirmed. See verification for subsequent delivery results.
 
 ### Known limitations
 

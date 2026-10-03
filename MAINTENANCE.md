@@ -95,7 +95,7 @@ This command generates migrations; it does not apply them to a live database. Re
 
 The worker exposes only `/api/account`. Managed dispatch owns ChatGPT sign-in/sign-out/callback routes and must strip client identity headers before inserting trusted identity. Never expose the worker directly through a host that lets clients spoof these headers. Test unauthenticated access, forged headers, same-origin checks, bounded bodies, capacity, existing accounts at capacity and outage handling against the actual host.
 
-Hosting uses the existing Sites project/manifest and its supported deployment tooling; no local deploy command is defined in package.json. Build and review concrete artifacts first, then use the authorized project deployment flow and inspect terminal status/live behavior. Do not invent a URL, migration success or authentication test. Hosted deployment and upgraded CI are pending until recorded in verification.
+Hosting uses the existing Sites project/manifest and its supported deployment tooling; no local deploy command is defined in package.json. Build and review concrete artifacts first, then use the authorized project deployment flow and inspect terminal status/live behavior. Do not invent a URL, migration success or authentication test. Deployment v1 succeeded at [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site), and upgraded Reader/native CI passed. Live online reading/recovery, anonymous account responses and spoofed-identity refusal passed; actual managed account sign-in remains unverified. Hosted offline reload exposed a separate failure under investigation. Exact runs and delivery identities are in verification.
 
 The 200-account ceiling concerns registered accounts, not measured concurrent traffic. Account rows do not contain PDFs. PDFs remain opt-in, unencrypted, device-local; sign-in on another device does not synchronize them.
 
@@ -108,7 +108,7 @@ pnpm exec tauri info
 pnpm exec tauri dev
 ```
 
-Once prerequisites exist, generate `Cargo.lock` **only if absent**, from `src-tauri/`, then verify resolution:
+The verified `src-tauri/Cargo.lock` is retained. Do not regenerate it during ordinary builds. Only if intentionally bootstrapping a missing lockfile, run `cargo generate-lockfile` from `src-tauri/`; inspect the result, then verify resolution:
 
 ```sh
 cargo generate-lockfile
@@ -122,9 +122,9 @@ node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis -- --l
 node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles app,dmg -- --locked
 ```
 
-The first is Windows; the second requires macOS. Direct Node invocation preserves the final `-- --locked` delimiter when PowerShell's pnpm wrapper would otherwise consume it; that delimiter forwards locking to Cargo. These produce unsigned development artifacts, not trusted releases. Native CI conditionally generates a missing lockfile, retains dependency metadata and packages, and archives the macOS app to preserve executable permissions. Inspect and commit the successfully verified Cargo lockfile before relying on repeatability.
+The first is Windows; the second requires macOS. Direct Node invocation preserves the final `-- --locked` delimiter when PowerShell's pnpm wrapper would otherwise consume it; that delimiter forwards locking to Cargo. These produce unsigned development artifacts, not trusted releases. Native CI conditionally generates a missing lockfile, retains dependency metadata and packages, and archives the macOS app to preserve executable permissions. Preserve the committed, verified Cargo lockfile; review any future resolution change and its notices.
 
-The inspected Windows environment lacks Rust/cargo, MSVC and Windows SDK; WebView2 alone does not permit a build. No local native build/runtime is claimed. CI configuration is not build success. See [native prerequisites and runtime gates](src-tauri/README.md). Test custom-origin workers, local opening, PDF export/print, recovery, accounts and offline behavior on actual Windows/macOS wrappers before release.
+The inspected Windows environment lacks Rust/cargo, MSVC and Windows SDK; WebView2 alone does not permit a build. No local native build/runtime is claimed. Remote run 37089902268 successfully built both Windows NSIS and macOS app/DMG; installation/runtime and signing/notarization remain unverified. See [native prerequisites and runtime gates](src-tauri/README.md). Test custom-origin workers, local opening, PDF export/print, recovery, accounts and offline behavior on actual Windows/macOS wrappers before release.
 
 ## Platform Test Procedure
 
@@ -133,6 +133,12 @@ Record OS, browser/version, headless/manual mode and input emulation. Layout cla
 Cover open/navigation/close; search/results/clear; annotation/form export-reopen; duplicate widgets/radios; dirty close; protected/damaged input; print/download handoff; local library/recovery/conflicts/quota; account availability/capacity; OCR recognize/cancel/offline; organization output/refusal; certificate signing/cancel/tamper. Monitor external requests and uncaught errors. Inspect saved outputs with independent parsers/renderers and actual screenshots.
 
 macOS WebKit CI, branded Safari, native wrappers, physical Android/iOS/iPadOS, printers and screen readers each need separate evidence. Read the latest run for the exact committed revision; historical Linux reader success does not establish the upgraded build. Workflow definitions cover Linux Chromium, macOS WebKit, core/signatures and native packaging, with current outcomes recorded only after they actually run.
+
+## Source and Publishing Continuity
+
+Deployment v1 used Site source commit `f7734929de58e05f280b536fbcd20b875a423221`; the corresponding GitHub commit is `6033dbf3546b0eef776507bc50b14ee354ca6273`. Their source trees were verified identical, but commit histories differ because the Site added a source commit. GitHub remains authoritative. Before future publishing, inspect both histories and merge/reconcile ancestry; do not force-push or overwrite either history because trees matched once. Later delivery/documentation revisions must be verified separately in the delivery record.
+
+Live static responses bypass the worker's static-response headers on the current host: HTML metadata CSP was confirmed, but HTTP CSP/frame-ancestors and Referrer-Policy enforcement need supported hosting configuration. Do not claim the worker header code or an unverified `_headers` file configures the live static service. Preserve document metadata CSP while resolving this platform gap.
 
 ## Document and Recovery Safety
 

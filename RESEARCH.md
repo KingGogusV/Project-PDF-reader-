@@ -71,7 +71,11 @@ Earlier research remains historical context. The current decisions below superse
 
 **DESIGN DECISION:** Use explicit local-storage consent, SHA-256 validation, transactional updates and revision-based conflict refusal. Keep the original copy separate and show failed/corrupt recovery honestly. A 200-slot database constraint enforces account registration capacity; it is not a concurrency benchmark.
 
-**UNRESOLVED:** Hosted identity correctness depends on the managed dispatcher stripping client identity headers. Local mocked-header/unit results do not verify this boundary, live migration, capacity behavior or account sign-in on the eventual host. Deployment remains pending.
+**UNRESOLVED:** Hosted identity correctness depends on the managed dispatcher stripping client identity headers. Local mocked-header/unit results do not verify managed sign-in or live capacity. Deployment has now succeeded at [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site), and the live D1 accounts table is confirmed; online form recovery, anonymous account response, spoofed-header rejection and sign-in redirect passed. Actual account sign-in remains unverified.
+
+**FACT - hosting observation:** On 2026-10-03, live static responses bypassed the worker's header code. Metadata CSP remained active, including blocking a host-injected inline script. HTTP CSP/frame-ancestors/nosniff and Referrer-Policy were not established by the attempted static-header configuration. [Cloudflare's static-asset headers documentation](https://developers.cloudflare.com/workers/static-assets/headers/) describes `_headers` behavior for its service; the managed Sites deployment did not honor the attempted route, so generic upstream behavior is not proof of this host's configuration.
+
+**DESIGN DECISION:** Keep the existing restrictive metadata CSP; add a metadata no-referrer fallback without enabling injected scripts. Resolve host-level headers through supported hosting configuration. Initial hosted offline reload also exposed cached canonical-redirect response handling; track the fix and actual redeployment test separately from local offline passes.
 
 ## Desktop and Mobile Architecture
 
@@ -79,7 +83,7 @@ Earlier research remains historical context. The current decisions below superse
 
 **DESIGN DECISION:** Start with zero custom native commands or privileged plugin permissions. Configure Windows NSIS and macOS app/DMG targets while retaining one document UI/core. Native association/atomic-save/updater/share integrations await actual product and platform evidence.
 
-**FACT:** [Playwright's WebKit documentation](https://playwright.dev/docs/browsers#webkit) distinguishes its patched WebKit from branded Safari. A macOS WebKit CI lane and native build workflows are configured; configuration is not a passed run. Physical iOS/iPadOS/Android, Safari and native WebView2/WKWebView workflows still require independent verification.
+**FACT:** [Playwright's WebKit documentation](https://playwright.dev/docs/browsers#webkit) distinguishes its patched WebKit from branded Safari. The upgraded CI now passed 62 E2E cases on macOS WebKit and 62 on Linux Chromium; the separate native run built Windows NSIS and macOS app/DMG successfully. Physical iOS/iPadOS/Android, Safari and native WebView2/WKWebView workflows still require independent verification.
 
 ## OCR Options and Decision
 
@@ -101,7 +105,7 @@ Earlier research remains historical context. The current decisions below superse
 
 **FACT:** Installed **PKI.js 3.4.1** and **ASN.1.js 3.0.10** have three-clause BSD notices. [PKI.js](https://github.com/PeculiarVentures/PKI.js) supplies CMS/X.509 primitives; it is not an operating-system trust-store policy or general PDF preservation engine. The OCR report records alternatives such as @signpdf and why fragile string-placeholder paths were rejected.
 
-**DESIGN DECISION:** Implement an explicit local P12/PFX inspection and confirmation flow, an invisible RSA/SHA-256 incremental signature and independent strict CMS/byte-range/preservation checks. Reject unsupported/protected/already-signed documents. Keep key material in short-lived workers; never persist credentials, fetch certificate chains or silently contact TSA/OCSP endpoints.
+**DESIGN DECISION:** Implement an explicit local P12/PFX inspection and confirmation flow, an invisible RSA/SHA-256 incremental signature and independent strict CMS/byte-range/preservation checks. Reject unsupported/protected/already-signed documents. Keep imported P12/password material only in transient UI and short-lived worker memory until completion/cancellation; never persist credentials, fetch certificate chains or silently contact TSA/OCSP endpoints.
 
 **VERIFICATION BOUNDARY:** Cryptographic integrity checks and independent test signatures do not establish trusted identity, revocation status, trusted time, legal validity, arbitrary-existing-signature validation or PAdES conformance. Those capabilities remain unimplemented. JavaScript cannot guarantee physical erasure of every secret copy.
 
@@ -115,7 +119,7 @@ Earlier research remains historical context. The current decisions below superse
 
 ## Licensing, Security and Performance Record
 
-Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. Native Cargo lockfile/transitive notice review follows the first verified build. Test-only dependencies must not be silently bundled into the client.
+Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. The verified native Cargo lockfile is retained; full native transitive notice review remains a release task. Test-only dependencies must not be silently bundled into the client.
 
 Security review must include parser/worker boundaries, account identity dispatch, device-storage expectations and embedded WASM components. An earlier zero-advisory package audit does not establish the upgraded dependency graph's current status; exact new commands/results belong in verification.
 

@@ -15,7 +15,7 @@ app.innerHTML = `
   <div class="brand-divider"></div><span class="workspace-label">Your document workspace</span>
   <div class="top-spacer"></div><span class="privacy-pill top-privacy">${icon('shield')} On your device. Always yours.</span>
   ${btn('help','help','Keyboard shortcuts and help','help-top')}
-  ${btn('library','open','Device library')}${btn('account','info','Account')}
+  ${btn('library','open','Device library')}${btn('account','account','Account')}
   <button id="open" class="button primary">${icon('plus')}<span>Open PDF</span></button>
  </header>
  <main id="welcome" class="welcome" tabindex="-1">
