@@ -19,3 +19,5 @@ docs/screenshots/
 src-tauri/target/
 src-tauri/generated-notices/
 *.tar.gz
+__pycache__/
+*.pyc

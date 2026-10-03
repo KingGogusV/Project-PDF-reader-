@@ -83,3 +83,36 @@ Screenshots, a synthetic recovery PDF, process output and `report.json` go to
 `test-results/native-windows/`. The implemented test is **not a passed native
 runtime result** until its actual CI execution succeeds. It does not cover every
 installer dialog, printing, native download handoffs, updates or assistive tools.
+
+### CI privilege preflight
+
+GitHub's Windows hosted runners run as administrators with UAC disabled. Microsoft
+WebView2 Runtime 150 intentionally ignores environment overrides in elevated hosts.
+The test respects that restriction by reducing its own child's privileges, using
+`CreateRestrictedToken` (`LUA_TOKEN` and `DISABLE_MAX_PRIVILEGE`), Administrators
+deny-only membership, Medium integrity, and `CreateProcessAsUserW`. It checks
+the actual suspended child token before resuming: same user, no elevation, no
+enabled Administrators membership, and exactly Medium integrity. There are no
+registry/policy changes, new accounts or disabled security features. Failure to
+meet any invariant stops the test.
+
+Before compiling an installer, CI can check that the runner supports this route
+without launching any app:
+
+```powershell
+pwsh -NoProfile -File tests/native/windows-token-launch.ps1 -Mode Preflight
+```
+
+The optional `FOLIO_TOKEN_REPORT` points to a JSON output file in an existing
+test-results directory. The smoke test also records nested CDP errors, WebView2
+version and selected owned-process arguments, and verifies that the actual
+runtime uses the requested isolated profile. Tokens, credentials and complete
+process command lines are not logged. No native runtime pass is implied by a
+successful token preflight.
+
+Primary references checked on 2026-10-03:
+
+- [GitHub hosted-runner privileges](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+- [Microsoft's Runtime 150 security-hardening explanation](https://github.com/MicrosoftEdge/WebView2Feedback/issues/5640#issuecomment-4923662109)
+- [CreateRestrictedToken](https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-createrestrictedtoken)
+- [CreateProcessAsUserW](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessasuserw)

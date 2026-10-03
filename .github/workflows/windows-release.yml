@@ -30,6 +30,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
+      - name: Verify unprivileged Windows test token
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path test-results/native-windows -Force | Out-Null
+          $env:FOLIO_TOKEN_REPORT = Join-Path $PWD 'test-results/native-windows/token-preflight.json'
+          pwsh -NoProfile -File tests/native/windows-token-launch.ps1 -Mode Preflight
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
         with:
           toolchain: '1.99.0'
@@ -77,6 +83,14 @@ jobs:
           path: test-results/native-windows/
           if-no-files-found: warn
           retention-days: 30
+      - name: Retain unpublished installer for failed-runtime diagnosis
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: folio-unpublished-diagnostic-installer-${{ github.run_id }}
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
+          retention-days: 7
       - name: Retain native notice diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

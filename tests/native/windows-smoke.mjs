@@ -14,6 +14,8 @@ import { PDFDocument } from 'pdf-lib';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(repo, 'test-results/native-windows');
 const fixtures = join(repo, 'tests/fixtures/generated');
+const launcherScript = join(repo, 'tests/native/windows-token-launch.ps1');
+const tokenReportPath = join(output, 'token-launch.json');
 const STARTUP_TIMEOUT = 45_000;
 const OVERALL_TIMEOUT = 180_000;
 const report = {
@@ -46,6 +48,49 @@ function safeUrl(value) {
   try { const url = new URL(value); return `${url.origin}${url.pathname}`; }
   catch { return value.slice(0,200); }
 }
+function describeError(error, depth = 0) {
+  if (!error || depth > 5) return undefined;
+  return { name:error.name, message:String(error.message ?? error), code:error.code,
+    stack:error.stack, cause:describeError(error.cause,depth + 1) };
+}
+async function readLaunchReport() {
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    if (report.launchError) throw new Error(report.launchError);
+    try {
+      const token = JSON.parse(await readFile(tokenReportPath,'utf8'));
+      report.tokenLaunch = token;
+      if (token.status === 'failed') throw new Error(`Restricted native launch failed: ${token.error}`);
+      if (token.status === 'launched') {
+        assert.equal(token.parentPid,ownedProcess.pid,'Token report must describe this owned launcher.');
+        assert.ok(Number.isInteger(token.childPid) && token.childPid > 0);
+        assert.equal(token.childToken.Elevated,false);
+        assert.equal(token.childToken.IntegrityRid,8192);
+        assert.equal(token.childToken.AdministratorsEnabled,false);
+        assert.equal(token.childToken.SameUser,true);
+        report.pid = token.childPid;
+        return;
+      }
+    } catch (error) {
+      if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
+    }
+    if (ownedProcess.exitCode !== null) throw new Error(`Restricted launcher exited (${ownedProcess.exitCode}). ${processOutput.slice(-6000)}`);
+    await delay(100);
+  }
+  throw new Error('Restricted launcher did not report a verified child within 20 seconds.');
+}
+function runtimeDiagnostics() {
+  if (!ownedProcess?.pid) return;
+  const result = spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',
+    join(repo,'tests/native/windows-runtime-diagnostics.ps1'),'-OwnedPid',String(ownedProcess.pid)],
+  { windowsHide:true, timeout:10_000, encoding:'utf8', maxBuffer:256_000 });
+  if (result.status !== 0 || result.error) {
+    report.runtimeDiagnosticError = { status:result.status, error:describeError(result.error), output:result.stderr?.slice(-4000) };
+    return;
+  }
+  try { report.nativeProcesses = JSON.parse(result.stdout); }
+  catch (error) { report.runtimeDiagnosticError = describeError(error); }
+}
 async function freePort() {
   const server = createServer();
   await new Promise((resolvePromise, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolvePromise); });
@@ -56,19 +101,24 @@ async function freePort() {
 async function connect(port) {
   const deadline = Date.now() + STARTUP_TIMEOUT;
   let lastError;
+  report.cdpDiagnostic = { attempts:0 };
   while (Date.now() < deadline) {
     if (report.launchError) throw new Error(report.launchError);
     if (ownedProcess.exitCode !== null) throw new Error(`Native app exited during startup (${ownedProcess.exitCode}).`);
     try {
+      report.cdpDiagnostic.attempts++;
       const response = await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(1_000) });
+      report.cdpDiagnostic.httpStatus = response.status;
       assert.equal(response.ok, true);
       const metadata = await response.json();
+      report.cdpDiagnostic.metadata = { browser:metadata.Browser, protocolVersion:metadata['Protocol-Version'],
+        userAgent:metadata['User-Agent'], webSocketOrigin:metadata.webSocketDebuggerUrl ? new URL(metadata.webSocketDebuggerUrl).origin : null };
       assert.equal(typeof metadata.webSocketDebuggerUrl, 'string');
       const endpoint = new URL(metadata.webSocketDebuggerUrl);
       assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(endpoint.hostname), 'CDP must remain on loopback');
       assert.equal(endpoint.port, String(port));
       return await chromium.connectOverCDP(`http://127.0.0.1:${port}`, { timeout: 5_000 });
-    } catch (error) { lastError = error; await delay(250); }
+    } catch (error) { lastError = error; report.cdpDiagnostic.lastError = describeError(error); await delay(250); }
   }
   throw new Error(`WebView2 CDP did not start within ${STARTUP_TIMEOUT}ms.`, { cause: lastError });
 }
@@ -135,20 +185,32 @@ async function workflow() {
   assert.ok(inside(runnerTemp, await realpath(profile)));
   report.retainedProfile = profile;
   const port = await freePort();
-  report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned test process environment' };
-  ownedProcess = spawn(executable, [], {
+  report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned restricted test process environment' };
+  await writeFile(tokenReportPath,JSON.stringify({ status:'starting' }));
+  ownedProcess = spawn('pwsh.exe', ['-NoProfile','-NonInteractive','-File',launcherScript,'-Mode','Launch'], {
     cwd: dirname(executable), shell: false, windowsHide: true, stdio: ['ignore','pipe','pipe'],
     env: { ...process.env,
+      FOLIO_TOKEN_REPORT: tokenReportPath,
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1`,
       WEBVIEW2_USER_DATA_FOLDER: profile,
     },
   });
-  report.pid = ownedProcess.pid;
+  report.launcherPid = ownedProcess.pid;
   ownedProcess.on('error', error => { report.launchError = error.message; });
   const capture = data => { processOutput = (processOutput + data.toString()).slice(-256_000); };
   ownedProcess.stdout.on('data', capture); ownedProcess.stderr.on('data', capture);
+  await readLaunchReport();
+  checked('installed application runs as the same user with a verified non-elevated Medium token', { pid:report.pid });
   browser = await connect(port);
   report.webviewVersion = browser.version();
+  runtimeDiagnostics();
+  assert.ok(Array.isArray(report.nativeProcesses),'Runtime process diagnostics must be available.');
+  const runtime = report.nativeProcesses.find(item => item.name === 'msedgewebview2.exe'
+    && item['remote-debugging-port'] === String(port) && item['user-data-dir']);
+  assert.ok(runtime,'Owned WebView2 must expose the requested process-scoped debugging port.');
+  assert.equal((await realpath(runtime['user-data-dir'])).toLowerCase(), profile.toLowerCase(),
+    'WebView2 must actually use the fresh retained profile, not its default profile.');
+  checked('owned WebView2 uses the requested isolated profile and debugging port', { version:runtime.version });
   const context = browser.contexts()[0];
   assert.ok(context, 'WebView2 must expose its existing browser context.');
   context.setDefaultTimeout(15_000); context.setDefaultNavigationTimeout(20_000);
@@ -272,6 +334,7 @@ try {
 } catch (error) {
   report.status = 'failed';
   report.error = error.stack || String(error);
+  report.errorDetails = describeError(error);
   console.error(report.error);
   process.exitCode = 1;
   if (page && !page.isClosed()) {
@@ -280,6 +343,7 @@ try {
   }
 } finally {
   clearTimeout(overallTimer);
+  if (ownedProcess?.pid && ownedProcess.exitCode === null) runtimeDiagnostics();
   // Never use an image-name kill: only terminate the process tree this test spawned.
   if (ownedProcess?.pid && ownedProcess.exitCode === null && ownedProcess.signalCode === null) {
     const stopped = spawnSync('taskkill.exe', ['/PID',String(ownedProcess.pid),'/T','/F'], { windowsHide:true, timeout:10_000, encoding:'utf8' });
