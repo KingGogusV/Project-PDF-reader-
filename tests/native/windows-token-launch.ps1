@@ -12,6 +12,7 @@ if ($Mode -eq 'Cleanup') {
 }
 $result = [ordered]@{ status = 'running'; mode = $Mode; parentPid = $PID; startedAt = [DateTime]::UtcNow.ToString('o') }
 $launcher = $null
+$diagnosticProfile = $null
 $scriptExit = 0
 function Save-Report {
   $json = $result | ConvertTo-Json -Depth 8
@@ -35,6 +36,40 @@ function Get-ProfileAclFacts([string]$Path, [System.Security.Principal.SecurityI
     }
   }
   return $facts
+}
+function Get-SingletonPathFacts([string]$Root, [System.Security.Principal.SecurityIdentifier]$UserSid) {
+  # Exactly the owned UDF and singleton file; never recurse, follow reparse points or change permissions.
+  $rows = @()
+  foreach ($relative in @('EBWebView','EBWebView\lockfile')) {
+    $path = Join-Path $Root $relative
+    $facts = [ordered]@{ relativePath=$relative; exists=$false }
+    try {
+      $item = Get-Item -LiteralPath $path -Force -ErrorAction Stop
+      $facts.exists=$true
+      $facts.directory=$item.PSIsContainer
+      $facts.reparsePoint=($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0
+      $facts.attributes=$item.Attributes.ToString()
+      if ($facts.reparsePoint) { $rows += $facts; break }
+      if (-not $item.PSIsContainer) { $facts.bytes=$item.Length }
+      $acl = Get-Acl -LiteralPath $path
+      $facts.ownerIsStandardUser=$acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $UserSid.Value
+      $facts.protectedAcl=$acl.AreAccessRulesProtected
+      $facts.rules=@(foreach ($rule in $acl.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier])) {
+        $sid = $rule.IdentityReference
+        $role = if ($sid.Value -eq $UserSid.Value) { 'created-standard-user' }
+          elseif ($sid.IsWellKnown([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid)) { 'Administrators' }
+          elseif ($sid.IsWellKnown([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid)) { 'Users' }
+          elseif ($sid.IsWellKnown([System.Security.Principal.WellKnownSidType]::AuthenticatedUserSid)) { 'AuthenticatedUsers' }
+          elseif ($sid.IsWellKnown([System.Security.Principal.WellKnownSidType]::WorldSid)) { 'Everyone' }
+          elseif ($sid.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid)) { 'System' }
+          else { 'other' }
+        @{ role=$role; type=$rule.AccessControlType.ToString(); rights=$rule.FileSystemRights.ToString(); inherited=$rule.IsInherited }
+      })
+    } catch { $facts.error=$_.Exception.Message; $facts.errorId=$_.FullyQualifiedErrorId }
+    $rows += $facts
+    if (-not $facts.exists) { break }
+  }
+  return $rows
 }
 try {
   $result.parentToken = [FolioNativeSmoke.StandardUserProcess]::CurrentToken()
@@ -66,6 +101,7 @@ try {
         @(Get-ChildItem -LiteralPath $logParent -Force).Count -ne 0) {
       throw 'Profile preparation requires the fresh empty non-reparse CI test directory.'
     }
+    $diagnosticProfile = $logParent
     $userSid = [System.Security.Principal.SecurityIdentifier]::new($launcher.AccountSid)
     $result.profileAccess = [ordered]@{ beforeAcl=(Get-ProfileAclFacts $logParent $userSid); changed=$false }
     $result.profileAccess.beforeProbe = $launcher.ProbeProfileWrite($logParent)
@@ -88,6 +124,10 @@ try {
     if (-not $result.profileAccess.afterProbe.Writable) { throw 'Standard user still cannot write its own test profile.' }
     if (-not $env:FOLIO_NATIVE_STOP_FILE) { throw 'Owned stop signal path is required for account cleanup.' }
     $result.nativeOutput = @{ available=$false; reason='Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' }
+    $result.singletonDiagnostics = [ordered]@{
+      coverage='Read-only upstream Chromium mutex-name probe; Edge may use another name. File probe does not test write/delete access.'
+      beforeMutex=$launcher.ProbeUpstreamSingletonMutex()
+    }
     $launcher.Launch($exe,[System.IO.Path]::GetDirectoryName($exe))
     $result.childPid = $launcher.Pid
     $result.childToken = $launcher.Child
@@ -99,7 +139,14 @@ try {
       try {
         $rows = & (Join-Path $PSScriptRoot 'windows-runtime-diagnostics.ps1') -OwnedPid $launcher.Pid | ConvertFrom-Json
         foreach ($row in $rows) {
-          if ($row.name -eq 'msedgewebview2.exe') { $row | Add-Member -NotePropertyName ownedHandleCaptured -NotePropertyValue ($launcher.ObserveRuntime([uint32]$row.pid)) }
+          if ($row.name -eq 'msedgewebview2.exe') {
+            $captured = $launcher.ObserveRuntime([uint32]$row.pid)
+            $row | Add-Member -NotePropertyName ownedHandleCaptured -NotePropertyValue $captured
+            if ($captured) {
+              try { $row | Add-Member -NotePropertyName token -NotePropertyValue ($launcher.RuntimeToken([uint32]$row.pid)) }
+              catch { $row | Add-Member -NotePropertyName tokenError -NotePropertyValue $_.Exception.Message }
+            }
+          }
         }
         $result.runtimeSnapshots += @{ at=[DateTime]::UtcNow.ToString('o'); processes=@($rows) }
         $result.runtimeExitsBeforeCleanup = @($launcher.RuntimeExits())
@@ -125,6 +172,20 @@ try {
   Save-Report
 } finally {
   if ($null -ne $launcher) {
+    if ($null -ne $diagnosticProfile) {
+      try {
+        if (-not $result.Contains('singletonDiagnostics')) { $result.singletonDiagnostics=[ordered]@{} }
+        $result.singletonDiagnostics.afterMutex=$launcher.ProbeUpstreamSingletonMutex()
+        $result.singletonDiagnostics.paths=@(Get-SingletonPathFacts $diagnosticProfile ([System.Security.Principal.SecurityIdentifier]::new($launcher.AccountSid)))
+        $inner = Join-Path $diagnosticProfile 'EBWebView'
+        if (Test-Path -LiteralPath $inner -PathType Container) {
+          $item = Get-Item -LiteralPath $inner -Force
+          if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -eq 0) {
+            $result.singletonDiagnostics.existingFileProbe=$launcher.ProbeExistingSingletonFile($inner)
+          }
+        }
+      } catch { $result.singletonDiagnosticError=$_.Exception.ToString() }
+    }
     $launcher.Dispose()
     $result.cleanup = $launcher.Cleanup
     if ($result.cleanup.Errors.Count -gt 0) { $result.status='failed'; $scriptExit=1 }

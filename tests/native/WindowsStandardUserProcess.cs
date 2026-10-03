@@ -12,6 +12,7 @@ using System.Text;
 
 namespace FolioNativeSmoke {
   public sealed class TokenFacts {
+    public string UserSid;
     public bool Elevated;
     public int ElevationType;
     public int IntegrityRid;
@@ -26,6 +27,7 @@ namespace FolioNativeSmoke {
     public int RestrictingSidCount;
   }
   public sealed class WriteProbe { public bool Writable; public int Error; public string Message; }
+  public sealed class AccessProbe { public string Target; public bool Opened; public int Error; public string Message; }
   public sealed class RuntimeExit { public uint Pid; public bool Exited; public uint? ExitCode; }
   public sealed class CleanupFacts {
     public bool OwnedJobEmpty=true, ProfileUnloaded=true, ProfileDeleted=true, AccountRemoved=true, PrivateDesktopClosed=true;
@@ -71,6 +73,8 @@ namespace FolioNativeSmoke {
     [DllImport("kernel32.dll", SetLastError=true)] static extern uint WaitForSingleObject(IntPtr handle, uint milliseconds);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
     [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
+    [DllImport("kernel32.dll", EntryPoint="OpenMutexW", CharSet=CharSet.Unicode, SetLastError=true)]
+    static extern IntPtr OpenMutex(uint access, bool inherit, string name);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool member);
     [DllImport("kernel32.dll", EntryPoint="CreateJobObjectW", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern IntPtr CreateJobObject(IntPtr attributes, string name);
@@ -205,7 +209,7 @@ namespace FolioNativeSmoke {
     static TokenFacts Inspect(IntPtr token, string user) {
       string integrity=ReadSid(token,25);
       int restrictionLength; uint restrictionValue=ReadRestrictions(token,out restrictionLength);
-      var facts=new TokenFacts { Elevated=ReadNumber(token,20)!=0, ElevationType=ReadNumber(token,18),
+      var facts=new TokenFacts { UserSid=ReadSid(token,1), Elevated=ReadNumber(token,20)!=0, ElevationType=ReadNumber(token,18),
         IntegrityRid=int.Parse(integrity.Substring(integrity.LastIndexOf('-')+1)), MatchesExpectedUser=ReadSid(token,1)==user,
         HasRestrictions=restrictionValue!=0, RestrictionReturnLength=restrictionLength, RestrictionRawValue=restrictionValue,
         RestrictingSidCount=ReadNumber(token,11) };
@@ -332,6 +336,31 @@ namespace FolioNativeSmoke {
         return new WriteProbe { Writable=true, Error=0, Message="Standard user can create/write/delete a new profile file." };
       } finally { Check(RevertToSelf(),"Revert standard-user profile probe impersonation"); }
     }
+    public AccessProbe ProbeUpstreamSingletonMutex() {
+      // Upstream Chromium name only; Microsoft Edge may use another name. Never create/acquire/change it.
+      const string name="Local\\ChromeProcessSingletonStartup!";
+      Check(ImpersonateLoggedOnUser(targetToken),"Impersonate standard user for read-only mutex probe");
+      try {
+        IntPtr handle=OpenMutex(0x001f0001,false,name); // MUTEX_ALL_ACCESS, as requested by upstream CreateMutex.
+        int error=handle==IntPtr.Zero ? Marshal.GetLastWin32Error() : 0;
+        if (handle!=IntPtr.Zero) Check(CloseHandle(handle),"Close read-only mutex probe");
+        return new AccessProbe { Target=name, Opened=handle!=IntPtr.Zero, Error=error,
+          Message=error==0 ? "Existing mutex opened and immediately closed; never acquired." : new Win32Exception(error).Message };
+      } finally { Check(RevertToSelf(),"Revert read-only mutex probe impersonation"); }
+    }
+    public AccessProbe ProbeExistingSingletonFile(string directory) {
+      string path=Path.Combine(directory,"lockfile");
+      Check(ImpersonateLoggedOnUser(targetToken),"Impersonate standard user for read-only singleton file probe");
+      try {
+        var security=new SecurityAttributes { length=Marshal.SizeOf(typeof(SecurityAttributes)),inherit=0 };
+        // OPEN_EXISTING with no desired access and full sharing. Does not create, truncate, write or delete.
+        IntPtr handle=CreateFile(path,0,7,ref security,3,0x00200000,IntPtr.Zero); // OPEN_REPARSE_POINT
+        int error=handle==new IntPtr(-1) ? Marshal.GetLastWin32Error() : 0;
+        if (handle!=new IntPtr(-1)) Check(CloseHandle(handle),"Close read-only singleton file probe");
+        return new AccessProbe { Target=path, Opened=handle!=new IntPtr(-1), Error=error,
+          Message=error==0 ? "Existing lockfile opened for metadata only and immediately closed." : new Win32Exception(error).Message };
+      } finally { Check(RevertToSelf(),"Revert read-only singleton file probe impersonation"); }
+    }
     public void Launch(string executable, string directory) {
       if (process!=IntPtr.Zero) throw new InvalidOperationException("Only one owned child is allowed.");
       job=CreateJobObject(IntPtr.Zero,null);
@@ -380,6 +409,12 @@ namespace FolioNativeSmoke {
         facts.Add(new RuntimeExit { Pid=entry.Key, Exited=exited, ExitCode=exitCode });
       }
       return facts.ToArray();
+    }
+    public TokenFacts RuntimeToken(uint pid) {
+      IntPtr handle;
+      if (!observedRuntime.TryGetValue(pid,out handle)) throw new InvalidOperationException("Runtime token inspection requires an observed member of our owned job.");
+      IntPtr token; Check(OpenProcessToken(handle,8,out token),"Read owned runtime process token");
+      try { return Inspect(token,user); } finally { CloseHandle(token); }
     }
     public uint ExitCode() { uint code; Check(GetExitCodeProcess(process,out code),"GetExitCodeProcess"); return code; }
     static string LookupLocalSid(string name) {

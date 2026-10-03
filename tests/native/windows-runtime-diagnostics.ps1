@@ -18,7 +18,7 @@ $rows = foreach ($process in $processes) {
   if ($process.Name -eq 'msedgewebview2.exe') {
     if ($process.ExecutablePath) { $row.version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($process.ExecutablePath).ProductVersion }
     # Only explicitly permitted browser flags are recorded, never whole command lines or environment.
-    foreach ($flag in @('user-data-dir','remote-debugging-port','remote-debugging-address','log-file','v')) {
+    foreach ($flag in @('type','user-data-dir','remote-debugging-port','remote-debugging-address','log-file','v')) {
       $match = [regex]::Match($process.CommandLine, '(?:^|\s)(?:"--' + $flag + '=([^"]*)"|--' + $flag + '=(?:"([^"]*)"|([^\s]+)))')
       if ($match.Success) {
         foreach ($group in $match.Groups | Select-Object -Skip 1) {

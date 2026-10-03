@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
-      - name: Verify unprivileged Windows test token
+      - name: Verify isolated standard-user setup and cleanup
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path test-results/native-windows -Force | Out-Null
