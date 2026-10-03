@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, open, readFile, realpath, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, open, readdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +30,7 @@ let page;
 let overallTimer;
 let processOutput = '';
 let nativeLogPath;
+let browserLogPath;
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 function inside(root, target) {
@@ -91,6 +92,38 @@ function runtimeDiagnostics() {
   }
   try { report.nativeProcesses = JSON.parse(result.stdout); }
   catch (error) { report.runtimeDiagnosticError = describeError(error); }
+}
+async function retainLog(source, name, limit) {
+  let handle;
+  try {
+    const path = await realpath(source);
+    assert.ok(inside(report.retainedProfile,path),'Diagnostic log must remain inside the owned profile.');
+    handle = await open(path,'r');
+    const size = (await handle.stat()).size;
+    const buffer = Buffer.alloc(Math.min(size,limit));
+    const { bytesRead } = await handle.read(buffer,0,buffer.length,Math.max(0,size-buffer.length));
+    await writeFile(join(output,name),buffer.subarray(0,bytesRead));
+    return { bytes:size, retainedBytes:bytesRead, truncated:size>bytesRead };
+  } catch (error) { return { error:describeError(error) }; }
+  finally { await handle?.close(); }
+}
+async function crashMetadata() {
+  const entries = [];
+  for (const part of ['reports','pending']) {
+    const directory = join(report.retainedProfile,'EBWebView','Crashpad',part);
+    try {
+      const actual = await realpath(directory);
+      assert.ok(inside(report.retainedProfile,actual));
+      for (const entry of (await readdir(actual,{ withFileTypes:true })).slice(0,32)) {
+        if (!entry.isFile()) continue;
+        const path = await realpath(join(actual,entry.name));
+        assert.ok(inside(report.retainedProfile,path));
+        const file = await stat(path);
+        entries.push({ relativePath:relative(report.retainedProfile,path),bytes:file.size,modifiedAt:file.mtime.toISOString() });
+      }
+    } catch (error) { if (error.code !== 'ENOENT') entries.push({ directory:part,error:describeError(error) }); }
+  }
+  return entries;
 }
 async function freePort() {
   const server = createServer();
@@ -186,6 +219,7 @@ async function workflow() {
   assert.ok(inside(runnerTemp, await realpath(profile)));
   report.retainedProfile = profile;
   nativeLogPath = join(profile,'native-process.log');
+  browserLogPath = join(profile,'webview-debug.log');
   const port = await freePort();
   report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned restricted test process environment' };
   await writeFile(tokenReportPath,JSON.stringify({ status:'starting' }));
@@ -195,7 +229,7 @@ async function workflow() {
       FOLIO_TOKEN_REPORT: tokenReportPath,
       FOLIO_NATIVE_LOG_PATH: nativeLogPath,
       RUST_BACKTRACE: '1',
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1`,
+      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1 --enable-logging --v=1 --log-file="${browserLogPath}"`,
       WEBVIEW2_USER_DATA_FOLDER: profile,
     },
   });
@@ -212,8 +246,11 @@ async function workflow() {
   const runtime = report.nativeProcesses.find(item => item.name === 'msedgewebview2.exe'
     && item['remote-debugging-port'] === String(port) && item['user-data-dir']);
   assert.ok(runtime,'Owned WebView2 must expose the requested process-scoped debugging port.');
-  assert.equal((await realpath(runtime['user-data-dir'])).toLowerCase(), profile.toLowerCase(),
-    'WebView2 must actually use the fresh retained profile, not its default profile.');
+  const actualProfile = await realpath(runtime['user-data-dir']);
+  assert.ok(inside(profile,actualProfile),'Actual WebView2 profile must remain beneath the fresh owned directory.');
+  assert.equal(actualProfile.toLowerCase(),(await realpath(join(profile,'EBWebView'))).toLowerCase(),
+    'WebView2 must use its EBWebView subdirectory in the requested user data folder.');
+  report.actualWebViewProfile = actualProfile;
   checked('owned WebView2 uses the requested isolated profile and debugging port', { version:runtime.version });
   const context = browser.contexts()[0];
   assert.ok(context, 'WebView2 must expose its existing browser context.');
@@ -362,16 +399,10 @@ try {
     } catch (error) { report.finalTokenReportError = describeError(error); }
   }
   if (nativeLogPath) {
-    let handle;
-    try {
-      handle = await open(nativeLogPath,'r');
-      const size = (await handle.stat()).size;
-      const buffer = Buffer.alloc(Math.min(size,256_000));
-      const { bytesRead } = await handle.read(buffer,0,buffer.length,Math.max(0,size-buffer.length));
-      await writeFile(join(output,'native-process.log'),buffer.subarray(0,bytesRead));
-      report.nativeOutput = { bytes:size, retainedBytes:bytesRead, truncated:size>bytesRead };
-    } catch (error) { report.nativeOutputError = describeError(error); }
-    finally { await handle?.close(); }
+    report.nativeOutput = await retainLog(nativeLogPath,'native-process.log',256_000);
+    report.browserOutput = await retainLog(browserLogPath,'webview-debug.log',1_000_000);
+    // Only metadata is retained for crash dumps; their binary contents are not uploaded.
+    report.crashFiles = await crashMetadata();
   }
   report.completedAt = new Date().toISOString();
   if (process.platform === 'win32' && process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true') {

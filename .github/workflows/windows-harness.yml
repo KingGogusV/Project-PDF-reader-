@@ -1,0 +1,81 @@
+name: Windows harness diagnostics
+
+on:
+  pull_request:
+    paths: ['tests/native/**', 'scripts/native-diagnostic.mjs', '.github/workflows/windows-harness.yml']
+  workflow_dispatch:
+    inputs:
+      artifact_id:
+        description: Unexpired diagnostic installer artifact ID
+        required: true
+      artifact_sha256:
+        description: Exact artifact archive SHA-256
+        required: true
+      source_sha:
+        description: Artifact source commit
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnose:
+    if: github.repository == 'KingGogusV/Project-PDF-reader-' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install harness dependencies and synthetic fixtures
+        run: |
+          npm install --global pnpm@11.25.0
+          pnpm install --frozen-lockfile
+          pnpm fixtures
+      - name: Verify and reuse existing installer for diagnosis only
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIAGNOSTIC_ARTIFACT_ID: ${{ inputs.artifact_id || '11265120775' }}
+          DIAGNOSTIC_ARTIFACT_SHA256: ${{ inputs.artifact_sha256 || 'ca131f4a42a4f6965e0d07cdc70174a9992d4363a4293acdfc99307d386606d1' }}
+          DIAGNOSTIC_SOURCE_SHA: ${{ inputs.source_sha || '3d122090cca651e007b0759be72a43be41ac1666' }}
+        run: node scripts/native-diagnostic.mjs
+      - name: Read only the checked installer ZIP member
+        shell: python
+        run: |
+          import pathlib, zipfile
+          with zipfile.ZipFile('.cache/native-diagnostic/installer.zip') as archive:
+              files = archive.infolist()
+              assert len(files) == 1
+              item = files[0]
+              assert not item.is_dir() and not item.flag_bits & 1
+              assert item.filename.endswith('.exe') and item.file_size < 200 * 1024 * 1024
+              data = archive.read(item)
+              assert data[:2] == b'MZ'
+              with open('.cache/native-diagnostic/FolioSetup.exe', 'xb') as target:
+                  target.write(data)
+      - name: Install in this disposable runner
+        shell: pwsh
+        run: |
+          $root = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\') + '\'
+          $target = [IO.Path]::GetFullPath((Join-Path $root 'FolioDiagnosticSmoke'))
+          if (-not $target.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -or $target -match '\s' -or (Test-Path -LiteralPath $target)) { throw 'Unsafe or occupied installation directory.' }
+          $installer = (Resolve-Path -LiteralPath '.cache/native-diagnostic/FolioSetup.exe').Path
+          $process = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$target") -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer returned $($process.ExitCode)." }
+          $app = Join-Path $target 'folio-desktop.exe'
+          if (-not (Test-Path -LiteralPath $app)) { throw 'Installed application missing.' }
+          "FOLIO_NATIVE_EXE=$app" >> $env:GITHUB_ENV
+      - name: Diagnose actual installed application with current harness
+        run: node tests/native/windows-smoke.mjs
+      - name: Retain diagnostic evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-harness-diagnostics-${{ github.run_id }}
+          path: test-results/native-windows/
+          if-no-files-found: warn
+          retention-days: 7

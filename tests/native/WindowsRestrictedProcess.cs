@@ -1,6 +1,7 @@
 // CI test launcher only. No privileges, policies, accounts or app permissions are added.
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -16,6 +17,7 @@ namespace FolioNativeSmoke {
     public bool SameUser;
   }
   public sealed class WriteProbe { public bool Writable; public int Error; public string Message; }
+  public sealed class RuntimeExit { public uint Pid; public bool Exited; public uint? ExitCode; }
 
   public sealed class RestrictedProcess : IDisposable {
     [StructLayout(LayoutKind.Sequential)] struct SidAttributes { public IntPtr Sid; public uint Attributes; }
@@ -42,6 +44,8 @@ namespace FolioNativeSmoke {
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool TerminateProcess(IntPtr process, uint code);
     [DllImport("kernel32.dll", SetLastError=true)] static extern uint WaitForSingleObject(IntPtr handle, uint milliseconds);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool member);
     [DllImport("kernel32.dll", EntryPoint="CreateJobObjectW", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern IntPtr CreateJobObject(IntPtr attributes, string name);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool SetInformationJobObject(IntPtr job, int kind, ref JobLimits limits, uint size);
@@ -67,6 +71,7 @@ namespace FolioNativeSmoke {
       ref StartupInfoEx startup, out ProcessInfo process);
 
     IntPtr current, restricted, process, job;
+    readonly Dictionary<uint,IntPtr> observedRuntime=new Dictionary<uint,IntPtr>();
     string user;
     public TokenFacts Parent { get; private set; }
     public TokenFacts Reduced { get; private set; }
@@ -223,9 +228,31 @@ namespace FolioNativeSmoke {
       if (value==0xffffffff) throw new Win32Exception(Marshal.GetLastWin32Error(),"WaitForSingleObject");
       return value==0;
     }
+    public bool ObserveRuntime(uint pid) {
+      if (observedRuntime.ContainsKey(pid)) return true;
+      if (observedRuntime.Count>=64 || job==IntPtr.Zero) return false;
+      // Read-only handles; no process-memory access, termination permission or inheritance.
+      IntPtr handle=OpenProcess(0x101000,false,pid);
+      if (handle==IntPtr.Zero) return false;
+      bool member;
+      if (!IsProcessInJob(handle,job,out member) || !member) { CloseHandle(handle); return false; }
+      observedRuntime.Add(pid,handle); return true;
+    }
+    public RuntimeExit[] RuntimeExits() {
+      var facts=new List<RuntimeExit>();
+      foreach (var entry in observedRuntime) {
+        bool exited=WaitForSingleObject(entry.Value,0)==0;
+        uint code;
+        uint? exitCode=exited && GetExitCodeProcess(entry.Value,out code) ? (uint?)code : null;
+        facts.Add(new RuntimeExit { Pid=entry.Key, Exited=exited, ExitCode=exitCode });
+      }
+      return facts.ToArray();
+    }
     public uint ExitCode() { uint code; Check(GetExitCodeProcess(process,out code),"GetExitCodeProcess"); return code; }
     public void Dispose() {
       if (job!=IntPtr.Zero) { CloseHandle(job); job=IntPtr.Zero; }
+      foreach (var handle in observedRuntime.Values) CloseHandle(handle);
+      observedRuntime.Clear();
       if (process!=IntPtr.Zero) { CloseHandle(process); process=IntPtr.Zero; }
       if (restricted!=IntPtr.Zero) { CloseHandle(restricted); restricted=IntPtr.Zero; }
       if (current!=IntPtr.Zero) { CloseHandle(current); current=IntPtr.Zero; }

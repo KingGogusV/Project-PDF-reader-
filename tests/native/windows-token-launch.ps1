@@ -83,10 +83,14 @@ try {
     Save-Report
     $result.runtimeSnapshots = @()
     # Preserve early evidence even when a native startup panic exits before CDP exists.
-    for ($sample=0; $sample -lt 3 -and -not $launcher.Wait(0); $sample++) {
+    for ($sample=0; $sample -lt 8 -and -not $launcher.Wait(0); $sample++) {
       try {
         $rows = & (Join-Path $PSScriptRoot 'windows-runtime-diagnostics.ps1') -OwnedPid $PID | ConvertFrom-Json
+        foreach ($row in $rows) {
+          if ($row.name -eq 'msedgewebview2.exe') { $row | Add-Member -NotePropertyName ownedHandleCaptured -NotePropertyValue ($launcher.ObserveRuntime([uint32]$row.pid)) }
+        }
         $result.runtimeSnapshots += @{ at=[DateTime]::UtcNow.ToString('o'); processes=@($rows) }
+        $result.runtimeExitsBeforeCleanup = @($launcher.RuntimeExits())
       } catch { $result.runtimeDiagnosticError = $_.Exception.ToString() }
       Save-Report
       if ($launcher.Wait(500)) { break }
@@ -97,6 +101,8 @@ try {
       throw 'Owned child exceeded helper lifetime.'
     }
     $result.childExitCode = $launcher.ExitCode()
+    # These are actual process-handle observations before closing our kill-on-close job.
+    $result.runtimeExitsBeforeCleanup = @($launcher.RuntimeExits())
     $result.status = 'exited'
     Save-Report
     exit ([int]$result.childExitCode)
