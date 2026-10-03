@@ -114,6 +114,8 @@ test('phone actions expose help and nested dialogs return focus to the action tr
   await page.setViewportSize({ width: 390, height: 844 });
   await openPdf(page);
   await page.locator('#mobile-more').click();
+  expect((await page.getByRole('button', { name: 'Keyboard shortcuts and help', exact: true }).boundingBox())!.width,
+    'Phone action labels need readable rows, not narrow columns of broken words').toBeGreaterThanOrEqual(200);
   await page.getByRole('button', { name: 'Keyboard shortcuts and help', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('A few useful shortcuts');
   await page.keyboard.press('Escape');

@@ -18,7 +18,7 @@ The axe gate scans welcome; help, library and account dialogs; multiple document
 
 All **15 axe states reported zero violations**. `color-contrast` remained incomplete in the welcome footer, PDF/text/canvas states, and some clipped/overlapping content reported in OCR, signing and phone-actions dialogs. These incomplete checks were retained, not suppressed or relabeled as passes. Application Properties labels improved from 3.60:1 to 6.36:1. Screenshot review covered desktop 1600 x 1000, laptop 1280 x 800, tablet 1024 x 768 and 768 x 1024, phone 390 x 844 and 844 x 390, 320 x 256 reflow, doubled text and forced colors.
 
-The local production shell JavaScript is **79.16 kB / 25.73 kB gzip**, compared with the inspected baseline 76.69 kB / 25.02 kB gzip. This is a build-size measurement, not a device-speed benchmark. No new runtime dependency was added. GitHub/macOS/native results and publication must be checked separately against their actual source revisions.
+The local production shell JavaScript is **79.23 kB / 25.73 kB gzip**, compared with the inspected baseline 76.69 kB / 25.02 kB gzip. This is a build-size measurement, not a device-speed benchmark. No new runtime dependency was added. GitHub/macOS/native results and publication must be checked separately against their actual source revisions.
 
 ## Earlier verified audit (before this pass)
 
@@ -155,3 +155,5 @@ The 320 x 256 viewport models the CSS layout space available at high zoom, not a
 ## Manual acceptance work still required
 
 Use NVDA/JAWS with Windows Chromium/WebView2, VoiceOver with branded macOS/iOS Safari, and Android TalkBack. Confirm announced names, selected/expanded/current and unsaved state; reading order; dialog focus; search announcements; field editing and errors; export/recovery; and focus visibility under native zoom/high contrast. Include tagged, untagged, scanned and complex form PDFs. The synthetic keyboard form test is not evidence that arbitrary PDFs have correct labels or reading order.
+
+Final screenshot review also caught phone action buttons compressed into columns of broken words. Actions now wrap into readable rows; a minimum readable-width regression and the complete 13-case accessibility gate passed after that correction. OCR/signing dialog screenshots showed readable foreground content despite the automated overlap/incomplete reports; those reports remain available for assistive-technology review.

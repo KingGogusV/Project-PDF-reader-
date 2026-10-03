@@ -244,6 +244,7 @@ function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!
 function setSidebar(show: boolean, focus: 'toggle'|'document'|'navigation'|false = false) {
  $('sidebar').hidden=!show;$('toggle-sidebar').setAttribute('aria-expanded',String(show));$('toggle-sidebar').setAttribute('aria-controls','sidebar');
  $('toggle-sidebar').setAttribute('aria-label',show?'Hide page navigation':'Show page navigation');
+ $('toggle-sidebar').title=show?'Hide page navigation':'Show page navigation';
  active()?.controller.refresh();
  if(focus==='toggle')$('toggle-sidebar').focus();else if(focus==='document')focusWorkspace();else if(focus==='navigation')$(`nav-${navMode==='pages'?'pages':navMode==='outline'?'outline':'info'}`).focus();
 }

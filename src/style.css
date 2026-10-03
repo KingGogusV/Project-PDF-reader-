@@ -84,6 +84,7 @@ textarea:focus-visible,[contenteditable=true]:focus-visible{outline:3px solid #2
 .toast{pointer-events:none}
 @media(max-width:900px){.toolbar .edit-group{flex:1 0 100%}.toolbar .edit-group .icon-button{min-width:38px;width:38px}.toolbar .edit-group .tool-separator{display:none}}
 @media(max-width:400px){.topbar .top-spacer{display:none}.topbar .brand{margin-right:auto}.toolbar .edit-group{justify-content:space-between}.property-list{grid-template-columns:1fr;gap:4px}.property-list dd{margin-bottom:8px}}
+@media(max-width:760px){.dialog-actions .button{flex:1 1 10rem}}
 @media(max-height:600px) and (min-width:600px){.toolbar .edit-group{order:initial;flex:0 1 auto;border:0;margin:0;padding:0}.topbar{padding-block:2px}.reader-body{min-height:120px}}
 @media(max-height:350px){.app-shell{height:auto;min-height:100dvh;overflow:visible}.welcome{overflow:visible}.reader{min-height:0}.reader-body{flex:none;height:60dvh;min-height:220px}}
 @media(forced-colors:active){
