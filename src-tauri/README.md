@@ -1,5 +1,7 @@
 # Experimental desktop wrapper
 
+The [Windows preview](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published and its actual reader/export/recovery/OS-close checks passed locally and in CI. [Installation help](../docs/windows-installation.md) contains the direct EXE and checksum. macOS packaging passed; macOS native runtime remains unverified. Older diagnostics below describe historical sources.
+
 This Tauri 2 shell embeds the existing `dist/client/` web app and its local PDF.js worker.
 It adds no separate document engine. Its only command, `finish_close`, is limited
 to the local main window and completes the shared save/discard flow after a native
@@ -62,7 +64,7 @@ failure. Subsequent Windows installation and actual reader/export/recovery check
 
 The Windows environment has WebView2 154.0.4258.53 and an isolated Rust tool cache, but lacks MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. See [verification](../docs/verification.md).
 
-The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. Public publication remains pending revised CI.
+The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. The corrected gate and public preview publication passed.
 
 Official sources checked 2026-10-03:
 
@@ -97,7 +99,7 @@ fill forms; annotate; export and independently reopen; close with unsaved work;
 check Blob downloads/print windows and external links; open offline; verify worker
 and WebAssembly loading under the packaged CSP. Test on Windows and macOS
 separately. Actual Windows reader/export/recovery tests passed locally and in CI;
-rebuilt release validation remain pending.
+release validation and public preview publication passed.
 
 The historical, superseded Windows CI launcher created a temporary Users-only account,
 loads its profile using only scoped privileges already assigned to the runner,
@@ -107,7 +109,7 @@ checks WebView2's actual data directory/debugging port. Plain `STARTUPINFO` does
 not inherit standard handles; browser logs and owned-process diagnostics are
 retained. Cleanup must empty the owned job, close the private desktop, unload and
 delete the exact temporary profile, and remove the name/SID-matched account.
-The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. These historical failures were superseded by the same-account owned-job route: its 12 native checks and cleanup passed. Native close safety subsequently passed; release validation still blocks publication.
+The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. These historical failures were superseded by the same-account owned-job route: its 12 native checks and cleanup passed. Native close safety and the corrected release identity gate subsequently passed; the Windows preview is published.
 See the [Windows verification procedure](../docs/windows-installation.md#developer-verification).
 
 The browser service worker, browser account redirects, downloads and popups may

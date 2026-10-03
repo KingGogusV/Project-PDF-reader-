@@ -2,6 +2,15 @@
 
 ## 2026-10-03
 
+### Published preview
+
+- [Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.
+- The exact public installer also passed all 14 native workflows in a normal local Windows session (12:16:20–12:16:31 UTC), including real OS-close cancellation/discard and process recovery; both owned process jobs emptied. Added sanitized evidence linked from verification.
+- Added the direct Windows EXE link and installation/checksum guidance to README. Guest PDF reading/device storage requires no ChatGPT account; optional website accounts still use managed sign-in.
+- Restored the local preview and verified live hosted guest recovery/offline reading. Physical-device, real sign-in-session and broader accessibility gaps remain explicit.
+
+The earlier same-day investigation and failures below are retained for engineering history.
+
 ### Added
 
 - Added a narrow native close handshake that reuses each document's save/discard flow, coalesces duplicate OS-close requests and displays the affected background tab. Added race/error unit tests, explicitly simulated browser UI tests, and real owned-window close assertions to the native release gate. Rebuilt native verification subsequently passed all 14 cases locally and in CI; see the evidence below.

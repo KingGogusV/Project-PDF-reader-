@@ -1,0 +1,154 @@
+{
+  "verifiedAt": "2026-10-03T12:15:32.087Z",
+  "repository": "KingGogusV/Project-PDF-reader-",
+  "sourceCommit": "61adbfd1c9d582e1203606052c2443270f689366",
+  "release": "https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1",
+  "tag": "v0.1.0-preview.1",
+  "runId": 37121666280,
+  "anonymousDownloadsVerified": true,
+  "assets": [
+    {
+      "name": "Folio-0.1.0-Third-Party-Notices.zip",
+      "bytes": 5015296,
+      "sha256": "13bbe7dbc8397392062a301140c89b2f8a6e54c409028b1b6293ae80cf1941c0",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Third-Party-Notices.zip",
+      "status": 200
+    },
+    {
+      "name": "Folio-0.1.0-Windows-x64-Setup.exe",
+      "bytes": 17844743,
+      "sha256": "ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe",
+      "status": 200
+    },
+    {
+      "name": "release-provenance.json",
+      "bytes": 210793,
+      "sha256": "8b44d173dfe1e87a523414a753dbbc94bce9913cd086df16e0f451160bb7770b",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/release-provenance.json",
+      "status": 200
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 292,
+      "sha256": "8eb9d0970acef6d913a2189d858ff0d72651de23990e10db968859174e6b6524",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/SHA256SUMS.txt",
+      "status": 200
+    }
+  ],
+  "nativeStatus": "passed",
+  "nativeChecks": 14,
+  "webviewVersion": "153.0.4234.48",
+  "binaryIdentity": {
+    "builtSha256": "e21a15b6816331531100c82657c2592875717c734883c70280f0ab80fe3da3df",
+    "installedSha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1",
+    "expectedInstalledSha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1",
+    "bundleMarkerOffset": 18469506,
+    "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+  },
+  "normalUserVerification": {
+    "sourceCommit": "61adbfd1c9d582e1203606052c2443270f689366",
+    "provenance": "Installer downloaded anonymously from the published release; installer and installed executable hashes match release evidence.",
+    "platform": "Windows 10.0.22621 x64",
+    "mode": "local-normal-user",
+    "startedAt": "2026-10-03T12:16:20.641Z",
+    "completedAt": "2026-10-03T12:16:31.733Z",
+    "status": "passed",
+    "webviewVersion": "154.0.4258.53",
+    "executableSha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1",
+    "checks": [
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "OS window close asks about unsaved changes and cancellation keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "native PDF download preserves original bytes and reopens with edited form values",
+        "status": "passed"
+      },
+      {
+        "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+        "status": "passed"
+      },
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "full native process termination and relaunch recover the last completed form checkpoint",
+        "status": "passed"
+      },
+      {
+        "name": "explicit native discard confirmation closes the real application cleanly",
+        "status": "passed"
+      }
+    ],
+    "nativeCloseConfirmed": true,
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "local",
+        "elevated": false,
+        "policyScope": null,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "closed",
+        "mode": "local",
+        "elevated": false,
+        "policyScope": null,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      }
+    ],
+    "pageErrors": [],
+    "unexpectedWriteRequests": [],
+    "networkScope": "Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation.",
+    "limitations": "Synthetic fixtures; file selection through real HTML input. Physical printing, interactive picker UI, unfinished checkpoint recovery and other devices are not established.",
+    "temporaryInstallationCleanup": {
+      "completedAt": "2026-10-03T12:25:57.0370153Z",
+      "status": "passed",
+      "ownedTemporaryExecutableRemoved": true,
+      "ownedUninstallRegistrationRemoved": true,
+      "existingAppDataDirectoriesRetained": 1,
+      "dataDeletionOptionUsed": false,
+      "uninstallExitCode": 0
+    }
+  }
+}

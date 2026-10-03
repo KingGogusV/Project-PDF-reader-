@@ -8,15 +8,15 @@ Original repository purpose: "Project to create free pdf reader that does not su
 
 ## Download for Windows
 
-**Windows download is pending release validation.** All 14 actual Windows reader/export/recovery and OS-close checks passed locally and in CI. The packaging identity correction is awaiting its release run. A public EXE has not been released. Use the web app above in the meantime.
+**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe)**
 
-Once released, download the installer, open it, then launch **Folio** from Start. **No ChatGPT account or developer tools are required.** This is an **unsigned development preview for Windows x64**, not a production release. If Windows policy blocks it, use the web app without disabling your security protections.
+Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **unsigned development preview**. No ChatGPT account, subscription or developer tools are required for reading or device storage. If your Windows policy blocks unsigned apps, use the website above.
 
-[GitHub releases](https://github.com/KingGogusV/Project-PDF-reader-/releases) · [Installation help](docs/windows-installation.md)
+[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) · [Installation help](docs/windows-installation.md)
 
-PDF reading and device storage work without signing in. Only the website's optional account feature currently uses ChatGPT/OpenAI sign-in. Documents remain on your device.
+**Status:** public web application and verified Windows preview. The release passed installation, native reader/export/recovery/close tests and exact-source CI. macOS packages build, but macOS native runtime remains unverified. See [verification](docs/verification.md).
 
-**Status:** deployed development application. Windows browser checks, Linux Chromium/macOS WebKit CI, and unsigned Windows/macOS package builds passed. Actual Windows native reader/export/recovery checks passed; release validation and actual managed sign-in remain unverified. See [verification](docs/verification.md) for exact results and package links. Folio is a provisional name.
+Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain on your device.
 
 ## Available workflows
 

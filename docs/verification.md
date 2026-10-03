@@ -2,28 +2,42 @@
 
 Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
-## Native close-safety correction, 2026-10-03
+## Published Windows preview and final QA, 2026-10-03
 
-The close correction passed 14 actual installed Windows checks both in CI (run 37120364964, WebView2 153.0.4234.48) and a normal local session (WebView2 154.0.4258.53), including cancel-preservation and confirmed clean exit. The remaining release checksum mismatch was reproduced: Tauri patches only its three-byte NSIS marker and restores the unpatched build file. The strict comparator now verifies that exact transformation and every remaining byte; revised release validation and publication are pending.
+[Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.
+
+Public download: [Folio-0.1.0-Windows-x64-Setup.exe](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe). Installer SHA-256: `ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac`. The release is a development preview, not production certification. [Machine-readable public verification](windows-preview-1-verification.json) records every asset and hash. PR #1 was merged preserving its milestone commits; later documentation-only changes do not alter the released application.
+
+The exact anonymously downloaded public installer was installed and passed all 14 native checks in a normal, non-elevated Windows build 22621 session at 12:16:20–12:16:31 UTC with WebView2 154.0.4258.53. This includes actual OS-close cancellation/discard, native PDF export/reopen and completed-checkpoint recovery after process termination. Both owned process jobs emptied; no local registry policy was changed. All 533 installed native notice hashes passed. Sanitized local evidence is included in the machine-readable record above. CI uses WebView2 153.0.4234.48. The final main browser runs had 66 passes each with no flaky marker; the earlier macOS OCR page crash remains recorded and is not considered resolved by subsequent passes.
+
+Local preview at `http://127.0.0.1:4173/` returned HTTP 200 with its CSP header. Live website v3 guest storage/recovery, phone layout and genuine Chromium-offline reopening passed at 11:40:57 UTC. No document uploads or page exceptions were observed. No website republish was needed for the native-only close/release changes.
+
+Performance boundaries: the current production build has 76.69 KB initial JavaScript (25.02 KB gzip), and 225 required offline assets total 8.07 MiB. The recovered one-page native synthetic form reported 147 ms to first page in the public-installer warm recovery run; this is not a cold-start distribution or physical-phone benchmark. Earlier measured large-page-count fixtures are retained below.
+
+Remaining external verification: complete managed account sessions, branded Safari/macOS native runtime, physical iOS/Android, printers and comprehensive assistive technology. Device storage remains unencrypted and nonsynchronizing; 200 is a registration ceiling, not a concurrent-user result.
+
+## Historical native close-safety correction, 2026-10-03
+
+The close correction passed 14 actual installed Windows checks both in CI (run 37120364964, WebView2 153.0.4234.48) and a normal local session (WebView2 154.0.4258.53), including cancel-preservation and confirmed clean exit. The remaining release checksum mismatch was reproduced: Tauri patches only its three-byte NSIS marker and restores the unpatched build file. The strict comparator now verifies that exact transformation and every remaining byte; At that stage revised release validation and publication were pending; both subsequently passed as recorded at the top.
 
 - Source `20b1f48e6a980a5b70cc3cfe41dad9828bb3e19a`: Reader run [37118654848](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654848) and both native build jobs [37118654865](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654865) passed.
 - Release run [37118654858](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654858): native WebView2 153.0.4234.48 passed 12 checks at 11:15:42-11:15:54 UTC; prepare failed, publisher skipped. Both jobs emptied and exact test policy was removed. Evidence archive SHA-256 `9960786ae9012f2ae5bb0aa6758ed51dc0da5da3e8d14ecc6168d3a3c822dd2b`.
 - Negative normal-user check at 11:11:33-11:11:37 UTC, source `85cc5de6378e64372549fb298d383374c74a488a`: real OS close exited zero without an unsaved-form prompt. Prior 12-check passes did not cover OS close.
 - Local correction: typecheck and production build passed (manifest `6242986adc1c8c29`); 59 unit tests passed, zero skips, 6.08 seconds. All three shared-UI close tests passed in Edge (6.0 seconds), and all six responsive viewport classes passed (12.3 seconds). The first background-tab attempt requested close while the second PDF was still opening; the app correctly refused, and the test now waits for opening to finish. Rebuilt native verification subsequently passed all 14 cases locally and in CI; see the evidence below. Browser tests simulate only the native bridge and are not native close evidence.
 
-## Normal-user Windows verification, 2026-10-03
+## Historical normal-user Windows verification, 2026-10-03
 
 Actual Windows 10.0.22621 x64 / WebView2 154.0.4258.53 verification on 2026-10-03 passed 12 native checks: startup, real rendering, storage refusal/consent, immutable originals, form recovery, search, form download/reopen, text annotation download/reopen, and recovery after full owned-process termination/relaunch. Both process jobs emptied; the normal-user route changed no registry policy. The tested installer came from artifact 11266978801, source `85cc5de6378e64372549fb298d383374c74a488a` (installer SHA-256 `48e755d2e3a9596981a11c0a914ae514455ec533e82eb0e8201e65e219da8c31`). All 533 installed notice hashes also passed.
 
-Public Windows publication remains pending the close-safety/release validation described above. The existing hosted custom-account failure does not reproduce in the normal Windows user session.
+At this earlier 12-check stage, public Windows publication was pending the later close-safety/release validation. The existing hosted custom-account failure does not reproduce in the normal Windows user session.
 
 Initial expanded-test attempts exposed test-only path joining and plain-array parsing mistakes; neither was marked passed. Corrected full verification passed at 10:57:34–10:57:43 UTC, followed by a final launcher rerun. Evidence is summarized in [native-windows-2026-10-03.json](native-windows-2026-10-03.json). File selection was automated through the real HTML input; physical picker/printing and other devices are not established by this result.
 
-## Current verification addendum: reader correction and Windows release gates
+## Historical verification: reader correction and Windows release gates
 
 The corrected reader is now live in **deployment v3**. Its complete Linux Chromium
 and macOS WebKit CI passed, and the hosted forced-GC Ink regression passed.
-The previous custom-account CI runtime failed; subsequent normal-user Windows native checks passed. The later revised runtime gate passed; close-safety/release validation and public publication remain pending. Earlier results below remain
+The previous custom-account CI runtime failed; subsequent normal-user Windows native checks passed. The later revised runtime gate passed; close-safety/release validation and public publication were still pending at this stage. Earlier results below remain
 evidence for their stated source revisions; they are not erased by later passes.
 
 ### WebKit editor lifecycle correction
@@ -79,8 +93,7 @@ exception/export/reopen checks.
 compilation and unsigned package creation, not native PDF runtime correctness or
 a public release. GitHub implementation `85cc5de6378e64372549fb298d383374c74a488a`
 and its matching hosted source/tree are recorded in the hosting section below.
-[PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1) remains open; no
-merge is claimed.
+[PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1) was still open at this stage; its later merge is recorded above.
 
 ### Windows installation passed; native runtime failed
 
@@ -90,8 +103,7 @@ notices, all **eight** extraction-boundary tests, installer build and silent
 installation **passed**. The actual installed application then exited with code
 **101**, so native runtime verification **failed** and publication was **skipped**.
 This confirms that the current source was built and installed; it does not turn
-the prior diagnostic failures into native passes. No public EXE/release has been
-published.
+the prior diagnostic failures into native passes. No public EXE/release had been published at that stage.
 
 The earlier release/harness comparisons remain relevant diagnostic history:
 
@@ -302,6 +314,6 @@ Application PR head `c720587726f486bbf431f1067ca353f2e2fd85f6` / merge source `9
 
 Windows release run [37120364964](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37120364964) passed all 14 actual native checks, including OS-close cancel and confirmed clean exit, then failed only the raw build/installed hash comparison. The downloaded diagnostic installer (SHA-256 `12fd743a3511bf369fd2991d0ed99bc4457b5cdfd155c2de51eb6d336ed425d0`) was installed into the same task-owned temporary directory. All 14 normal-user WebView2 154 checks and 533 installed notice hashes passed. See [sanitized native evidence](native-windows-close-2026-10-03.json).
 
-The installed EXE SHA-256 is `998a0595d8a8e8215e03e9c3307fd248c70f36becbbb14c553dc9b342265a355`. Reversing only the reviewed marker at byte 18469506 reproduces the independently logged build hash `afec79d8a54f795a5d817c41a3aa6c17cdcdb34cfcdc766384ee8a734314e982`. The new comparator checks all bytes and has four passing tests for identity, tampering, ambiguous markers, size and version rejection. Its revised CI prepare/publication result is pending.
+The installed EXE SHA-256 is `998a0595d8a8e8215e03e9c3307fd248c70f36becbbb14c553dc9b342265a355`. Reversing only the reviewed marker at byte 18469506 reproduces the independently logged build hash `afec79d8a54f795a5d817c41a3aa6c17cdcdb34cfcdc766384ee8a734314e982`. The new comparator checks all bytes and has four passing tests for identity, tampering, ambiguous markers, size and version rejection. Its revised CI prepare/publication result was pending at that point; final main-source validation and publication subsequently passed (see the current record above).
 
 The live website was rechecked at 11:40:57 UTC: anonymous account API limit 200, forged identity refusal, managed sign-in redirect, guest local form recovery, phone layout and actual Chromium-offline reopen passed. No uploads/page exceptions were observed. Full signed-in account sessions remain unverified.

@@ -4,13 +4,11 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## Critical
 
-- Complete the corrected NSIS identity gate and publish the verified Windows preview. Native OS-close safety passed locally and in CI. Actual normal-user native rendering, export/reopen, search and full-process checkpoint recovery passed. The replacement same-account CI route uses documented executable-scoped WebView2 settings; its 12 native checks and cleanup passed in run 37118654858, but preparation failed an aggregate validation check. The next run passed 14 native checks; installed bytes differ only in the pinned Tauri NSIS marker. Retain the exact-byte comparator, source-matched main Reader checks and artifact digests before publication. Do not announce `v0.1.0-preview.1` or its direct EXE until publication and downloaded bytes are verified.
-
-- Keep the verified Reader and native packaging CI baselines reproducible; the separate Windows runtime release gate currently fails. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
+- Preserve the now-passing Reader, native close, exact NSIS identity and published-release gates for future versions. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
 - Complete actual managed sign-in, registration and sign-out. Live anonymous responses, spoofed-header refusal and redirect to the identity provider passed; those checks do not establish a complete account session. Never expose the account worker behind a dispatcher that trusts client headers.
 - The live D1 accounts table is confirmed. Verify real registration/capacity/outage behavior without disrupting existing accounts and document operational backup/recovery. Local SQLite/mock identity checks do not establish deployed account sessions or concurrent load.
 - Preserve save/recovery regression gates: immutable input, pending editor/stroke handling, asynchronous snapshot races, explicit export acknowledgment, ResetForm restrictions, duplicate widgets/radios, per-tab position, quota failures and revision conflicts.
-- Preserve the completed pinned LibPDF FontBox license/provenance and OCR/signing notices through builds and upgrades. Verify the implemented Windows Cargo/platform notice gate against its actual generated bundle; review other native platform inventories separately. Review embedded-native advisories, including the zlib version recorded in OCR research; an npm audit alone is insufficient.
+- Preserve the completed pinned LibPDF FontBox license/provenance and OCR/signing notices through builds and upgrades. Preserve the Windows Cargo/platform notice gate already verified against all 533 installed file hashes; review other native platform inventories separately. Review embedded-native advisories, including the zlib version recorded in OCR research; an npm audit alone is insufficient.
 - Keep unsupported signed/encrypted/restricted/form/annotation/document-structure cases fail-closed in each writer. Do not broaden supported documents by suppressing validation failures.
 
 ## High Priority
@@ -19,12 +17,12 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 - Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks, source-matched macOS CI and hosted ink export/reopen. Retain instance-scoped signal cleanup on future PDF.js upgrades.
 
-- Keep the repaired canonical-redirect cache path under regression coverage; the second deployment passed true Chromium offline reload/recovery. Retain the passed final-source 63-case Reader CI and Windows/macOS packaging evidence; rerun affected gates after consequential changes.
+- Keep the repaired canonical-redirect cache path under regression coverage; the deployed website passed true Chromium offline reload/recovery. Retain the passed final-source 66-case Reader CI and Windows/macOS packaging evidence; rerun affected gates after consequential changes.
 - Obtain supported host-level HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement. Metadata CSP and no-referrer metadata are active; do not weaken it for host-injected scripts or claim ineffective worker/static-header configuration protects live static responses.
 - Exercise crash/forced-termination recovery around debounced checkpoints, incomplete strokes/text drafts, storage eviction, corrupt originals/latest copies, multiple browser tabs and account switching. Explain unrecoverable windows honestly; never silently overwrite a newer revision.
 - Retain the completed zero-violation production shell audit and rerun after UI changes; complete manual keyboard, contrast and representative tagged-PDF checks. See [accessibility audit](docs/accessibility-audit.md); incomplete automated checks are not passes.
 - Extend the now-passing macOS WebKit CI evidence to branded Safari and physical iPhone/iPad/Android workflows. Keep those results separate from Chromium and viewport emulation.
-- Retain the built unsigned Windows/macOS artifacts and Cargo lockfile; retain the passed normal-user Windows installed-app smoke and 533 bundled notice checks, verify revised CI, then expand native printing, file-picker interaction and macOS WebView runtime. Installer compilation alone does not establish runtime correctness.
+- Retain the built unsigned Windows/macOS artifacts and Cargo lockfile; retain the passed normal-user Windows installed-app smoke and 533 bundled notice checks, preserve the published preview gates, then expand native printing, file-picker interaction and macOS WebView runtime. Installer compilation alone does not establish runtime correctness.
 - Expand independent-reader rendering comparisons for every shipped mutation, including newly generated embedded/Unicode-font, transparency/image and mixed-box fixtures. Successful object/value checks do not prove full visual fidelity.
 - Verify signing with independently generated certificate/document variants and external readers while preserving the explicit no-trust/no-revocation/no-timestamp boundary. Retain strict tamper, trailing-data, wrong-key, cancellation and preservation tests.
 - Extend the now-passing Windows OCR offline asset/reload workflow to other supported engines and actual devices. Keep model-load cancellation/retry, version consistency, resource cleanup and absence of PDF/account caching under regression coverage.
@@ -55,7 +53,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 | Hosted web | Online guest recovery/API boundary passed and D1 table exists; actual account sessions, static security headers and concurrent-request measurement remain |
 | Linux browser | Upgraded Chromium CI passed; interactive desktop, real printer and assistive-technology sessions remain |
 | macOS browser | WebKit CI passed; branded Safari, VoiceOver and real macOS interaction remain |
-| Windows native | Reader/export/recovery passed locally and in CI; release validation pending; signing, associations and broader lifecycle remain |
+| Windows native | Published unsigned x64 preview; reader/export/recovery/OS-close and release identity passed locally and in CI; signing, associations and broader lifecycle remain |
 | macOS native | App/DMG build passed; installation/runtime, WKWebView/custom-origin workers, signing/notarization and lifecycle/recovery remain |
 | Physical phone/tablet | Safari/Android file flows, memory pressure, selection/keyboard, OCR, stylus/palm, share/print, storage eviction and screen readers |
 | Linux native | No native package target currently configured; evaluate only after browser/native evidence and product need |

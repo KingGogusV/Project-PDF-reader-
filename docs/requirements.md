@@ -15,6 +15,12 @@ The first release should establish a safe, demonstrably functional universal rea
 
 Status was reconciled with source and completed Windows browser/unit verification on **2026-10-03 UTC**, including upgrade production build `2e61d5c66548dcdc`. Deployment v2 succeeded and passed online plus true Chromium offline recovery; actual managed account sign-in remains unverified. Final-source Reader CI passed; Windows/macOS packaging both passed. Consult `docs/verification.md` for exact source/deployment/run/artifact identities. Earlier reader CI and benchmark results do not establish upgraded behavior. An engine API, compile, screenshot or one-platform pass is insufficient evidence of a full feature or cross-platform support. Keep this trace consistent with `PROJECT.md` and `BACKLOG.md`.
 
+## Final Windows delivery addendum
+
+[Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.
+
+The original requirement trace below retains its source-specific evidence. OS-close preservation and completed-checkpoint recovery now have actual Windows runtime evidence. Full real-device/sign-in/printing/accessibility verification and deferred content editing remain open; publication does not waive those requirements.
+
 ## Current upgrade verification
 
 These completed checks are distinct from the historical reader evidence below. Counts overlap where stated; do not sum suites into a claim about unique requirements or universal support.

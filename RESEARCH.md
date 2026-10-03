@@ -1,5 +1,11 @@
 # Research record
 
+## Final delivery evidence - 2026-10-03
+
+**FACT:** [Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.
+
+**DESIGN DECISION:** Preserve exact-version unsigned NSIS identity rules and immutable release tags. Native close handling now has actual runtime evidence. These results resolve the earlier startup, close and publication questions; physical devices, trust/signing, actual account sessions and intermittent experimental OCR investigation remain open.
+
 Updated: **2026-10-03 UTC**. **FACT** records inspected code/artifacts or primary evidence; **DEVELOPER CLAIM** records upstream assertions; **INFERENCE** records an engineering assessment; **DESIGN DECISION** records Folio's choice; **UNRESOLVED** records remaining questions. Marketing figures and dependency capabilities are not Folio verification.
 
 ## Evidence Index
