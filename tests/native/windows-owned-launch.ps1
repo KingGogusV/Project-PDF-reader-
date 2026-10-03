@@ -79,6 +79,15 @@ try {
       if ($children.Count -gt 0) {
         if ($children.Count -ne 1) { throw 'Expected one direct WebView2 browser child.' }
         $child = $children[0]
+        # A startup CIM snapshot can expose the child before its image metadata.
+        # Keep polling within the existing bounded startup/lifetime checks; never
+        # claim the runtime is verified without its path, version, profile and port.
+        if ([string]::IsNullOrWhiteSpace($child.ExecutablePath)) {
+          $result.webviewProbe = 'Waiting for the owned WebView2 image path from Windows'
+          Save-Report
+          Start-Sleep -Milliseconds 100
+          continue
+        }
         $match = [regex]::Match($child.CommandLine, '(?:^|\s)(?:"--user-data-dir=([^"]*)"|--user-data-dir=(?:"([^"]*)"|([^\s]+)))')
         if (-not $match.Success) { throw 'Owned WebView2 has no explicit data directory.' }
         $actual = ($match.Groups | Select-Object -Skip 1 | Where-Object Success | Select-Object -First 1).Value

@@ -160,3 +160,5 @@ Deferred tools include underline/strikethrough/sticky-note creation, signing, OC
 - Kept zoom/reading-mode selects native while enforcing readable, 44-pixel control boxes across engines.
 - Added Safari keyboard navigation guidance and cross-platform pointer-focus regression assertions.
 - Recorded the failing macOS CI evidence; passing Linux results alone are not treated as cross-platform verification.
+
+- Windows release verification exposed an empty process-image path during startup. The native harness now waits within its existing bound for that metadata without weakening runtime identity or cleanup checks.
