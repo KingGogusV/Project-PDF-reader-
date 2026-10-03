@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 const channel = process.env.E2E_BROWSER_CHANNEL || 'msedge';
+const browserName = process.env.E2E_BROWSER === 'webkit' ? 'webkit' : 'chromium';
 const baseURL = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
 
 export default defineConfig({
@@ -13,8 +14,8 @@ export default defineConfig({
   expect: { timeout: 12_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    browserName: 'chromium',
-    channel: channel === 'chromium' ? undefined : channel,
+    browserName,
+    channel: browserName === 'webkit' || channel === 'chromium' ? undefined : channel,
     baseURL,
     viewport: { width: 1440, height: 1000 },
     headless: true,

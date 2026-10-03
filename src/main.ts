@@ -2,19 +2,23 @@ import './style.css';
 import { icon } from './ui/icons';
 import type { ReaderController, ReaderState } from './core/document-controller';
 import { pickFiles, downloadPdf, printPdf, reservePrintWindow, getRecent, rememberRecent, clearRecent } from './platform/browser';
+import { createDeviceLibrary } from './features/device-library';
+import { createDocumentTools } from './features/document-tools';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const btn = (id: string, glyph: string, label: string, extra = '') => `<button id="${id}" class="icon-button ${extra}" title="${label}" aria-label="${label}">${icon(glyph)}</button>`;
 app.innerHTML = `
 <div class="app-shell">
+ <a class="skip-link" href="#welcome">Skip to workspace</a>
  <header class="topbar">
   <div class="brand"><span class="brand-mark">${icon('file')}</span>folio<span class="offscreen"> PDF reader</span></div>
   <div class="brand-divider"></div><span class="workspace-label">Your document workspace</span>
   <div class="top-spacer"></div><span class="privacy-pill top-privacy">${icon('shield')} On your device. Always yours.</span>
   ${btn('help','help','Keyboard shortcuts and help','help-top')}
+  ${btn('library','open','Device library')}${btn('account','info','Account')}
   <button id="open" class="button primary">${icon('plus')}<span>Open PDF</span></button>
  </header>
- <main id="welcome" class="welcome">
+ <main id="welcome" class="welcome" tabindex="-1">
   <div class="welcome-content">
    <div class="eyebrow">A little less friction. A little more focus.</div>
    <h1>A clear space for<br>your documents.</h1>
@@ -22,7 +26,7 @@ app.innerHTML = `
    <div class="welcome-grid">
     <section id="drop-zone" class="drop-zone" aria-label="Open a local PDF">
      <div class="document-stack">${icon('file')}</div><h2>Bring a document into focus</h2><p>Drop a PDF here, or choose one from your device.</p>
-     <button id="choose" class="button primary">${icon('open')} Choose a PDF</button><small>No upload. No account. Just your document.</small>
+     <button id="choose" class="button primary">${icon('open')} Choose a PDF</button><small>Read without an account. Store a copy on this device when you choose.</small>
     </section>
     <section class="demo-card"><div class="eyebrow">Take a look around</div><h2>Meet your new<br>reading space.</h2><p>Try our four-page field guide. Explore the reader, add a note, or fill out a form.</p><button id="demo" class="text-button">Open the field guide ${icon('arrow')}</button></section>
    </div>
@@ -36,13 +40,13 @@ app.innerHTML = `
   </div>
  </main>
  <main id="reader" class="reader" hidden>
-  <div id="tabs" class="tabbar" role="tablist" aria-label="Open documents"></div>
+  <div class="tab-strip"><div id="tabs" class="tabbar" role="tablist" aria-label="Open documents"></div>${btn('close-active-document','close','Close active document')}</div>
   <div class="toolbar" role="toolbar" aria-label="Document tools">
    <div class="tool-group">${btn('toggle-sidebar','pages','Show page navigation')}${btn('toggle-search','search','Find in document (Ctrl or Command F)')}</div>
    <div class="tool-separator mobile-tool-separator"></div>
    <div class="tool-group edit-group">
     ${btn('tool-select','cursor','Select text','active')}${btn('tool-highlight','highlight','Highlight text')}${btn('tool-text','text','Add text')}${btn('tool-draw','draw','Draw')}
-    <div class="tool-separator"></div>${btn('undo','undo','Undo (Ctrl or Command Z)')}${btn('redo','redo','Redo')}
+    <div class="tool-separator"></div>${btn('undo','undo','Undo (Ctrl or Command Z)')}${btn('redo','redo','Redo')}${btn('store-local','open','Store on this device')}${btn('document-tools','info','More document tools')}
    </div>
    <div class="toolbar-spacer"></div>
    <div class="tool-group zoom-group">${btn('zoom-out','minus','Zoom out')}<select id="scale" class="scale-select" aria-label="Zoom level"><option value="page-width">Fit width</option><option value="page-fit">Fit page</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option></select>${btn('zoom-in','plus','Zoom in')}</div>
@@ -50,10 +54,10 @@ app.innerHTML = `
    <div class="tool-separator desktop-tools"></div><button id="export" class="button accent" title="Export a PDF copy (Ctrl or Command S)">${icon('download')}<span class="save-label">Export copy</span><span class="offscreen">Export PDF copy</span></button>
   </div>
   <div id="searchbar" class="searchbar" hidden><div class="search-field"><input id="search-input" type="search" placeholder="Find a word or phrase…" aria-label="Search document" autocomplete="off"></div><span id="search-status" class="search-status" aria-live="polite">Type to search</span>${btn('search-prev','chevron','Previous search result','previous-icon')}${btn('search-next','chevron','Next search result')}${btn('search-close','close','Close search')}</div>
-  <div id="notice" class="notice-bar" role="status" hidden></div><div id="tool-hint" class="tool-hint" hidden></div>
+  <div id="notice" class="notice-bar" role="status" hidden></div><div id="tool-hint" class="tool-hint" hidden></div><div id="recovery-status" class="recovery-status" role="status" aria-live="polite" hidden></div>
   <div class="reader-body">
    <aside id="sidebar" class="sidebar" aria-label="Document navigation"><div class="sidebar-tabs">${btn('nav-pages','pages','Page thumbnails','active')}${btn('nav-outline','outline','Document outline')}${btn('nav-info','info','Document information')}${btn('sidebar-close','close','Hide navigation')}</div><div id="sidebar-content" class="sidebar-content"></div></aside>
-   <section id="stage" class="stage" aria-label="PDF pages"><div id="loading" class="loading-overlay" hidden><span class="spinner"></span><span>Opening your document…</span></div></section>
+   <section id="stage" class="stage" aria-label="PDF pages" tabindex="-1"><div id="loading" class="loading-overlay" hidden><span class="spinner"></span><span>Opening your document…</span></div></section>
   </div>
   <footer class="statusbar"><div class="page-control">${btn('page-prev','chevron','Previous page','previous-icon')}<label for="page-number" class="offscreen">Page number</label><input id="page-number" class="page-input" type="number" min="1" value="1"><span id="page-total">of 1</span>${btn('page-next','chevron','Next page')}</div><span class="privacy-pill">${icon('shield')} Local document</span><span id="status-detail" class="status-detail">Ready</span>${btn('mobile-more','info','Document actions')}</footer>
  </main>
@@ -64,7 +68,7 @@ app.innerHTML = `
 `;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-type Session = { id: number; name: string; file: File; host: HTMLDivElement; controller: ReaderController; state?: ReaderState; position?: { page: number; top: number; left: number; width: number } };
+type Session = { id: number; name: string; file: File; host: HTMLDivElement; controller: ReaderController; state?: ReaderState; closing?: boolean; position?: { page: number; top: number; left: number; width: number } };
 const sessions: Session[] = [];
 let activeId = 0;
 let nextId = 1;
@@ -98,6 +102,14 @@ function dialog(title: string, body: HTMLElement, actions: {label: string; value
  });
 }
 const copy = (text: string) => { const p = document.createElement('p'); p.className='dialog-copy'; p.textContent=text; return p; };
+const featureHooks = {
+ active, sessions: () => sessions,
+ async openFile(file: File) { await openFiles([file]); return sessions.find(session => session.file === file); },
+ activate, dialog, dismissDialog: () => cancelDialog?.(), toast,
+ refreshStatus() { const s=active(); const text=s ? deviceLibrary.status(s.id) : ''; $('recovery-status').textContent=text; $('recovery-status').hidden=!text; },
+};
+const deviceLibrary = createDeviceLibrary(featureHooks);
+const documentTools = createDocumentTools(featureHooks);
 async function askPassword(reason: number) {
  const body = document.createElement('div'); body.append(copy(reason === 2 ? 'That password was not accepted. Try again to open this document.' : 'This PDF is password protected. Its password stays on this device.'));
  const label=document.createElement('label');label.className='dialog-label';label.textContent='Document password';
@@ -118,10 +130,11 @@ function renderTabs() {
  const holder=$('tabs');holder.replaceChildren();
  for(const s of sessions){const tab=document.createElement('div');tab.className=`tab ${s.id===activeId?'active':''}`;const b=document.createElement('button');b.setAttribute('role','tab');b.setAttribute('aria-selected',String(s.id===activeId));b.setAttribute('aria-controls',`document-${s.id}`);b.id=`tab-${s.id}`;b.tabIndex=s.id===activeId?0:-1;b.textContent=s.name;b.title=s.name;b.onclick=()=>activate(s.id);b.onkeydown=e=>{const index=sessions.indexOf(s);const target=e.key==='ArrowRight'?sessions[(index+1)%sessions.length]:e.key==='ArrowLeft'?sessions[(index-1+sessions.length)%sessions.length]:e.key==='Home'?sessions[0]:e.key==='End'?sessions.at(-1):undefined;if(target){e.preventDefault();activate(target.id);$(`tab-${target.id}`).focus();}};tab.append(b);
  if(s.controller.dirty){const dot=document.createElement('span');dot.className='dirty-dot';dot.title='Changes not confirmed saved';dot.setAttribute('aria-label','Unsaved changes');tab.append(dot);}
- const close=document.createElement('button');close.className='icon-button';close.setAttribute('aria-label',`Close ${s.name}`);close.disabled=!!s.state?.loading;close.innerHTML=icon('close');close.onclick=()=>void closeSession(s.id).catch(e=>toast(errorText(e),true));tab.append(close);holder.append(tab);}
+ tab.setAttribute('role','presentation');holder.append(tab);}
+ const current=active();const close=$<HTMLButtonElement>('close-active-document');close.disabled=!current||!!current.state?.loading||!!current.closing;close.setAttribute('aria-label',current?`Close ${current.name}`:'Close active document');
 }
 function applyState(session: Session, state: ReaderState) {
- session.state=state; if(session.id!==activeId)return;
+ session.state=state; deviceLibrary.onState(session,state); if(session.id!==activeId)return;
  $('loading').hidden=!state.loading;
  $<HTMLInputElement>('page-number').value=String(state.page||1);$<HTMLInputElement>('page-number').max=String(state.pages||1);$('page-total').textContent=`of ${state.pages||'…'}`;
  $<HTMLButtonElement>('page-prev').disabled=state.page<=1;$<HTMLButtonElement>('page-next').disabled=state.page>=state.pages;
@@ -140,11 +153,13 @@ function applyState(session: Session, state: ReaderState) {
  if(state.error)toast(state.error,true);
  for(const el of document.querySelectorAll<HTMLButtonElement>('.thumb-button'))el.classList.toggle('active',Number(el.dataset.page)===state.page);
  renderTabs();
+ featureHooks.refreshStatus();
 }
 function activate(id: number) {
  const previous=active();if(previous){if(previous.id!==id)previous.position={page:previous.controller.currentPage,top:previous.host.scrollTop,left:previous.host.scrollLeft,width:previous.host.clientWidth};previous.controller.setTool('select');}
  activeId=id; const current=active();
  $('welcome').hidden=!!current;$('reader').hidden=!current;
+ const skip=document.querySelector<HTMLAnchorElement>('.skip-link');if(skip)skip.href=current?'#stage':'#welcome';
  // PDF.js form widgets resolve some fields through document-wide queries.
  // Keep only one document DOM attached, so identical PDF field IDs cannot cross tabs.
  for(const s of sessions)if(s.id!==id)s.host.remove();
@@ -155,6 +170,7 @@ function activate(id: number) {
  $('tool-hint').hidden=true;
  $<HTMLInputElement>('search-input').value='';current?.controller.clearSearch();
  setToolUI('select');
+ featureHooks.refreshStatus();
 }
 async function choose() { try { const files=await pickFiles();await openFiles(files); }catch(e){toast(errorText(e),true);} }
 async function openFiles(files: File[]) {
@@ -172,9 +188,13 @@ async function openFiles(files: File[]) {
  }}finally{opening=false;}
 }
 async function closeSession(id: number) {
- const s=sessions.find(x=>x.id===id);if(!s)return;
+ const s=sessions.find(x=>x.id===id);if(!s||s.closing)return;
  s.controller.flushPendingEdits();
- if(s.controller.dirty){const answer=await dialog('Keep your changes?',copy('This document has changes that you have not confirmed saved. Export a PDF copy before closing, or explicitly discard the changes.'),[{label:'Keep open',value:'cancel'},{label:'Discard changes',value:'discard'},{label:'Export copy',value:'export',primary:true}]);if(answer==='export'){activate(id);await exportCopy();return;}if(answer!=='discard')return;}
+ let discard=false;
+ if(s.controller.dirty){const answer=await dialog('Keep your changes?',copy('Export a PDF copy or keep your validated changes in the device library. Discard restores the version opened in this tab.'),[{label:'Keep open',value:'cancel'},{label:'Discard changes',value:'discard'},...(deviceLibrary.isStored(s.id)?[{label:'Keep in library',value:'library'}]:[]),{label:'Export copy',value:'export',primary:true}]);if(answer==='export'){activate(id);await exportCopy();return;}if(answer!=='discard'&&answer!=='library')return;discard=answer==='discard';}
+ s.closing=true;s.host.inert=true;
+ try { await deviceLibrary.beforeClose(s,discard); }
+ catch(error){s.closing=false;s.host.inert=false;throw error;}
  sessions.splice(sessions.indexOf(s),1);await s.controller.destroy();s.host.remove();if(id===activeId)activate(sessions.at(-1)?.id||0);else renderTabs();
 }
 function setToolUI(tool: string) {for(const name of ['select','highlight','text','draw']){const b=$(`tool-${name}`);b.classList.toggle('active',name===tool);b.setAttribute('aria-pressed',String(name===tool));}}
@@ -182,7 +202,7 @@ function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!
 async function renderSidebar() {
  thumbnailObserver?.disconnect();thumbnailObserver=undefined;
  const token=++sidebarToken;const s=active();const content=$('sidebar-content');for(const canvas of content.querySelectorAll('canvas')){canvas.width=0;canvas.height=0;}content.replaceChildren();if(!s||!s.controller.pageCount||$('sidebar').hidden)return;
- for(const [id,mode] of [['nav-pages','pages'],['nav-outline','outline'],['nav-info','info']])$(id).classList.toggle('active',navMode===mode);
+ for(const [id,mode] of [['nav-pages','pages'],['nav-outline','outline'],['nav-info','info']]){$(id).classList.toggle('active',navMode===mode);$(id).setAttribute('aria-pressed',String(navMode===mode));}
  const title=document.createElement('h2');title.className='sidebar-title';title.textContent=navMode==='pages'?`${s.controller.pageCount} pages`:navMode==='outline'?'Document outline':'Document details';content.append(title);
  if(navMode==='pages'){
   const observer=thumbnailObserver=new IntersectionObserver(entries=>{for(const entry of entries){const b=entry.target as HTMLButtonElement;const canvas=b.querySelector('canvas')!;b.dataset.visible=String(entry.isIntersecting);if(!entry.isIntersecting){if(!b.dataset.rendering){canvas.width=0;canvas.height=0;}continue;}if(b.dataset.rendering||canvas.width)continue;b.dataset.rendering='true';void s.controller.renderThumbnail(Number(b.dataset.page),canvas).catch(()=>{b.title='Preview unavailable; select to navigate';}).finally(()=>{delete b.dataset.rendering;if(token!==sidebarToken||b.dataset.visible!=='true'){canvas.width=0;canvas.height=0;}});}},{root:content,rootMargin:'150px'});
@@ -213,9 +233,11 @@ async function printCopy() {
  let reserved:Window|undefined;
  try{reserved=reservePrintWindow();const bytes=await s.controller.exportBytes();const result=printPdf(bytes,s.name,reserved);toast(result.message);}catch(e){reserved?.close();toast(errorText(e),true);}finally{exporting=false;}
 }
-function toggleSearch(show=!$('searchbar').hidden?false:true){$('searchbar').hidden=!show;if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();}}
+function toggleSearch(show=!$('searchbar').hidden?false:true){$('searchbar').hidden=!show;if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();$('toggle-search').focus();}}
 function runSearch(previous=false){const query=$<HTMLInputElement>('search-input').value;active()?.controller.search(query,previous);}
 on('open',choose);on('choose',choose);on('clear-recent',()=>{clearRecent();renderRecents();});
+on('library',()=>deviceLibrary.showLibrary());on('account',()=>deviceLibrary.showAccount());on('store-local',()=>deviceLibrary.storeActive());on('document-tools',()=>documentTools.showTools());
+on('close-active-document',async()=>{const s=active();if(s)await closeSession(s.id);});
 on('demo',async()=>{const r=await fetch(`${import.meta.env.BASE_URL}demo.pdf`);if(!r.ok)throw new Error('The field guide could not load. You can open a local PDF instead.');await openFiles([new File([await r.blob()],'Folio field guide.pdf',{type:'application/pdf'})]);});
 on('toggle-sidebar',()=>{$('sidebar').hidden=!$('sidebar').hidden;active()?.controller.refresh();void renderSidebar();});on('sidebar-close',()=>{$('sidebar').hidden=true;active()?.controller.refresh();});
 on('nav-pages',()=>{navMode='pages';return renderSidebar();});on('nav-outline',()=>{navMode='outline';return renderSidebar();});on('nav-info',()=>{navMode='info';return renderSidebar();});
@@ -234,7 +256,7 @@ $('print').addEventListener('click',()=>void printCopy());
 on('mobile-more',async()=>{const body=document.createElement('div');body.append(copy('Choose a document action. Printing opens a local PDF copy in your browser.'));
  const actions=[{label:'Rotate view',value:'rotate'},{label:'Properties',value:'properties'},{label:'Reading mode',value:'mode'},{label:'Print copy',value:'print'}];
  const result=await dialog('Document actions',body,actions);if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties();if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();});
-on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. PDF JavaScript, OCR and certificate signing are not enabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
+on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only. Choose Keep on this device to enable a local library and recovery copies. Export important work regularly; clearing browser data removes local files.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. Document tools include local English OCR, safe page organization and certificate signing. Signing checks document integrity; certificate trust and revocation are not verified. PDF JavaScript remains disabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
 document.addEventListener('keydown',e=>{
  if($<HTMLDialogElement>('dialog').open)return;const target=e.target as HTMLElement;const editing=target.matches('input,textarea,select,[contenteditable="true"]')||target.closest('[contenteditable="true"]');const mod=e.ctrlKey||e.metaKey;
  if(mod&&e.key.toLowerCase()==='o'){e.preventDefault();void choose();return;}
@@ -261,4 +283,5 @@ window.addEventListener('resize',()=>active()?.controller.refresh());
 matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(event.matches){$('sidebar').hidden=true;active()?.controller.refresh();void renderSidebar();}});
 if(innerWidth<900)$('sidebar').hidden=true;
 renderRecents();
+void deviceLibrary.initialize().catch(e=>toast(errorText(e),true));
 if(import.meta.env.PROD&&'serviceWorker'in navigator)navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>toast('Offline app caching is unavailable. Local PDF reading still works in this open tab.'));

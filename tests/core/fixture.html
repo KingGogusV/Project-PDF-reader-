@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Folio controller test harness</title></head>
+  <body>
+    <div id="reader" style="position:absolute;inset:0;overflow:auto"></div>
+    <script type="module">
+      import 'pdfjs-dist/web/pdf_viewer.css';
+      import { ReaderController } from '/src/core/document-controller.ts';
+      // This development-only fixture is not a production build entry point.
+      window.readerStates = [];
+      window.readerController = new ReaderController(document.querySelector('#reader'), state => window.readerStates.push(state));
+      window.harnessReady = true;
+    </script>
+  </body>
+</html>

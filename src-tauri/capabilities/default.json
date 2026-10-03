@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Local web reader only. No native IPC commands or privileged plugins are granted.",
+  "windows": [
+    "main"
+  ],
+  "permissions": []
+}

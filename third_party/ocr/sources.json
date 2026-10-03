@@ -1,0 +1,206 @@
+{
+  "recorded": "2026-10-03",
+  "tesseractJsRevision": "42eae669e4b3a66429d8516f078912cc747a89df",
+  "coreRevision": "acffef2b66eb44a31df297e11d905f4b39001068",
+  "englishModelSha256": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91",
+  "sources": [
+    {
+      "file": "base64-js-LICENSE",
+      "url": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+      "entry": "package/LICENSE",
+      "version": "1.5.1",
+      "archiveIntegrityVerified": true,
+      "sha256": "5b37224c080cdcc97c871ada971c224e9926370fe74f11b539aa1cf9f3b1aca1"
+    },
+    {
+      "file": "bmp-js-LICENSE",
+      "url": "https://registry.npmjs.org/bmp-js/-/bmp-js-0.1.0.tgz",
+      "entry": "package/LICENSE",
+      "version": "0.1.0",
+      "archiveIntegrityVerified": true,
+      "sha256": "9f165f5bd2b462122cacb8c6dc32028be1abb4d8ad0322e9a332f30b2ebdb833"
+    },
+    {
+      "file": "buffer-LICENSE",
+      "url": "https://registry.npmjs.org/buffer/-/buffer-6.0.3.tgz",
+      "entry": "package/LICENSE",
+      "version": "6.0.3",
+      "archiveIntegrityVerified": true,
+      "sha256": "06bafa45fdad2579ba0e43b0c9b2c6290287c99c4203c300254a462b38a307f6"
+    },
+    {
+      "file": "compiler-rt-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/system/lib/compiler-rt/LICENSE.TXT",
+      "revision": "4.0.15",
+      "sha256": "1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d"
+    },
+    {
+      "file": "emscripten-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/LICENSE",
+      "revision": "4.0.15",
+      "sha256": "620a78084fc7ca97c0b5dea9abf891f3ffcadfdbf305276f099c9c4e12fc1d86"
+    },
+    {
+      "file": "eng-model-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/naptha/tessdata/806cd9adc8c6e8abc11c782db1818c990576bebc/LICENSE",
+      "revision": "806cd9adc8c6e8abc11c782db1818c990576bebc",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "file": "eng-package.json",
+      "package": "node_modules/@tesseract.js-data/eng/package.json",
+      "version": "1.0.0",
+      "sha256": "b603509212196b5d09e10519bf252c1e344b79704d065e0d62886846f8554c80"
+    },
+    {
+      "file": "giflib-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/mirrorer/giflib/fa37672085ce4b3d62c51627ab3c8cf2dda8009a/COPYING",
+      "revision": "fa37672085ce4b3d62c51627ab3c8cf2dda8009a",
+      "sha256": "0c9b7990ecdca88b676db232c226548ac408b279f550d424d996f0d83591dd8e"
+    },
+    {
+      "file": "idb-keyval-LICENCE",
+      "url": "https://registry.npmjs.org/idb-keyval/-/idb-keyval-6.2.1.tgz",
+      "entry": "package/LICENCE",
+      "version": "6.2.1",
+      "archiveIntegrityVerified": true,
+      "sha256": "20c27d6339619eeb3113cb865d4e98a3f559e52964fc75caea9cb5fa72674565"
+    },
+    {
+      "file": "ieee754-LICENSE",
+      "url": "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz",
+      "entry": "package/LICENSE",
+      "version": "1.2.1",
+      "archiveIntegrityVerified": true,
+      "sha256": "18d45466ba3253deae04667e267a91ea8de8548f18c1125264d1c9db28194cc1"
+    },
+    {
+      "file": "is-url-LICENSE-MIT",
+      "url": "https://registry.npmjs.org/is-url/-/is-url-1.2.4.tgz",
+      "entry": "package/LICENSE-MIT",
+      "version": "1.2.4",
+      "archiveIntegrityVerified": true,
+      "sha256": "80957b522b0ea4ce24290953d74d818220c804d1f42cad02b8d7da1c12ce1fc1"
+    },
+    {
+      "file": "leptonica-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/DanBloomberg/leptonica/4af068b56a9674da915debea4ed7e1b9885b17e8/leptonica-license.txt",
+      "revision": "4af068b56a9674da915debea4ed7e1b9885b17e8",
+      "sha256": "87829abb5bbb00b55a107365da89e9a33f86c4250169e5a1e5588505be7d5806"
+    },
+    {
+      "file": "libcxx-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/system/lib/libcxx/LICENSE.TXT",
+      "revision": "4.0.15",
+      "sha256": "539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b"
+    },
+    {
+      "file": "libcxxabi-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/system/lib/libcxxabi/LICENSE.TXT",
+      "revision": "4.0.15",
+      "sha256": "e2b35be49f7284a45b7baca8fc7b3ab7440e7902392b2528a457816b5bb2a15c"
+    },
+    {
+      "file": "libjpeg-README.txt",
+      "url": "https://raw.githubusercontent.com/LuaDist/libjpeg/6c0fcb8ddee365e7abc4d332662b06900612e923/README",
+      "revision": "6c0fcb8ddee365e7abc4d332662b06900612e923",
+      "sha256": "c791da525733040e622ed257c7b096b8f5191b332604ead0c6bc2b54cbd8e0d1"
+    },
+    {
+      "file": "libpng-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/glennrp/libpng/a37d4836519517bdce6cb9d956092321eca3e73b/LICENSE",
+      "revision": "a37d4836519517bdce6cb9d956092321eca3e73b",
+      "sha256": "33ba4e187d8b0c8d7ab2bc2e522bb095219e03089e9aa0122b4fb9eb2b7de82b"
+    },
+    {
+      "file": "libtiff-LICENSE.txt",
+      "url": "https://gitlab.com/libtiff/libtiff/-/raw/b51bb157123264e26d34c09cc673d213aea61fc7/COPYRIGHT",
+      "revision": "b51bb157123264e26d34c09cc673d213aea61fc7",
+      "sha256": "fbd6fed7938541d2c809c0826225fc85e551fdbfa8732b10f0c87e0847acafd7"
+    },
+    {
+      "file": "libunwind-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/system/lib/libunwind/LICENSE.TXT",
+      "revision": "4.0.15",
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d"
+    },
+    {
+      "file": "libwebp-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/webmproject/libwebp/20ef03ee351d4ff03fc5ff3ec4804a879d1b9d5c/COPYING",
+      "revision": "20ef03ee351d4ff03fc5ff3ec4804a879d1b9d5c",
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf"
+    },
+    {
+      "file": "libwebp-PATENTS.txt",
+      "url": "https://raw.githubusercontent.com/webmproject/libwebp/20ef03ee351d4ff03fc5ff3ec4804a879d1b9d5c/PATENTS",
+      "revision": "20ef03ee351d4ff03fc5ff3ec4804a879d1b9d5c",
+      "sha256": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c"
+    },
+    {
+      "file": "musl-COPYRIGHT.txt",
+      "url": "https://raw.githubusercontent.com/emscripten-core/emscripten/4.0.15/system/lib/libc/musl/COPYRIGHT",
+      "revision": "4.0.15",
+      "sha256": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af"
+    },
+    {
+      "file": "openlibm-LICENSE.md",
+      "url": "https://raw.githubusercontent.com/JuliaMath/openlibm/ae2d91698508701c83cab83714d42a1146dccf85/LICENSE.md",
+      "revision": "ae2d91698508701c83cab83714d42a1146dccf85",
+      "sha256": "b1843fbf5b03f519a5f0a44fce751bdd1022ae7148614923f9d6293e17a18b17"
+    },
+    {
+      "file": "regenerator-runtime-LICENSE",
+      "url": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz",
+      "entry": "package/LICENSE",
+      "version": "0.13.11",
+      "archiveIntegrityVerified": true,
+      "sha256": "51887a3d47051ac2fce1210562e5b9fe0830a8a8fabeb272c2d586eeb18a05fd"
+    },
+    {
+      "file": "tesseract-core-LICENSE.txt",
+      "package": "node_modules/tesseract.js-core/LICENSE",
+      "version": "7.0.0",
+      "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08"
+    },
+    {
+      "file": "tesseract-js-LICENSE.txt",
+      "package": "node_modules/tesseract.js/LICENSE.md",
+      "version": "7.0.0",
+      "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1"
+    },
+    {
+      "file": "tesseract-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/Balearica/tesseract/2a9c1c49c360462733c386d2a44fcd22c4e21411/LICENSE",
+      "revision": "2a9c1c49c360462733c386d2a44fcd22c4e21411",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "wasm-feature-detect-LICENSE",
+      "url": "https://registry.npmjs.org/wasm-feature-detect/-/wasm-feature-detect-1.8.0.tgz",
+      "entry": "package/LICENSE",
+      "version": "1.8.0",
+      "archiveIntegrityVerified": true,
+      "sha256": "bcf29b4fd3ec2cb5f9d40a0866da446f6da62170d2ccedf4aeca9cf9406dd20c"
+    },
+    {
+      "file": "worker-bundled-notices.txt",
+      "package": "node_modules/tesseract.js/dist/worker.min.js.LICENSE.txt",
+      "version": "7.0.0",
+      "sha256": "45f54171aeaa1d10c0c1a66f374b7bba1f02472b1487fbe892eec04f840002ac"
+    },
+    {
+      "file": "zlib-README.txt",
+      "url": "https://raw.githubusercontent.com/madler/zlib/21767c654d31d2dccdde4330529775c6c5fd5389/README",
+      "revision": "21767c654d31d2dccdde4330529775c6c5fd5389",
+      "sha256": "fc2c3368901700f0acdeb1d8afeaca5923296768ec6824ecdf627aac396001fd"
+    },
+    {
+      "file": "zlibjs-LICENSE",
+      "url": "https://registry.npmjs.org/zlibjs/-/zlibjs-0.3.1.tgz",
+      "entry": "package/LICENSE",
+      "version": "0.3.1",
+      "archiveIntegrityVerified": true,
+      "sha256": "131afe3f7bdce1698beb292fb8de1a968de01bce876122a60ef5db230471c866"
+    }
+  ]
+}

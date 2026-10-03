@@ -14,3 +14,7 @@ public/demo.pdf
 docs/screenshots/
 *.tsbuildinfo
 .tmp/
+.sites-runtime/
+.wrangler/
+src-tauri/target/
+*.tar.gz
