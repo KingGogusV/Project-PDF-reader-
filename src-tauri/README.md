@@ -46,12 +46,12 @@ These are unsigned development packages; no signing credentials are configured.
 
 ## Prerequisites and current evidence
 
-[Native run 37089902268](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268)
+[Native run 37091186893](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893)
 succeeded on both Windows and macOS after the direct-Node argument-forwarding fix.
 Unsigned development packages are available until **2026-10-17**:
 
-- [Windows NSIS artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262491712)
-- [macOS app/DMG artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262072022)
+- [Windows NSIS artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11262104539)
+- [macOS app/DMG artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11261664576)
 
 ZIP sizes and verified SHA-256 hashes are in [verification](../docs/verification.md).
 Downloads may require GitHub access. The earlier run 37088665153 built macOS but

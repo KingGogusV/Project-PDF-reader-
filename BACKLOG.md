@@ -13,8 +13,8 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## High Priority
 
-- Fix/retest the hosted canonical-redirect offline reload failure, retaining the local offline baseline. Preserve verified deployment identities and retest the delivered URL after the change.
-- Obtain supported host-level HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement. Metadata CSP is active; do not weaken it for host-injected scripts or claim ineffective worker/static-header configuration protects live static responses.
+- Keep the repaired canonical-redirect cache path under regression coverage; the second deployment passed true Chromium offline reload/recovery. Retain the passed final-source 63-case Reader CI and Windows/macOS packaging evidence; rerun affected gates after consequential changes.
+- Obtain supported host-level HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement. Metadata CSP and no-referrer metadata are active; do not weaken it for host-injected scripts or claim ineffective worker/static-header configuration protects live static responses.
 - Exercise crash/forced-termination recovery around debounced checkpoints, incomplete strokes/text drafts, storage eviction, corrupt originals/latest copies, multiple browser tabs and account switching. Explain unrecoverable windows honestly; never silently overwrite a newer revision.
 - Retain the completed zero-violation production shell audit and rerun after UI changes; complete manual keyboard, contrast and representative tagged-PDF checks. See [accessibility audit](docs/accessibility-audit.md); incomplete automated checks are not passes.
 - Extend the now-passing macOS WebKit CI evidence to branded Safari and physical iPhone/iPad/Android workflows. Keep those results separate from Chromium and viewport emulation.
@@ -46,7 +46,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 | Environment | Specific unfinished evidence/integration |
 |---|---|
-| Hosted web | Online guest recovery/API boundary passed and D1 table exists; actual account sessions, hosted offline correction, static security headers and concurrent-request measurement remain |
+| Hosted web | Online guest recovery/API boundary passed and D1 table exists; actual account sessions, static security headers and concurrent-request measurement remain |
 | Linux browser | Upgraded Chromium CI passed; interactive desktop, real printer and assistive-technology sessions remain |
 | macOS browser | WebKit CI passed; branded Safari, VoiceOver and real macOS interaction remain |
 | Windows native | NSIS build passed; installation/WebView2 runtime, installer signing, associations and lifecycle/recovery remain |

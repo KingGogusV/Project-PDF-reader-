@@ -20,7 +20,7 @@ Earlier local audit/timing evidence used production build 2e61d5c66548dcdc at ht
 | Accessibility | 9 production UI states: zero axe violations; four PDF-content contrast checks incomplete |
 | Runtime npm audit | Zero known advisories returned for 44 runtime/optional dependencies; compiled WASM is not covered |
 
-Together the E2E files contain 62 tests; the separate core/signing suites contain 16. Suite durations are execution times, not application performance. Windows Edge production audit version154.0.4258.53; Chrome measurement version153.0.8010.54.
+The final-source complete E2E suite contains 63 tests, including the hosted-redirect regression. The separate core/signing suites contain 16. Suite durations are execution times, not application performance. Windows Edge production audit version154.0.4258.53; Chrome measurement version153.0.8010.54.
 
 ## Verified workflows and safety
 
@@ -56,41 +56,54 @@ Printing verification means a local PDF reaches browser viewer/download handling
 | Canvas pixels at sample | 7,222,996 | 791,000 |
 | Reported JS heap at sample | 10,663,756B | 11,617,220B |
 
-Heap samples exclude total browser/native/worker/canvas memory and are not peaks. Single-run values are not benchmark distributions. Initial JS is approximately75.8KB (24.6KB gzip); mandatory offline assets8.06MiB. OCR loads its worker, one selected core and English model on request. Large-byte scans, battery and physical low-memory devices remain unmeasured.
+Heap samples exclude total browser/native/worker/canvas memory and are not peaks. Single-run values are not benchmark distributions. The earlier measured build had approximately 75.8 KB initial JS (24.6 KB gzip); v2 reports 75.88 KB (24.71 KB gzip). Mandatory offline assets were 8.06 MiB in the measured build. OCR loads its worker, one selected core and English model on request. Large-byte scans, battery and physical low-memory devices remain unmeasured.
 
 ## Remote CI and native packaging
 
 GitHub repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). Upgrade branch: `feature/hosted-local-library`; [PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1).
 
-[Reader run 37089902258](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902258) **succeeded in all jobs**: 55 unit/fixture checks, typecheck/build, 62 E2E cases on Linux Chromium, 62 E2E cases on macOS WebKit, seven controller checkpoints and nine signing-core cases. Patched WebKit is not branded Safari or a physical Apple-device test.
+[Final-source Reader run 37091186897](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186897) **succeeded in all jobs** on application commit `710ff978c4f59b907bce108921ade34b6d2b5326`: 55 unit/fixture checks with zero skips, typecheck/build, 63 E2E cases on Linux Chromium (2.1 minutes), 63 E2E cases on macOS WebKit (4.3 minutes, no flaky marker), seven controller checkpoints (11.5 seconds) and nine signing-core cases (11.7 seconds). These are suite durations. Patched WebKit is not branded Safari or a physical Apple-device test.
 
-[Native run 37089902268](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268) **succeeded on Windows and macOS**, producing unsigned NSIS and app/DMG packages with a retained Cargo lockfile. Compilation/packaging does not verify installation, native runtime, signing or notarization.
+[Final-source native run 37091186893](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893) **succeeded on Windows and macOS**, producing unsigned NSIS and app/DMG packages with a retained Cargo lockfile. Compilation/packaging does not verify installation, native runtime, signing or notarization.
 
 | Verified artifact | ZIP size | SHA-256 |
 | --- | ---: | --- |
-| [Windows NSIS package](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262491712) | 13,932,934 bytes | `e496ec3f543d4ca98e53a2fabcdaed9ce0ae10dec954dce0d4d5e34347b823e4` |
-| [macOS app/DMG packages](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37089902268/artifacts/11262072022) | 29,791,928 bytes | `15c595ed8e2c8c1c42f4f5840d7961a23604ed41f66c8d8bd3f961459450bd85` |
+| [Windows NSIS package](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11262104539) | 13,946,200 bytes | `2a0e6bdc1b459d887e3e77886dba1600c311751ca83e7d2b57e585eea531fc6f` |
+| [macOS app/DMG packages](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893/artifacts/11261664576) | 29,792,212 bytes | `e47283997b450e6c32cf072f6911557dfa41fca53f00a5f63025f77d78ccbf38` |
 
 These CI downloads expire **2026-10-17** and may require GitHub access. They are development artifacts, not permanent signed releases. Earlier runs 37088665148/37088665153 exposed signing-harness navigation, WebKit Blob storage and Windows CLI argument-forwarding failures; the final runs above verify their corrections.
 
 ## Hosting and identity
 
-Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` reached terminal success at **2026-10-03 02:37:09 UTC**. URL: [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
+Current deployment **v2** `appgdep_6ac06d8fe58c819181427cd4cea78796` reached terminal success at **2026-10-03 02:51:08 UTC**. URL: [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site). App manifest: `b2837e77c6ac14a7`.
 
-The deployed Site source commit is `f7734929de58e05f280b536fbcd20b875a423221`; GitHub implementation commit `6033dbf3546b0eef776507bc50b14ee354ca6273` has a verified identical source tree. They have different ancestry. GitHub remains authoritative; future publishing must inspect and merge/reconcile histories, without force-pushing. This does not claim a final documentation commit has been created.
+Published Site source `cae5f95b0255f6278c485c78da834adf606e6a60` and GitHub implementation `710ff978c4f59b907bce108921ade34b6d2b5326` have identical verified tree `09642b4ac086bf603510c5fc75fcf1aa14862650`. Their ancestry differs. GitHub remains authoritative. Preserve Site history on `site-publication`; align `feature/hosted-local-library` with the actual fetched GitHub HEAD by branch switching without resets/history rewriting. Future publishing must merge/reconcile Site and GitHub feature/main ancestry without force-pushing. Final documentation commits are separate from this delivered implementation snapshot.
 
-Live v1 checks passed:
+At **02:51:18 UTC**, live v2 checks passed:
 
-- Root HTTP 200; anonymous `GET /api/account` returned null identity/account, limit 200, registered 0 and no-store.
-- A POST with forged identity headers was rejected with 401.
-- Managed sign-in returned a 302 redirect to `auth.openai.com`; an actual signed-in account/registration session was **not** exercised.
-- Live D1 inspection confirmed the accounts table.
-- A real local form was opened, explicitly stored, edited, reloaded and recovered with its value intact; no browser document uploads or page exceptions were observed.
+- Root/app and account dialog, including its sign-in button, loaded.
+- Anonymous `GET /api/account` returned 200, null identity/account, limit 200 and registered 0.
+- A POST with forged identity headers returned 401; managed sign-in redirected with 302 to `auth.openai.com`.
+- A real local form was opened, explicitly stored, edited, reloaded online and recovered with its value intact.
 - A 390-pixel phone viewport had no body overflow.
+- With Chromium's actual browser-offline mode enabled, the hosted app reloaded and reopened the device-local form with its edited value preserved.
+- No PDF uploads or application page exceptions were observed.
 
-**Known hosted failure:** with an active service worker, Chromium offline `page.reload` returned `net::ERR_FAILED`. The deployed offline-navigation path is under investigation. Local offline reader/OCR tests passed, but do not override this hosted failure. No hosted-offline pass is claimed until a corrected deployment is independently retested.
+The live D1 accounts table was confirmed. Actual managed sign-in, account registration/sign-out sessions and live capacity/load were **not** exercised. A redirect to the provider is not a completed authenticated session.
 
-**Hosting header gap:** static responses bypassed the worker's static-response headers. Document metadata CSP was confirmed, but HTTP CSP, frame-ancestors and Referrer-Policy were not enforced through the attempted static header route. The reverted experiment is not part of the delivered source. Supported host-level header configuration remains a release task.
+### Offline correction and source-specific CI
+
+Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` succeeded at 02:37:09 UTC, using Site `f7734929de58e05f280b536fbcd20b875a423221` and identical-tree GitHub `6033dbf3546b0eef776507bc50b14ee354ca6273`. Its online checks passed, but Chromium offline reload returned `net::ERR_FAILED`: the host canonicalized `/index.html` to the root and the cached response retained redirect state.
+
+The worker now normalizes cached navigation responses. The added regression failed against the old worker, then the two direct/canonical offline cases passed on Edge and WebKit before v2 deployment. The live Chromium pass above verifies the actual hosted repair. WebKit's automated test uses an unavailable origin because its offline-emulation limitation differs; it is not a physical Safari test.
+
+Final-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs, as detailed above.
+
+Historical Reader run 37089902258 passed 62 cases before the added redirect regression; the primary artifact table now refers exclusively to the final-source packages. CI evidence attaches to the tested application commit, not a later documentation-only HEAD. Engineering-record updates do not require republishing unchanged application inputs and must not be described as a separately tested build.
+
+### Hosting header boundary
+
+Static responses bypass the worker's static-response header code. Restrictive document metadata CSP and `referrer=no-referrer` metadata are active in v2. HTTP CSP/frame-ancestors/nosniff and Referrer-Policy header enforcement were not established through the attempted static-header route; the experiment was reverted. Supported host-level header configuration remains a release task. CSP was not weakened to allow host-injected inline code.
 
 ## Security review and remaining gates
 

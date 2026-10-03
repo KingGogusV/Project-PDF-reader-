@@ -8,7 +8,7 @@ Folio is an original, local-first PDF workspace for everyday reading, annotation
 
 Authoritative repository: [KingGogusV/Project-PDF-reader-](https://github.com/KingGogusV/Project-PDF-reader-). Original purpose: "Project to create free pdf reader that does not suck." Folio remains a provisional name, not trademark clearance.
 
-An optional hosted account service supports **up to 200 registered accounts**. Account metadata is the only server-side application data. PDFs and recovery copies remain in the current device/browser profile. Deployment succeeded at [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site); the live database has an accounts table. Online hosted local-form storage/edit/reload recovery, anonymous responses, spoofed-header rejection and sign-in redirect passed. Actual managed sign-in/registration remains unverified; the first hosted offline reload failed and is under repair. The upgraded Reader and native build CI runs passed; exact source identities and evidence are in verification.
+An optional hosted account service supports **up to 200 registered accounts**. Account metadata is the only server-side application data. PDFs and recovery copies remain in the current device/browser profile. Deployment succeeded at [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site); the live database has an accounts table. Online hosted local-form storage/edit/reload recovery, anonymous responses, spoofed-header rejection and sign-in redirect passed. Actual managed sign-in/registration remains unverified. The second deployment fixed canonical-redirect caching and passed live Chromium offline reload/local recovery. Final-source Reader CI passed with 63 E2E cases each on Linux Chromium/macOS WebKit. Final-source Windows NSIS and macOS app/DMG packaging both passed. Exact source identities and evidence are in verification.
 
 ## Product Principles
 
@@ -20,8 +20,8 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 |---|---|---|
 | Web | Deployed; Windows browser checks and upgraded Linux Chromium/macOS WebKit CI passed | Actual managed account sign-in remains unverified |
 | Windows | Edge/Chrome browser checks; unsigned NSIS package built successfully | Native installer execution/runtime unverified |
-| macOS | 62 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
-| Linux | 62 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
+| macOS | 63 WebKit E2E cases passed; unsigned app/DMG built successfully | Branded Safari, WKWebView runtime, installation and notarization unverified |
+| Linux | 63 Chromium E2E cases and upgraded unit/core/signing checks passed | Interactive desktop and physical printing unverified; no Linux native package configured |
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
 | Android | Experimental browser target | Physical file pickers, memory, selection, printing and sharing unverified |
 
@@ -82,7 +82,7 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 | OCR | English recognition, progress/cancel, separate text output and `.txt` download | Recognition estimates; no handwriting/multilingual guarantee, searchable-PDF export or layout reconstruction |
 | Page tools | Extract, reorder, delete, permanent rotation and merge to a verified new copy | Reject forms, annotations, signatures, encryption and unsupported document structures; page-only metadata behavior is explicit |
 | Certificate signing | Local P12/PFX review and invisible RSA/SHA-256 signature; independent byte-range/CMS and preservation checks | No trust-chain, revocation, trusted timestamp, visible-signature or existing-signature validation verdict |
-| Offline | Cached reader/local PDF operation; optional OCR assets and offline recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
+| Offline | Cached reader/local PDF operation and live hosted Chromium offline recovery verified; optional OCR assets/recognition verified in the Windows browser suite | First asset retrieval requires network; browser eviction and other platforms need separate evidence; accounts require hosted service |
 | Native/accessibility | Windows/macOS packages built; targeted accessibility repairs and nine production audit states with zero axe violations | Native installation/runtime, incomplete PDF contrast checks, physical assistive technology and conformance remain unverified |
 
 The [original MVP trace](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md) and [verification](docs/verification.md) separate implemented behavior from test evidence.

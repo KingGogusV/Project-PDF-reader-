@@ -1,22 +1,24 @@
 # Hosted library upgrade
 
-Requested 2026-10-02 America/Los_Angeles (2026-10-03 UTC). This record tracks outcomes, not completion promises.
+Requested 2026-10-02 America/Los_Angeles (2026-10-03 UTC). Updated after deployment v2 at 2026-10-03 02:51:18 UTC. Exact runs, source identities and artifact links are in [verification](verification.md).
 
-| Request | Implementation / evidence target |
-| --- | --- |
-| Working website link | Persistent Sites deployment from this existing GitHub source; verify terminal deployment status |
-| Accounts, maximum 200 | Managed ChatGPT identity, explicit Folio registration, atomic D1 allocation with database-enforced ceiling; test concurrent registration and existing users at capacity |
-| Store PDFs locally | Explicit opt-in IndexedDB library per account/device; immutable original and validated revisions; no PDF upload route |
-| Crash recovery | Commit checkpoints while editing; recover after reload/renderer termination; disclose unfinished-editor and storage-eviction limits |
-| OCR | Local English worker/model; bounded pages, cancellation, permissions and real scanned fixture recognition |
-| Advanced editing | Safe new-copy page extract/reorder/delete/rotate/merge; reject documents with features that cannot be preserved |
-| Certificate signing | Local P12/private-key processing, certificate/key correspondence, independent CMS verification; no implied certificate trust or revocation verdict |
-| Native installers | Shared web core in minimal Tauri wrapper; build artifacts through supported runners, distinguish built from runtime-verified |
-| macOS/Safari and mobile | Expand WebKit/macOS CI where possible; physical devices cannot be simulated into verified hardware |
-| Physical printing | Verify real browser handoff; physical printer output requires access to a printer |
-| Accessibility | Automated audit plus keyboard/focus/zoom checks; no comprehensive screen-reader certification without direct evidence |
-| Fidelity | Embedded fonts, unicode/image/transparency corpus and independent render/preservation checks |
+| Request | Implemented and verified outcome | Remaining boundary |
+| --- | --- | --- |
+| Working website link | [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site) deployment v2 succeeded; online and true Chromium offline local-form recovery passed | Actual managed sign-in remains unverified; static host HTTP header support remains incomplete |
+| Accounts, maximum 200 | Account-only API and atomic database ceiling; live D1 table, anonymous response, forged-header 401 and managed sign-in redirect verified | Actual signed-in registration/session, live capacity and concurrent-user load not tested |
+| Store PDFs locally | Opt-in original/latest library, hashes, transactions and conflict protection; Edge and macOS WebKit workflows passed; ArrayBuffer writes retain legacy Blob compatibility | Unencrypted device-profile storage; no file synchronization or eviction guarantee |
+| Crash recovery | Validated checkpoints and reload recovery, including actual hosted offline reopening with edited value | Unfinished drafts, termination before commit and browser storage clearing can still lose work |
+| OCR | Local English recognition, text download, cancellation, restrictions and primed offline assets verified | Experimental: patched reproducible native dependency rebuild remains a stable-release gate; no searchable-PDF output |
+| Advanced editing | Extract/reorder/delete/permanent rotation/merge create independently checked new copies | Unsupported document structures are refused; no general content editor/redaction |
+| Certificate signing | Local P12/RSA signing with independent CMS/ByteRange and preservation checks; downloaded signed output reopens | Invisible only; no certificate trust, revocation, trusted time or legal-identity verdict |
+| Native installers | Unsigned Windows NSIS and macOS app/DMG artifacts built in run 37091186893 | Installation/runtime, signing/notarization and native integrations unverified; v2 packages verified; no installation/runtime claim |
+| macOS/Safari and mobile | 63-case macOS WebKit and Linux Chromium runs passed; responsive/touch-emulated browser coverage | Branded Safari, physical iOS/iPadOS/Android and assistive technology unverified; actual branded Safari/physical-mobile checks remain |
+| Physical printing | Browser PDF viewer/download handoff verified | No physical printer, native-driver or OS-share-sheet result |
+| Accessibility | Nine production states had zero axe violations; semantics/labels/focus/contrast repaired | Incomplete PDF contrast/reading order and physical screen-reader checks remain |
+| Fidelity | Embedded fonts/Unicode/images/transparency corpus and independent Poppler checks passed | Synthetic corpus is not universal compatibility or print/color certification |
 
-Account metadata is server-backed; PDF bytes are explicitly device-local. Browser clearing/eviction can delete local documents. Signing in on another device does not synchronize files. Managed ChatGPT sign-in avoids a new password database. A cap on registered accounts is not a measured 200-concurrent-user service guarantee.
+Account metadata is server-backed; PDF bytes remain explicitly device-local. Signing in elsewhere does not synchronize documents. Managed ChatGPT sign-in avoids a new password database. The 200-account cap is not a measured 200-concurrent-user service guarantee.
 
-Native SDK inspection found no Rust, Windows build SDK, Android SDK/ADB or Xcode in this Windows environment. Remote CI may build additional targets; actual hardware, printer and trust-chain checks remain separate gates.
+V2 fixed a real hosted canonical-redirect cache failure; the regression failed on the old worker and passed on Edge/WebKit before deployment. Hosted Chromium offline reload then passed. Metadata CSP and no-referrer are active; HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement still requires supported hosting configuration.
+
+The inspected Windows machine lacks Rust/MSVC/Windows SDK, so native builds were performed on remote CI. Existing artifact availability does not imply successful installation or native runtime. Final-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs. Exact hashes, expiring package downloads and the tested application commit are in verification; later documentation-only commits are not a separate application CI result.

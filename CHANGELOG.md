@@ -27,8 +27,8 @@
 - Windows: 55 unit/fixture cases; 62 E2E cases across focused suites; 7 controller and 9 signing-core cases passed.
 - Nine production accessibility states returned zero axe violations, with PDF-content contrast checks still incomplete.
 - Linux Chromium: 55 unit/fixture and 62 E2E cases passed in the first upgrade CI lane.
-- Final Reader CI run 37089902258 passed all jobs: 55 unit cases, 62 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint and nine signing cases.
-- Final native run 37089902268 built Windows NSIS and macOS app/DMG successfully; installation/runtime and signing/notarization remain unverified.
+- Final-source Reader CI run 37091186897 passed all jobs: 55 unit cases with zero skips, 63 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint and nine signing cases.
+- Final-source native run 37091186893 built Windows NSIS and macOS app/DMG successfully; installation/runtime and signing/notarization remain unverified.
 - Final Windows library rerun passed 23 cases in 27.5 seconds after portable ArrayBuffer writes, including legacy Blob read compatibility.
 - Earlier signing-harness navigation, WebKit Blob storage and Windows CLI forwarding failures were fixed and verified by the successful final runs.
 - New performance samples and hosted delivery status are recorded in docs/verification.md.
@@ -38,7 +38,10 @@
 - Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` succeeded at https://folio-local-pdf.gogoi-ronnie.chatgpt.site on 2026-10-03 at 02:37:09 UTC; live D1 accounts table confirmed.
 - Published Site commit `f7734929de58e05f280b536fbcd20b875a423221` and GitHub commit `6033dbf3546b0eef776507bc50b14ee354ca6273` have verified identical source trees with different ancestry. Preserve/reconcile both histories for future publishing; do not force-push.
 - Hosted online form/local-storage/edit/reload recovery, anonymous API response, forged-header rejection, sign-in redirect and phone layout passed. Actual account sign-in remains unverified.
-- Hosted offline reload exposed a failure under repair. Static-host HTTP CSP/referrer-header enforcement remains a platform gap; document metadata CSP was confirmed. See verification for subsequent delivery results.
+- Deployment v2 `appgdep_6ac06d8fe58c819181427cd4cea78796` succeeded at 02:51:08 UTC. At 02:51:18 UTC the full live online/account-boundary/phone smoke and true Chromium offline reload/local recovery passed, with zero PDF uploads or page exceptions.
+- Canonical-redirect cache normalization repaired the v1 offline failure; the added regression failed with the old worker and passed with the fix in Edge and WebKit. Metadata no-referrer and an original account icon were added; restrictive metadata CSP remains unchanged.
+- Site source `cae5f95b0255f6278c485c78da834adf606e6a60` and GitHub `710ff978c4f59b907bce108921ade34b6d2b5326` share tree `09642b4ac086bf603510c5fc75fcf1aa14862650`. Final-source Reader CI passed, including Linux 63 cases in 2.1 minutes and macOS WebKit 63 in 4.3 minutes without a flaky marker. Final-source Windows and macOS packaging both passed in native run 37091186893.
+- Static-host HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement remains a platform gap; metadata CSP and no-referrer are active. Actual managed account sign-in remains unverified.
 
 ### Known limitations
 

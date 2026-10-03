@@ -75,7 +75,9 @@ Earlier research remains historical context. The current decisions below superse
 
 **FACT - hosting observation:** On 2026-10-03, live static responses bypassed the worker's header code. Metadata CSP remained active, including blocking a host-injected inline script. HTTP CSP/frame-ancestors/nosniff and Referrer-Policy were not established by the attempted static-header configuration. [Cloudflare's static-asset headers documentation](https://developers.cloudflare.com/workers/static-assets/headers/) describes `_headers` behavior for its service; the managed Sites deployment did not honor the attempted route, so generic upstream behavior is not proof of this host's configuration.
 
-**DESIGN DECISION:** Keep the existing restrictive metadata CSP; add a metadata no-referrer fallback without enabling injected scripts. Resolve host-level headers through supported hosting configuration. Initial hosted offline reload also exposed cached canonical-redirect response handling; track the fix and actual redeployment test separately from local offline passes.
+**DESIGN DECISION:** Keep restrictive metadata CSP and the now-deployed metadata no-referrer fallback without enabling injected scripts. Resolve host-level headers through supported hosting configuration.
+
+**FACT - corrected hosted behavior:** Initial offline reload failed when the cache held a redirected response for the canonical application URL. Normalizing cached navigation responses repaired it; the regression failed against the old worker and passed with the fix in Edge and WebKit. Deployment v2 succeeded at 2026-10-03 02:51:08 UTC, followed by live Chromium offline reload/local-form recovery at 02:51:18 UTC. This verifies that hosted path, not branded Safari or physical devices.
 
 ## Desktop and Mobile Architecture
 
@@ -83,7 +85,7 @@ Earlier research remains historical context. The current decisions below superse
 
 **DESIGN DECISION:** Start with zero custom native commands or privileged plugin permissions. Configure Windows NSIS and macOS app/DMG targets while retaining one document UI/core. Native association/atomic-save/updater/share integrations await actual product and platform evidence.
 
-**FACT:** [Playwright's WebKit documentation](https://playwright.dev/docs/browsers#webkit) distinguishes its patched WebKit from branded Safari. The upgraded CI now passed 62 E2E cases on macOS WebKit and 62 on Linux Chromium; the separate native run built Windows NSIS and macOS app/DMG successfully. Physical iOS/iPadOS/Android, Safari and native WebView2/WKWebView workflows still require independent verification.
+**FACT:** [Playwright's WebKit documentation](https://playwright.dev/docs/browsers#webkit) distinguishes its patched WebKit from branded Safari. The upgraded CI now passed 63 E2E cases on macOS WebKit and 63 on Linux Chromium; the separate native run built Windows NSIS and macOS app/DMG successfully. Physical iOS/iPadOS/Android, Safari and native WebView2/WKWebView workflows still require independent verification.
 
 ## OCR Options and Decision
 
