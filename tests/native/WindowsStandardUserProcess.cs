@@ -13,6 +13,8 @@ using System.Text;
 namespace FolioNativeSmoke {
   public sealed class TokenFacts {
     public string UserSid;
+    public int TokenSessionId;
+    public uint? ProcessSessionId;
     public bool Elevated;
     public int ElevationType;
     public int IntegrityRid;
@@ -75,6 +77,10 @@ namespace FolioNativeSmoke {
     [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
     [DllImport("kernel32.dll", EntryPoint="OpenMutexW", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern IntPtr OpenMutex(uint access, bool inherit, string name);
+    [DllImport("kernel32.dll", EntryPoint="CreateMutexW", CharSet=CharSet.Unicode, SetLastError=true)]
+    static extern IntPtr CreateMutex(IntPtr attributes, bool initialOwner, string name);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool ProcessIdToSessionId(uint pid, out uint session);
+    [DllImport("kernel32.dll")] static extern uint GetCurrentProcessId();
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool member);
     [DllImport("kernel32.dll", EntryPoint="CreateJobObjectW", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern IntPtr CreateJobObject(IntPtr attributes, string name);
@@ -209,7 +215,7 @@ namespace FolioNativeSmoke {
     static TokenFacts Inspect(IntPtr token, string user) {
       string integrity=ReadSid(token,25);
       int restrictionLength; uint restrictionValue=ReadRestrictions(token,out restrictionLength);
-      var facts=new TokenFacts { UserSid=ReadSid(token,1), Elevated=ReadNumber(token,20)!=0, ElevationType=ReadNumber(token,18),
+      var facts=new TokenFacts { UserSid=ReadSid(token,1), TokenSessionId=ReadNumber(token,12), Elevated=ReadNumber(token,20)!=0, ElevationType=ReadNumber(token,18),
         IntegrityRid=int.Parse(integrity.Substring(integrity.LastIndexOf('-')+1)), MatchesExpectedUser=ReadSid(token,1)==user,
         HasRestrictions=restrictionValue!=0, RestrictionReturnLength=restrictionLength, RestrictionRawValue=restrictionValue,
         RestrictingSidCount=ReadNumber(token,11) };
@@ -241,7 +247,11 @@ namespace FolioNativeSmoke {
     }
     public static TokenFacts CurrentToken() {
       IntPtr token; Check(OpenProcessToken(GetCurrentProcess(),8,out token),"OpenProcessToken diagnostic");
-      try { return Inspect(token,ReadSid(token,1)); } finally { CloseHandle(token); }
+      try { var facts=Inspect(token,ReadSid(token,1)); facts.ProcessSessionId=ReadProcessSession(GetCurrentProcessId()); return facts; }
+      finally { CloseHandle(token); }
+    }
+    static uint ReadProcessSession(uint pid) {
+      uint session; Check(ProcessIdToSessionId(pid,out session),"ProcessIdToSessionId owned process"); return session;
     }
     public StandardUserProcess(Action<string,string> accountReceipt) {
       if (Environment.OSVersion.Platform!=PlatformID.Win32NT || Environment.GetEnvironmentVariable("GITHUB_ACTIONS")!="true" ||
@@ -348,6 +358,22 @@ namespace FolioNativeSmoke {
           Message=error==0 ? "Existing mutex opened and immediately closed; never acquired." : new Win32Exception(error).Message };
       } finally { Check(RevertToSelf(),"Revert read-only mutex probe impersonation"); }
     }
+    public AccessProbe ProbeFreshSessionMutex() {
+      // Test only a random disposable name, never create/open the browser's singleton name.
+      string name="Local\\FolioNativeSmoke_"+Guid.NewGuid().ToString("N");
+      Check(ImpersonateLoggedOnUser(targetToken),"Impersonate standard user for owned session mutex probe");
+      try {
+        IntPtr handle=CreateMutex(IntPtr.Zero,false,name); // Default token DACL; non-inheritable; never acquire ownership.
+        int error=Marshal.GetLastWin32Error();
+        if (handle!=IntPtr.Zero) {
+          Check(CloseHandle(handle),"Close fresh session mutex probe");
+          if (error==183) throw new InvalidOperationException("Random diagnostic mutex unexpectedly existed; no ownership was acquired.");
+          error=0;
+        }
+        return new AccessProbe { Target=name, Opened=handle!=IntPtr.Zero, Error=error,
+          Message=error==0 ? "Fresh session mutex created without ownership, immediately closed and destroyed." : new Win32Exception(error).Message };
+      } finally { Check(RevertToSelf(),"Revert owned session mutex probe impersonation"); }
+    }
     public AccessProbe ProbeExistingSingletonFile(string directory) {
       string path=Path.Combine(directory,"lockfile");
       Check(ImpersonateLoggedOnUser(targetToken),"Impersonate standard user for read-only singleton file probe");
@@ -380,7 +406,7 @@ namespace FolioNativeSmoke {
         Check(AssignProcessToJobObject(job,process),"AssignProcessToJobObject owned child");
         IntPtr token;
         Check(OpenProcessToken(process,8,out token),"OpenProcessToken child");
-        try { Child=Inspect(token,user); RequireStandard(Child); } finally { CloseHandle(token); }
+        try { Child=Inspect(token,user); Child.ProcessSessionId=ReadProcessSession(Pid); RequireStandard(Child); } finally { CloseHandle(token); }
         if (ResumeThread(child.thread)==0xffffffff) throw new Win32Exception(Marshal.GetLastWin32Error(),"ResumeThread");
       } catch { TerminateProcess(process,1); throw; }
       finally { CloseHandle(child.thread); }
@@ -414,7 +440,7 @@ namespace FolioNativeSmoke {
       IntPtr handle;
       if (!observedRuntime.TryGetValue(pid,out handle)) throw new InvalidOperationException("Runtime token inspection requires an observed member of our owned job.");
       IntPtr token; Check(OpenProcessToken(handle,8,out token),"Read owned runtime process token");
-      try { return Inspect(token,user); } finally { CloseHandle(token); }
+      try { var facts=Inspect(token,user); facts.ProcessSessionId=ReadProcessSession(pid); return facts; } finally { CloseHandle(token); }
     }
     public uint ExitCode() { uint code; Check(GetExitCodeProcess(process,out code),"GetExitCodeProcess"); return code; }
     static string LookupLocalSid(string name) {

@@ -125,8 +125,9 @@ try {
     if (-not $env:FOLIO_NATIVE_STOP_FILE) { throw 'Owned stop signal path is required for account cleanup.' }
     $result.nativeOutput = @{ available=$false; reason='Plain CreateProcessWithTokenW startup uses no inherited standard handles; browser file logging remains enabled.' }
     $result.singletonDiagnostics = [ordered]@{
-      coverage='Read-only upstream Chromium mutex-name probe; Edge may use another name. File probe does not test write/delete access.'
+      coverage='Upstream Chromium mutex-name probe may not match Edge. Random mutex tests the impersonated helper namespace, not necessarily the child namespace. File probe is metadata-only, not write/delete access.'
       beforeMutex=$launcher.ProbeUpstreamSingletonMutex()
+      freshSessionMutex=$launcher.ProbeFreshSessionMutex()
     }
     $launcher.Launch($exe,[System.IO.Path]::GetDirectoryName($exe))
     $result.childPid = $launcher.Pid
