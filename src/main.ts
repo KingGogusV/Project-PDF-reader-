@@ -51,8 +51,8 @@ app.innerHTML = `
     <div class="tool-separator"></div>${btn('undo','undo','Undo (Ctrl or Command Z)')}${btn('redo','redo','Redo')}${btn('store-local','open','Store on this device')}${btn('document-tools','info','More document tools')}
    </div>
    <div class="toolbar-spacer"></div>
-   <div class="tool-group zoom-group">${btn('zoom-out','minus','Zoom out')}<select id="scale" class="scale-select" aria-label="Zoom level"><option value="page-width">Fit width</option><option value="page-fit">Fit page</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option></select>${btn('zoom-in','plus','Zoom in')}</div>
-   <div class="tool-group desktop-tools">${btn('rotate','rotate','Rotate view clockwise')}<select id="view-mode" class="view-select" aria-label="Reading mode"><option value="continuous">Scroll pages</option><option value="page">One page</option></select>${btn('properties','info','Document properties')}${btn('print','print','Open a print copy')}</div>
+   <div class="tool-group zoom-group">${btn('zoom-out','minus','Zoom out')}<span class="select-shell"><select id="scale" class="scale-select" aria-label="Zoom level"><option value="page-width">Fit width</option><option value="page-fit">Fit page</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option></select></span>${btn('zoom-in','plus','Zoom in')}</div>
+   <div class="tool-group desktop-tools">${btn('rotate','rotate','Rotate view clockwise')}<span class="select-shell view-mode-control"><select id="view-mode" class="view-select" aria-label="Reading mode"><option value="continuous">Scroll pages</option><option value="page">One page</option></select></span>${btn('properties','info','Document properties')}${btn('print','print','Open a print copy')}</div>
    <div class="tool-separator desktop-tools"></div><button id="export" class="button accent" title="Export a PDF copy (Ctrl or Command S)">${icon('download')}<span class="save-label">Export copy</span><span class="offscreen">Export PDF copy</span></button>
   </div>
   <div id="searchbar" class="searchbar" hidden><div class="search-field"><input id="search-input" type="search" placeholder="Find a word or phrase…" aria-label="Search document" autocomplete="off"></div><span id="search-status" class="search-status" aria-live="polite">Type to search</span>${btn('search-prev','chevron','Previous search result','previous-icon')}${btn('search-next','chevron','Next search result')}${btn('search-close','close','Close search')}</div>
@@ -99,9 +99,11 @@ function toast(message: string, error = false) {
  toastTimer = setTimeout(() => { el.hidden = true; }, error ? 10000 : 6500);
 }
 function on(id: string, fn: () => unknown) { $(id).addEventListener('click', () => { Promise.resolve().then(fn).catch(e => toast(errorText(e), true)); }); }
-function dialog(title: string, body: HTMLElement, actions: {label: string; value: string; primary?: boolean}[]): Promise<string> {
+function dialog(title: string, body: HTMLElement, actions: {label: string; value: string; primary?: boolean}[], origin?: HTMLElement): Promise<string> {
  const el = $<HTMLDialogElement>('dialog'); cancelDialog?.();
- const returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+ // WebKit on macOS does not focus buttons on pointer activation. Preserve the
+ // actual initiating control explicitly instead of inferring it from focus.
+ const returnFocus=origin||(document.activeElement instanceof HTMLElement?document.activeElement:null);
  $('dialog-title').textContent = title; $('dialog-body').replaceChildren(body); $('dialog-actions').replaceChildren();
  return new Promise(resolve => {
   let settled = false;
@@ -261,15 +263,15 @@ async function renderSidebar() {
   const add=(items: typeof outline,level=0)=>{for(const item of items||[]){const b=document.createElement('button');b.className='outline-item';b.style.paddingLeft=`${8+Math.min(level,5)*12}px`;b.textContent=item.title||'Untitled section';b.onclick=()=>{if(item.dest)void s.controller.goToDestination(item.dest);if(innerWidth<760)setSidebar(false,'document');};content.append(b);if(item.items?.length)add(item.items,level+1);}};
   if(outline?.length)add(outline);else{const p=copy('This PDF has no outline. Use page thumbnails or search to find your place.');p.className='sidebar-empty';content.append(p);}
  }else{
-  content.append(copy(s.name));content.append(copy(`${s.controller.pageCount} pages · ${(s.file.size/1024).toFixed(0)} KB`));const b=document.createElement('button');b.className='button';b.textContent='View properties';b.onclick=()=>void showProperties();content.append(b);
+  content.append(copy(s.name));content.append(copy(`${s.controller.pageCount} pages · ${(s.file.size/1024).toFixed(0)} KB`));const b=document.createElement('button');b.className='button';b.textContent='View properties';b.onclick=()=>void showProperties(b);content.append(b);
  }
 }
-async function showProperties() {
+async function showProperties(origin: HTMLElement = $('properties')) {
  const s=active();if(!s)return;const metadata=await s.controller.getMetadata();const body=document.createElement('div');const dl=document.createElement('dl');dl.className='property-list';
  const info=(metadata?.info||{}) as unknown as Record<string,unknown>;
  const pairs=[['File',s.name],['Pages',String(s.controller.pageCount)],['Size',`${(s.file.size/1024).toFixed(1)} KB`],['Title',String(info.Title||'Not set')],['Author',String(info.Author||'Not set')],['Producer',String(info.Producer||'Not set')],['PDF version',String(info.PDFFormatVersion||'Unknown')],['Processing','Local — no document upload'],['Edits',s.state?.readOnlyReason||'Supported forms and annotations']];
  for(const [key,value]of pairs){const dt=document.createElement('dt');dt.textContent=key;const dd=document.createElement('dd');dd.textContent=value;dl.append(dt,dd);}body.append(dl);
- await dialog('Document properties',body,[{label:'Done',value:'done',primary:true}]);
+ await dialog('Document properties',body,[{label:'Done',value:'done',primary:true}],origin);
 }
 async function exportCopy() {
  const s=active();if(!s||exporting)return;exporting=true;$<HTMLButtonElement>('export').disabled=true;
@@ -285,7 +287,7 @@ async function printCopy() {
 function toggleSearch(show=!$('searchbar').hidden?false:true){clearTimeout(searchTimer);$('searchbar').hidden=!show;$('toggle-search').setAttribute('aria-expanded',String(show));if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();$('toggle-search').focus();}}
 function runSearch(previous=false){const query=$<HTMLInputElement>('search-input').value;active()?.controller.search(query,previous);}
 on('open',choose);on('choose',choose);on('clear-recent',()=>{clearRecent();renderRecents();});
-on('library',()=>deviceLibrary.showLibrary());on('account',()=>deviceLibrary.showAccount());on('store-local',()=>deviceLibrary.storeActive());on('document-tools',()=>documentTools.showTools());
+on('library',()=>deviceLibrary.showLibrary($('library')));on('account',()=>deviceLibrary.showAccount($('account')));on('store-local',()=>deviceLibrary.storeActive($('store-local')));on('document-tools',()=>documentTools.showTools());
 on('close-active-document',async()=>{const s=active();if(s)await closeSession(s.id);});
 on('demo',async()=>{const r=await fetch(`${import.meta.env.BASE_URL}demo.pdf`);if(!r.ok)throw new Error('The field guide could not load. You can open a local PDF instead.');await openFiles([new File([await r.blob()],'Folio field guide.pdf',{type:'application/pdf'})]);});
 on('toggle-sidebar',()=>{const show=!!$('sidebar').hidden;setSidebar(show,show?'navigation':'toggle');return renderSidebar();});on('sidebar-close',()=>setSidebar(false,'toggle'));
@@ -306,8 +308,9 @@ on('properties',showProperties);on('export',exportCopy);
 $('print').addEventListener('click',()=>void printCopy());
 on('mobile-more',async()=>{const body=document.createElement('div');body.append(copy('Choose a document action. Printing opens a local PDF copy in your browser.'));
  const actions=[{label:'Rotate view',value:'rotate'},{label:'Properties',value:'properties'},{label:'Reading mode',value:'mode'},{label:'Print copy',value:'print'},{label:'Keyboard shortcuts and help',value:'help'}];
- const result=await dialog('Document actions',body,actions);if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties();if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();if(result==='help')$('help').click();});
-on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only. Choose Keep on this device to enable a local library and recovery copies. Export important work regularly; clearing browser data removes local files.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. Document tools include local English OCR, safe page organization and certificate signing. Signing checks document integrity; certificate trust and revocation are not verified. PDF JavaScript remains disabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
+ const result=await dialog('Document actions',body,actions,$('mobile-more'));if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties($('mobile-more'));if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();if(result==='help')await showHelp($('mobile-more'));});
+async function showHelp(origin: HTMLElement = $('help')) {const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only. Choose Keep on this device to enable a local library and recovery copies. Export important work regularly; clearing browser data removes local files.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">In Safari on Mac, Option-Tab includes links; enable “Press Tab to highlight each item on a webpage” in Safari settings for full Tab navigation. Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. Document tools include local English OCR, safe page organization and certificate signing. Signing checks document integrity; certificate trust and revocation are not verified. PDF JavaScript remains disabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}],origin);}
+on('help',()=>showHelp());
 document.addEventListener('keydown',e=>{
  if(e.defaultPrevented||$<HTMLDialogElement>('dialog').open)return;const target=e.target as HTMLElement;const editing=target.matches('input,textarea,select,[contenteditable="true"]')||target.closest('[contenteditable="true"]');const mod=e.ctrlKey||e.metaKey;
  if(mod&&e.key.toLowerCase()==='o'){e.preventDefault();void choose();return;}

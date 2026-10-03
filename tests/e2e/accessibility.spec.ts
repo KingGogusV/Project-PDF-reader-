@@ -122,8 +122,9 @@ test('phone actions expose help and nested dialogs return focus to the action tr
   await expect(page.locator('#mobile-more')).toBeFocused();
 });
 
-test('skip link, keyboard form entry, save and reopen preserve edits and accessible status', async ({ page }, testInfo) => {
-  await page.keyboard.press('Tab');
+test('skip link, keyboard form entry, save and reopen preserve edits and accessible status', async ({ page, browserName }, testInfo) => {
+  // Safari's default macOS convention includes links with Option+Tab.
+  await page.keyboard.press(browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab');
   await expect(page.locator('.skip-link')).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#welcome')).toBeFocused();
@@ -228,6 +229,7 @@ test('axe checks all shell content in representative document and dialog states'
     await expect(page.getByRole('dialog')).toBeVisible();
     await scan(`${id} dialog`);
     await page.keyboard.press('Escape');
+    await expect(page.locator(`#${id}`)).toBeFocused();
   }
   await openPdf(page);
   await openPdf(page);
@@ -242,6 +244,7 @@ test('axe checks all shell content in representative document and dialog states'
     await expect(page.getByRole('dialog')).toBeVisible();
     await scan(`${name} dialog`);
     await page.keyboard.press('Escape');
+    await expect(page.locator('#document-tools')).toBeFocused();
   }
   await page.locator('#properties').click();
   await scan('document properties');
@@ -257,6 +260,7 @@ test('axe checks all shell content in representative document and dialog states'
   await expect(page.getByRole('dialog')).toBeVisible();
   await scan('local storage consent');
   await page.getByRole('button', { name: 'Not now', exact: true }).click();
+  await expect(page.locator('#store-local')).toBeFocused();
   await page.setViewportSize({ width: 390, height: 844 });
   await scan('phone reader');
   await page.locator('#mobile-more').click();

@@ -18,7 +18,7 @@ The axe gate scans welcome; help, library and account dialogs; multiple document
 
 All **15 axe states reported zero violations**. `color-contrast` remained incomplete in the welcome footer, PDF/text/canvas states, and some clipped/overlapping content reported in OCR, signing and phone-actions dialogs. These incomplete checks were retained, not suppressed or relabeled as passes. Application Properties labels improved from 3.60:1 to 6.36:1. Screenshot review covered desktop 1600 x 1000, laptop 1280 x 800, tablet 1024 x 768 and 768 x 1024, phone 390 x 844 and 844 x 390, 320 x 256 reflow, doubled text and forced colors.
 
-The local production shell JavaScript is **79.23 kB / 25.73 kB gzip**, compared with the inspected baseline 76.69 kB / 25.02 kB gzip. This is a build-size measurement, not a device-speed benchmark. No new runtime dependency was added. GitHub/macOS/native results and publication must be checked separately against their actual source revisions.
+The local production shell JavaScript is **79.62 kB / 25.90 kB gzip**, compared with the inspected baseline 76.69 kB / 25.02 kB gzip. This is a build-size measurement, not a device-speed benchmark. No new runtime dependency was added. GitHub/macOS/native results and publication must be checked separately against their actual source revisions.
 
 ## Earlier verified audit (before this pass)
 

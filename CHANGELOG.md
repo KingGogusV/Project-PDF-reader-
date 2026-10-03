@@ -153,3 +153,10 @@ The earlier same-day investigation and failures below are retained for engineeri
 ### Known Issues
 
 Deferred tools include underline/strikethrough/sticky-note creation, signing, OCR and advanced editing. Broad font/document fidelity, real signed PDFs, large-byte scans and assistive technology need more evidence. No persistent unsaved-document recovery exists.
+
+### Accessibility cross-browser follow-up — 2026-10-03
+
+- Fixed stale dialog return focus after macOS pointer activation by supplying the initiating control.
+- Kept zoom/reading-mode selects native while enforcing readable, 44-pixel control boxes across engines.
+- Added Safari keyboard navigation guidance and cross-platform pointer-focus regression assertions.
+- Recorded the failing macOS CI evidence; passing Linux results alone are not treated as cross-platform verification.
