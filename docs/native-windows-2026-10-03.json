@@ -1,0 +1,111 @@
+{
+  "sourceCommit": "85cc5de6378e64372549fb298d383374c74a488a",
+  "artifactId": 11266978801,
+  "installerSha256": "48e755d2e3a9596981a11c0a914ae514455ec533e82eb0e8201e65e219da8c31",
+  "executableSha256": "051ea3fd588f4f11aa52734dfadfa2bd841deb9f43dc7690bca5b2237d6bd3a9",
+  "osVersion": "10.0.22621.0",
+  "webviewVersion": "154.0.4258.53",
+  "mode": "local-normal-user",
+  "status": "passed",
+  "startedAt": "2026-10-03T10:57:34.598Z",
+  "completedAt": "2026-10-03T10:57:43.347Z",
+  "checks": [
+    {
+      "name": "same-account installed app starts with isolated loopback debugging",
+      "status": "passed",
+      "mode": "local-normal-user",
+      "elevated": false,
+      "version": "154.0.4258.53"
+    },
+    {
+      "name": "packaged application opens without a development server",
+      "status": "passed"
+    },
+    {
+      "name": "real local form PDF renders nonblank pixels and native form widgets",
+      "status": "passed",
+      "width": 1007,
+      "height": 1303,
+      "sampledNonWhitePixels": 775
+    },
+    {
+      "name": "declining storage leaves the document library empty",
+      "status": "passed"
+    },
+    {
+      "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+      "status": "passed",
+      "originalSha256": "3c68bed5cf4413357fcd633a9c88251755994e4aaf7895ebd156cbc2b425bb8b",
+      "latestSha256": "283ea529608a6178d4cadd643bd6dec6816abc5139d5f0e07523f2883977c3e6",
+      "pageCount": 1
+    },
+    {
+      "name": "reloading the actual native WebView restores the edited form from the device library",
+      "status": "passed"
+    },
+    {
+      "name": "a second real PDF searches all three pages and navigates results",
+      "status": "passed"
+    },
+    {
+      "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+      "status": "passed",
+      "observation": "Controlled reload through form recovery and search; app network requests only."
+    },
+    {
+      "name": "native PDF download preserves original bytes and reopens with edited form values",
+      "status": "passed"
+    },
+    {
+      "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+      "status": "passed"
+    },
+    {
+      "name": "same-account installed app starts with isolated loopback debugging",
+      "status": "passed",
+      "mode": "local-normal-user",
+      "elevated": false,
+      "version": "154.0.4258.53"
+    },
+    {
+      "name": "full native process termination and relaunch recover the last completed form checkpoint",
+      "status": "passed"
+    }
+  ],
+  "launches": [
+    {
+      "status": "stopped",
+      "elevated": false,
+      "policyScope": null,
+      "cleanup": {
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      "webview": {
+        "version": "154.0.4258.53",
+        "profileVerified": true,
+        "portVerified": true
+      }
+    },
+    {
+      "status": "stopped",
+      "elevated": false,
+      "policyScope": null,
+      "cleanup": {
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      "webview": {
+        "version": "154.0.4258.53",
+        "profileVerified": true,
+        "portVerified": true
+      }
+    }
+  ],
+  "installedNoticeHashesVerified": 533,
+  "limits": [
+    "Synthetic fixtures, real installed application; no physical print or native picker UI certification.",
+    "Only checkpoints completed before termination are recoverable.",
+    "Normal-user results do not stand in for the revised elevated CI gate."
+  ]
+}

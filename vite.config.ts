@@ -7,7 +7,7 @@ const securityHeaders = {
 };
 
 export default defineConfig({
-  server: { host: '127.0.0.1', headers: securityHeaders },
+  server: { host: '127.0.0.1', headers: securityHeaders, watch: { ignored: ['**/.tmp/**', '**/playwright-report/**', '**/test-results/**'] } },
   preview: { host: '127.0.0.1', headers: securityHeaders },
-  build: { target: 'es2022', sourcemap: true },
+  build: { outDir: 'dist/client', target: 'es2022', sourcemap: true },
 });

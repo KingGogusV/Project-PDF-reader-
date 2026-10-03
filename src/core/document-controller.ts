@@ -17,6 +17,10 @@ export interface ReaderState {
   pages: number;
   scale: number;
   dirty: boolean;
+  /** Monotonic local content revision, including unfinished text annotation drafts. */
+  revision: number;
+  /** The native editor has an unfinished operation which cannot yet be checkpointed. */
+  checkpointPending: boolean;
   tool: ReaderTool;
   canUndo: boolean;
   canRedo: boolean;
@@ -31,6 +35,25 @@ export interface ReaderState {
 }
 export type PasswordHandler = (reason: number) => Promise<string | null>;
 export type OutlineItem = NonNullable<Awaited<ReturnType<PDFDocumentProxy['getOutline']>>>[number];
+
+export interface DocumentCheckpoint {
+  bytes: Uint8Array;
+  /** Revision captured when this queued operation started serializing. */
+  revision: number;
+  /** PDF.js document identifier, not a cryptographic integrity checksum. */
+  fingerprint: string;
+  /** Whether this snapshot differed from the last explicitly acknowledged export. */
+  modified: boolean;
+}
+
+export class CheckpointDeferredError extends Error {
+  constructor() {
+    super('Recovery is pending until the current annotation edit is finished.');
+    this.name = 'CheckpointDeferredError';
+  }
+}
+
+interface SerializedCopy extends DocumentCheckpoint { hash: string }
 
 const TOOL_MODES: Record<ReaderTool, number> = {
   select: pdfjs.AnnotationEditorType.NONE,
@@ -128,29 +151,52 @@ export class ReaderController {
   private _pdfDocument?: PDFDocumentProxy;
   private _viewer?: PDFViewer;
   private loadingTask?: PDFDocumentLoadingTask;
-  private originalBytes?: Uint8Array;
+  private originalBytes?: Uint8Array<ArrayBuffer>;
   private eventBus?: EventBus;
   private linkService?: PDFLinkService;
   private findController?: PDFFindController;
   private editorManager?: AnnotationEditorUIManager;
+  private readonly editorSignals = new Set<AbortSignal>();
   private readonly lifetime = new AbortController();
   private destroyed = false;
   private openedAt = 0;
   private lastQuery = '';
   private savedHash = '';
   private exportedHash?: string;
+  private observedHash = '';
+  private observedDraft = '';
+  private draftElement?: HTMLElement;
+  private drawingPointers = new Set<number>();
+  private outputQueue: Promise<void> = Promise.resolve();
   private dirtyTimer?: ReturnType<typeof setTimeout>;
   private thumbnailQueue: Promise<void> = Promise.resolve();
   private thumbnailTask?: RenderTask;
   private _state: ReaderState = {
-    loading: false, page: 1, pages: 0, scale: 1, dirty: false, tool: 'select',
+    loading: false, page: 1, pages: 0, scale: 1, dirty: false, revision: 0, checkpointPending: false, tool: 'select',
     canUndo: false, canRedo: false, canPrint: false, canCopy: false,
     searchCount: 0, searchCurrent: 0,
   };
 
   constructor(readonly container: HTMLElement, private readonly onState: (state: ReaderState) => void) {
+    container.addEventListener('input', event => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest('.annotationEditorLayer') && target.isContentEditable) {
+        this.draftElement = target;
+      }
+    }, { signal: this.lifetime.signal });
     for (const event of ['input', 'change', 'pointerup', 'keyup', 'focusout']) {
       container.addEventListener(event, () => this.scheduleDirtyCheck(), { signal: this.lifetime.signal });
+    }
+    container.addEventListener('pointerdown', event => {
+      if (['draw', 'highlight'].includes(this._state.tool) && (event.target as Element).closest('.annotationEditorLayer, .textLayer')) {
+        this.drawingPointers.add(event.pointerId);
+        this.scheduleDirtyCheck();
+      }
+    }, { signal: this.lifetime.signal });
+    for (const type of ['pointerup', 'pointercancel'] as const) {
+      window.addEventListener(type, event => {
+        if (this.drawingPointers.delete(event.pointerId)) this.scheduleDirtyCheck();
+      }, { signal: this.lifetime.signal });
     }
     container.addEventListener('click', event => {
       const target = event.target as Element;
@@ -170,6 +216,14 @@ export class ReaderController {
   get pageCount() { return this._pdfDocument?.numPages ?? 0; }
   get currentPage() { return this._viewer?.currentPageNumber ?? 1; }
   get state(): Readonly<ReaderState> { return { ...this._state }; }
+
+  /** An immutable snapshot of the parsed source, independent of its external file. */
+  getOriginalFile(): File {
+    if (!this._file || !this.originalBytes || !this._pdfDocument || this.destroyed) throw new Error('No document is open.');
+    return new File([this.originalBytes], this._file.name, {
+      type: this._file.type || 'application/pdf', lastModified: this._file.lastModified,
+    });
+  }
 
   private publish(patch: Partial<ReaderState>) {
     if (this.destroyed) return;
@@ -195,9 +249,9 @@ export class ReaderController {
       task.onPassword = (updatePassword: (password: string) => void, reason: number) => {
         void passwordHandler(reason).then(password => {
           if (this.destroyed) return;
-          if (password === null) { cancelled = true; void task.destroy(); }
+          if (password === null) { cancelled = true; void task.destroy().catch(() => undefined); }
           else updatePassword(password);
-        }).catch(() => { void task.destroy(); });
+        }).catch(() => { cancelled = true; void task.destroy().catch(() => undefined); });
       };
       const doc = this._pdfDocument = await task.promise;
       const [metadata, permissions, signatures] = await Promise.all([
@@ -207,7 +261,7 @@ export class ReaderController {
       let readOnlyReason: string | undefined;
       if (info.EncryptFilterName) readOnlyReason = 'Encrypted document: reading only. Export keeps the original encryption.';
       else if (signatures?.length) readOnlyReason = 'Signed document: reading only to preserve existing signatures. Signature validity is not checked.';
-      else if (info.IsSignaturesPresent) readOnlyReason = 'This PDF contains signature fields. Editing is disabled; certificate signing and signature validation are not supported.';
+      else if (info.IsSignaturesPresent) readOnlyReason = 'This PDF contains signature fields. Changes to these documents are disabled in this version.';
       else if (info.IsXFAPresent || doc.isPureXfa) readOnlyReason = 'XFA forms are not supported. This document is read-only and may require another reader.';
       else if (permissions && (!permissions.has(pdfjs.PermissionFlag.MODIFY_CONTENTS) || !permissions.has(pdfjs.PermissionFlag.MODIFY_ANNOTATIONS))) {
         readOnlyReason = 'This document restricts changes. Editing and form entry are disabled.';
@@ -231,6 +285,7 @@ export class ReaderController {
       // Never let that reset acknowledge a user save.
       storage.onResetModified = () => this.scheduleDirtyCheck();
       this.savedHash = doc.annotationStorage.serializable.hash;
+      this.observedHash = this.savedHash;
       this.linkService!.setDocument(doc);
       this._viewer!.setDocument(doc);
       await this._viewer!.firstPagePromise;
@@ -298,7 +353,35 @@ export class ReaderController {
     });
     on('updatefindmatchescount', event => this.publish({ searchCount: event.matchesCount.total, searchCurrent: event.matchesCount.current }));
     on('updatefindcontrolstate', event => this.publish({ searchCount: event.matchesCount.total, searchCurrent: event.matchesCount.current }));
-    on('annotationeditoruimanager', event => { this.editorManager = event.uiManager; });
+    on('annotationeditoruimanager', event => {
+      const manager = this.editorManager = event.uiManager as AnnotationEditorUIManager;
+      const combinedSignal = manager.combinedSignal.bind(manager);
+      manager.combinedSignal = controller => {
+        const signal = combinedSignal(controller);
+        // WebKit 26.6 can collect AbortSignal.any() while event listeners still
+        // depend on it, so aborting a finished stroke leaves stale listeners.
+        // Retain only this manager's live signals until their normal abort.
+        // No global API patch or suppressed editor exceptions are involved.
+        if (!signal.aborted) {
+          this.editorSignals.add(signal);
+          signal.addEventListener('abort', () => this.editorSignals.delete(signal), { once: true });
+        }
+        return signal;
+      };
+    });
+    on('annotationlayerrendered', event => {
+      // PDFs often omit /TU (the field's alternate name). Preserve supplied
+      // labels; otherwise expose the actual field name without guessing meaning.
+      const page = viewer.getPageView(event.pageNumber - 1)?.div as HTMLDivElement | undefined;
+      const controls = page?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+        '.annotationLayer input:not([type="hidden"]), .annotationLayer textarea, .annotationLayer select',
+      );
+      for (const control of controls ?? []) {
+        if (control.getAttribute('aria-label')?.trim() || control.getAttribute('aria-labelledby')?.trim() || control.title.trim() || control.labels?.length) continue;
+        const fieldName = control.name.trim();
+        if (fieldName) control.setAttribute('aria-label', fieldName);
+      }
+    });
     on('editingstateschanged', event => {
       this.publish({ canUndo: !!event.details.hasSomethingToUndo, canRedo: !!event.details.hasSomethingToRedo });
       this.scheduleDirtyCheck();
@@ -315,8 +398,19 @@ export class ReaderController {
   }
   private checkDirty() {
     if (!this._pdfDocument || this.destroyed || this._state.readOnlyReason) return;
-    const dirty = this._pdfDocument.annotationStorage.serializable.hash !== this.savedHash;
-    if (dirty !== this._state.dirty) this.publish({ dirty });
+    const hash = this._pdfDocument.annotationStorage.serializable.hash;
+    // FreeText serializes its committed private content, not the current DOM.
+    // Track that transient draft so the UI reports pending recovery honestly.
+    if (this.draftElement && !this.draftElement.isContentEditable) this.draftElement = undefined;
+    const draft = this.draftElement ? `${this.draftElement.id}:${this.draftElement.innerHTML}` : '';
+    const contentChanged = hash !== this.observedHash || draft !== this.observedDraft;
+    const dirty = hash !== this.savedHash || !!draft;
+    const checkpointPending = !!draft || this.drawingPointers.size > 0;
+    this.observedHash = hash;
+    this.observedDraft = draft;
+    if (contentChanged || dirty !== this._state.dirty || checkpointPending !== this._state.checkpointPending) {
+      this.publish({ dirty, checkpointPending, revision: this._state.revision + (contentChanged ? 1 : 0) });
+    }
   }
 
   /** Commit the active editor before a close/navigation decision; do not rely on a timer. */
@@ -324,6 +418,8 @@ export class ReaderController {
     const focused = document.activeElement as HTMLElement | null;
     if (focused && this.container.contains(focused)) focused.blur();
     this.editorManager?.commitOrRemove();
+    this.draftElement = undefined;
+    this.drawingPointers.clear();
     this.checkDirty();
     return this._state.dirty;
   }
@@ -370,23 +466,56 @@ export class ReaderController {
   undo() { this.eventBus?.dispatch('editingaction', { source: this, name: 'undo' }); this.scheduleDirtyCheck(); }
   redo() { this.eventBus?.dispatch('editingaction', { source: this, name: 'redo' }); this.scheduleDirtyCheck(); }
 
-  /** Returns a separate copy only after an incremental-write and reopen check. */
-  async exportBytes(): Promise<Uint8Array> {
+  private queueOutput<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.outputQueue.then(operation);
+    // Keep the queue usable after a failed operation; the caller still receives
+    // the original rejection and must display a recovery/export failure.
+    this.outputQueue = result.then(() => undefined, () => undefined);
+    return result;
+  }
+
+  /** A validated copy; starting a download alone never acknowledges these changes. */
+  exportBytes(): Promise<Uint8Array> {
+    return this.queueOutput(async () => {
+      this.flushPendingEdits();
+      const copy = await this.serializeCopy();
+      this.exportedHash = copy.hash;
+      return copy.bytes;
+    });
+  }
+
+  /** Background recovery must neither steal editor focus nor acknowledge a save. */
+  createCheckpoint(): Promise<DocumentCheckpoint> {
+    return this.queueOutput(async () => {
+      this.checkDirty();
+      if (this._state.checkpointPending) throw new CheckpointDeferredError();
+      const { hash: _hash, ...checkpoint } = await this.serializeCopy();
+      return checkpoint;
+    });
+  }
+
+  /** Shared, serialized preservation and persistence checks for every output path. */
+  private async serializeCopy(): Promise<SerializedCopy> {
     const doc = this._pdfDocument;
-    if (!doc || !this.originalBytes) throw new Error('No document is open.');
-    this.flushPendingEdits();
-    if (this._state.readOnlyReason || !doc.annotationStorage.size) {
-      this.exportedHash = doc.annotationStorage.serializable.hash;
-      return this.originalBytes.slice();
-    }
+    const original = this.originalBytes;
+    if (!doc || !original || this.destroyed) throw new Error('No document is open.');
+    this.checkDirty();
     const snapshot = doc.annotationStorage.serializable;
     const expectedHash = snapshot.hash;
+    const captured = {
+      hash: expectedHash, revision: this._state.revision,
+      fingerprint: doc.fingerprints[0] ?? '', modified: expectedHash !== this.savedHash,
+    };
+    if (this._state.readOnlyReason || !doc.annotationStorage.size) {
+      return { ...captured, bytes: original.slice() };
+    }
     // Form entries are live object references; edits made while writing must not
     // change what this specific saved copy is checked against.
     const expectedChanges = snapshot.map ? structuredClone(snapshot.map) : null;
     const output = await doc.saveDocument();
+    if (this.destroyed) throw new Error('The document was closed before its copy finished.');
     // PDF.js performs incremental writes: every byte of the source must remain.
-    if (output.length < this.originalBytes.length || !this.originalBytes.every((value, index) => output[index] === value)) {
+    if (output.length < original.length || !original.every((value, index) => output[index] === value)) {
       throw new Error('Export validation failed: the original PDF bytes were not preserved. Your edits remain open.');
     }
     const verificationTask = pdfjs.getDocument(loadingOptions(output.slice()));
@@ -406,8 +535,8 @@ export class ReaderController {
         await after.getAnnotations();
       }
       await verifyChanges(reopened, expectedChanges);
-      this.exportedHash = expectedHash;
-      return output;
+      if (this.destroyed) throw new Error('The document was closed before its copy finished.');
+      return { ...captured, bytes: output };
     } catch (error) {
       throw new Error(`The saved copy could not be verified. Your edits remain open. ${messageFor(error)}`);
     } finally {
@@ -457,6 +586,7 @@ export class ReaderController {
     this.thumbnailTask?.cancel();
     // The pinned runtime accepts null here although its generated types do not.
     this._viewer?.setDocument(null as unknown as PDFDocumentProxy);
+    this.editorSignals.clear();
     this.linkService?.setDocument(null);
     this.lifetime.abort();
     await this.loadingTask?.destroy();

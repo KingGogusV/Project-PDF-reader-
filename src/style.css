@@ -9,3 +9,43 @@
 @media(max-height:520px) and (max-width:950px){.topbar{min-height:48px}.brand{font-size:23px}.topbar .button{min-height:36px;padding:6px 10px}.tabbar{min-height:34px}.tab>button:first-child{min-height:33px}.toolbar{padding-block:3px}.toolbar .icon-button{height:36px}.edit-group{order:initial;flex:initial;border-top:0;margin:0;padding:0}.edit-group .icon-button{width:36px;min-width:36px}.statusbar{min-height:35px}.tool-hint{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;scroll-behavior:auto!important}}
 @media print{body>*{display:none!important}body::before{display:block;content:"Folio: open a print copy from the document toolbar to print this PDF. The application workspace is not a printable document.";font:16px/1.6 sans-serif;color:#000;margin:2cm}}
+
+/* App controls only: PDF form/text layers retain document-authored metrics. */
+:root{--muted:#566662}
+.skip-link{position:fixed;left:12px;top:-100px;z-index:200;background:#213d40;color:white;padding:14px;border-radius:6px}
+.skip-link:focus{top:12px}
+.topbar{gap:16px}
+.workspace-label{color:#52635a}
+.tab-strip{display:flex;align-items:center;background:#efefea;border-bottom:1px solid var(--line);min-height:46px}
+.tab-strip .tabbar{flex:1;min-width:0;border-bottom:0}.tab-strip>.icon-button{flex:none;margin-inline:4px}
+.workspace-label,.button,.text-button,.tab>button:first-child,.outline-item,.search-field input,.dialog-label,.property-list,.shortcut-list{font-size:.875rem}
+.intro,.dialog-copy{font-size:1rem;color:#52615a}
+.drop-zone p,.drop-zone small,.feature p,.demo-card p,.recent-empty,.recent-row>span,.sidebar-empty{font-size:.875rem;color:#56635b}
+.eyebrow,.feature h3,.recent-heading h2,.search-status,.notice-bar,.tool-hint,.toast,.loading-overlay{font-size:.875rem}
+.eyebrow{letter-spacing:1.5px}.demo-card .eyebrow{font-size:.75rem;color:#506343}
+.search-status{color:#52615a}
+.footer-note,.recent-row small,.privacy-pill,.statusbar,.statusbar .privacy-pill,.status-detail,.sidebar-title,.thumb-button span{font-size:.75rem;color:#526257}
+.scale-select,.view-select,.page-input{font-size:.875rem;min-height:44px}
+.icon-button,.toolbar .icon-button,.statusbar .icon-button,.topbar .icon-button{width:44px;min-width:44px;height:44px}
+.toolbar .button{min-height:44px;font-size:.875rem}
+.tab .icon-button{min-width:38px;width:38px;height:44px}
+.viewer-container:focus-visible{outline:3px solid #298788;outline-offset:-4px}
+.recovery-status{padding:6px 20px;background:#edf2e8;color:#39523d;font-size:.8125rem;line-height:1.5;border-bottom:1px solid var(--line)}
+dialog{width:min(680px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto}
+.dialog-heading{position:sticky;top:-27px;padding-block:10px;background:var(--panel);z-index:1}
+.dialog-actions{flex-wrap:wrap}.dialog-input{font-size:1rem;max-width:100%;min-width:0}.dialog-label{line-height:1.6}
+textarea.dialog-input{min-height:190px;resize:vertical;font-family:inherit;line-height:1.6}
+.document-tools-body,.device-library{min-width:0;overflow-wrap:anywhere}
+.document-tools-body progress{width:100%;height:18px;margin-block:12px}
+.document-tools-actions{margin-block:16px}
+.device-library .library-row{padding:16px 0;border-bottom:1px solid var(--line)}
+.device-library .library-row h3,.device-library .library-row strong{overflow-wrap:anywhere}
+.device-library button{min-height:44px}.device-library small{font-size:.8125rem}
+.device-library .library-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.library-detail,.library-usage{font-size:.875rem;color:#52615a;line-height:1.6}.recovery-badge{display:inline-block;padding:4px 8px;background:#fff0cf;color:#654511;border-radius:5px;font-size:.8125rem}
+@media(max-width:1350px){.toolbar .view-select{display:none}.toolbar .tool-separator{margin-inline:2px}.toolbar{padding-inline:8px;gap:3px}.topbar .workspace-label,.topbar .top-privacy{display:none}}
+@media(max-width:1150px){.toolbar .desktop-tools{display:none}}
+@media(max-width:900px){.toolbar{flex-wrap:wrap}.toolbar-spacer{display:none}.toolbar .zoom-group{margin-left:auto}.toolbar .edit-group{order:3;flex:1 0 100%;justify-content:center;border-top:1px solid var(--line);padding-top:3px}.toolbar .mobile-tool-separator{display:none}}
+@media(max-width:760px){.topbar{gap:5px;padding-inline:10px}.topbar .button{font-size:.875rem}.topbar .brand{margin-right:auto}.toolbar{gap:2px;padding:5px}.toolbar .edit-group{order:3;justify-content:space-evenly;gap:0}.edit-group .icon-button{width:42px;min-width:42px}.scale-select{max-width:98px;font-size:.875rem}.zoom-group{gap:0}.toolbar .zoom-group .icon-button{width:36px;min-width:36px}.toolbar .save-label{display:none}.statusbar .status-detail{font-size:.75rem}.welcome .intro,.dialog-copy{font-size:1rem}.welcome h1{font-size:2.4rem}.recovery-status{padding:5px 10px;font-size:.75rem}.dialog-heading{top:-20px}.dialog-heading h2{font-size:1.4rem}.search-status{font-size:.8125rem}.tool-hint,.notice-bar{font-size:.8125rem}}
+@media(max-width:380px){.brand{font-size:24px}.brand-mark{display:none}.topbar .button{padding-inline:8px}.toolbar .edit-group .icon-button{width:40px;min-width:40px}.scale-select{max-width:88px}.toolbar .tool-separator{display:none}}
+@media(max-height:520px) and (max-width:950px){.toolbar .edit-group{order:3;flex:1;border-top:1px solid var(--line)}.topbar{min-height:48px}.statusbar{min-height:44px}}

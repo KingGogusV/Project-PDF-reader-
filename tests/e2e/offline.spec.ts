@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './support/offline-fixture';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,21 +7,31 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), '..', 'fixtures',
 
 test.use({ serviceWorkers: 'allow' });
 
-test('installed application reloads and reads local PDFs offline without caching document bytes', async ({ page, context, baseURL }, testInfo) => {
+for (const canonicalShellRedirect of [false, true]) test.describe(canonicalShellRedirect ? 'hosted canonical index redirect' : 'direct index response', () => {
+test.use({ canonicalShellRedirect });
+test('installed application reloads and reads local PDFs during network or origin loss without caching document bytes', async ({ page, context, networkOutage }, testInfo) => {
   const externalRequests: string[] = [];
   const errors: string[] = [];
-  const origin = new URL(baseURL!).origin;
+  const origin = new URL(networkOutage.baseURL).origin;
   context.on('request', request => {
     const url = new URL(request.url());
     if (['http:', 'https:'].includes(url.protocol) && url.origin !== origin) externalRequests.push(url.href);
   });
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto(networkOutage.baseURL);
   await expect(page.locator('#choose')).toBeVisible();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+  if (canonicalShellRedirect) {
+    expect(networkOutage.shellRedirects, 'precache must follow a real canonical HTTP redirect').toBeGreaterThan(0);
+    const cachedShell = await page.evaluate(async () => {
+      const response = await caches.match(new URL('index.html', location.href).href);
+      return { redirected: response?.redirected, status: response?.status };
+    });
+    expect(cachedShell).toEqual({ redirected: true, status: 200 });
+  }
 
-  await context.setOffline(true);
+  await networkOutage.begin(page);
   await page.reload({ waitUntil: 'domcontentloaded' });
   // Regression: module and style requests may carry Origin while precaching does not.
   // Their server Vary: Origin header must not make the static allowlist miss offline.
@@ -54,4 +65,5 @@ test('installed application reloads and reads local PDFs offline without caching
   expect(externalRequests).toEqual([]);
   expect(errors).toEqual([]);
   await testInfo.attach('offline-cache-urls', { body: JSON.stringify(cachedUrls, null, 2), contentType: 'application/json' });
+});
 });

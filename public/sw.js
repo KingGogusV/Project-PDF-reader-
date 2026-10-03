@@ -1,10 +1,12 @@
 /* Build replaces the version and allowlist. Do not register this template in development. */
 const VERSION = '__FOLIO_SW_VERSION__';
 const ASSET_PATHS = /*__FOLIO_ASSET_MANIFEST__*/ [];
+const OPTIONAL_PATHS = /*__FOLIO_OPTIONAL_MANIFEST__*/ [];
 const CACHE_PREFIX = 'folio-app-';
 const CACHE_NAME = CACHE_PREFIX + VERSION;
 const scope = new URL('./', self.location.href);
 const assetUrls = new Set(ASSET_PATHS.map(path => new URL(path, scope).href));
+const optionalUrls = new Set(OPTIONAL_PATHS.map(path => new URL(path, scope).href));
 const shellUrl = new URL('index.html', scope).href;
 
 self.addEventListener('install', event => {
@@ -36,16 +38,29 @@ self.addEventListener('fetch', event => {
       // Keep shell and stable vendor URLs on the same active version. A newer
       // worker waits for old documents to close before activating its complete cache.
       const shell = await caches.match(shellUrl, { cacheName: CACHE_NAME });
-      if (shell) return shell;
+      if (shell) {
+        // Static hosts may redirect index.html to the directory URL during precache.
+        // Navigations use redirect mode "manual" and reject a redirected Response,
+        // even when its final status is 200. Recreate this allowlisted shell response
+        // without its fetch redirect history; keep its actual body and headers.
+        if (shell.redirected) return new Response(shell.body, { status: shell.status, statusText: shell.statusText, headers: shell.headers });
+        return shell;
+      }
       return fetch(request);
     })());
     return;
   }
-  if (!assetUrls.has(request.url)) return;
+  if (!assetUrls.has(request.url) && !optionalUrls.has(request.url)) return;
   event.respondWith((async () => {
     // The allowlist contains only identical static assets, never personalized data.
     // Module/CSS requests send Origin; Vite adds Vary: Origin to otherwise identical bytes.
     const cached = await caches.match(request, { cacheName: CACHE_NAME, ignoreVary: true });
-    return cached || fetch(request);
+    if (cached) return cached;
+    const response = await fetch(request);
+    if (response.ok && optionalUrls.has(request.url)) {
+      const cache = await caches.open(CACHE_NAME);
+      try { await cache.put(request, response.clone()); } catch { /* Quota failure must not prevent OCR in this session. */ }
+    }
+    return response;
   })());
 });

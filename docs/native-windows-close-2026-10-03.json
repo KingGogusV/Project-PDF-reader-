@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-03",
+  "sourceCommit": "9de673b3acf0a3f1f91989648246473f91e8875b",
+  "prHead": "c720587726f486bbf431f1067ca353f2e2fd85f6",
+  "artifactId": 11273720042,
+  "installerSha256": "12fd743a3511bf369fd2991d0ed99bc4457b5cdfd155c2de51eb6d336ed425d0",
+  "platform": "Windows 10.0.22621 x64, normal non-elevated session",
+  "webviewVersion": "154.0.4258.53",
+  "startedAt": "2026-10-03T11:53:33.273Z",
+  "completedAt": "2026-10-03T11:53:44.529Z",
+  "status": "passed",
+  "nativeCloseConfirmed": true,
+  "checks": [
+    {
+      "name": "same-account installed app starts with isolated loopback debugging",
+      "status": "passed",
+      "mode": "local-normal-user",
+      "elevated": false,
+      "version": "154.0.4258.53"
+    },
+    {
+      "name": "packaged application opens without a development server",
+      "status": "passed"
+    },
+    {
+      "name": "real local form PDF renders nonblank pixels and native form widgets",
+      "status": "passed",
+      "width": 1007,
+      "height": 1303,
+      "sampledNonWhitePixels": 775
+    },
+    {
+      "name": "declining storage leaves the document library empty",
+      "status": "passed"
+    },
+    {
+      "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+      "status": "passed",
+      "originalSha256": "3c68bed5cf4413357fcd633a9c88251755994e4aaf7895ebd156cbc2b425bb8b",
+      "latestSha256": "6ca4ba9e9feb32a88171b10265a23e15d4e468e52eadaf50842b6bc6bbd51d21",
+      "pageCount": 1
+    },
+    {
+      "name": "reloading the actual native WebView restores the edited form from the device library",
+      "status": "passed"
+    },
+    {
+      "name": "a second real PDF searches all three pages and navigates results",
+      "status": "passed"
+    },
+    {
+      "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+      "status": "passed",
+      "observation": "Controlled reload through form recovery and search; app network requests only."
+    },
+    {
+      "name": "OS window close asks about unsaved changes and cancellation keeps edits open",
+      "status": "passed"
+    },
+    {
+      "name": "native PDF download preserves original bytes and reopens with edited form values",
+      "status": "passed"
+    },
+    {
+      "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+      "status": "passed"
+    },
+    {
+      "name": "same-account installed app starts with isolated loopback debugging",
+      "status": "passed",
+      "mode": "local-normal-user",
+      "elevated": false,
+      "version": "154.0.4258.53"
+    },
+    {
+      "name": "full native process termination and relaunch recover the last completed form checkpoint",
+      "status": "passed"
+    },
+    {
+      "name": "explicit native discard confirmation closes the real application cleanly",
+      "status": "passed"
+    }
+  ],
+  "launches": [
+    {
+      "status": "stopped",
+      "elevated": false,
+      "cleanup": {
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      "webview": {
+        "version": "154.0.4258.53",
+        "profileVerified": true,
+        "portVerified": true
+      }
+    },
+    {
+      "status": "closed",
+      "elevated": false,
+      "cleanup": {
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      "webview": {
+        "version": "154.0.4258.53",
+        "profileVerified": true,
+        "portVerified": true
+      }
+    }
+  ],
+  "binaryIdentity": {
+    "runId": 37120364964,
+    "builtSha256": "afec79d8a54f795a5d817c41a3aa6c17cdcdb34cfcdc766384ee8a734314e982",
+    "installedSha256": "998a0595d8a8e8215e03e9c3307fd248c70f36becbbb14c553dc9b342265a355",
+    "expectedInstalledSha256": "998a0595d8a8e8215e03e9c3307fd248c70f36becbbb14c553dc9b342265a355",
+    "bundleMarkerOffset": 18469506,
+    "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+  },
+  "notices": {
+    "verifiedFileHashes": 533,
+    "crates": 226,
+    "licenseTexts": 110,
+    "platformFiles": 24,
+    "sourceArchives": 5
+  },
+  "limitations": [
+    "Synthetic PDFs only",
+    "Physical printing and native file-picker interaction not tested",
+    "macOS native runtime and physical mobile devices not tested"
+  ]
+}

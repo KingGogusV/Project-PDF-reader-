@@ -5,22 +5,44 @@
   "type": "module",
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.25.0",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "assets": "node scripts/copy-assets.mjs",
     "fixtures": "node scripts/generate-fixtures.mjs",
     "dev": "node scripts/copy-assets.mjs && node scripts/generate-fixtures.mjs && vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/generate-fixtures.mjs && node --test tests/unit/*.test.mjs",
+    "test": "node scripts/generate-fixtures.mjs && node scripts/generate-fidelity-fixtures.mjs && node --test tests/unit/*.test.mjs",
+    "test:core": "playwright test --config tests/core/playwright.config.ts",
+    "test:signing": "playwright test --config tests/core/signing.config.ts",
+    "fixtures:fidelity": "node scripts/generate-fidelity-fixtures.mjs",
+    "native:dev": "tauri dev",
+    "native:build": "tauri build",
+    "db:generate": "drizzle-kit generate",
     "test:e2e": "playwright test",
-    "build": "node scripts/copy-assets.mjs && node scripts/generate-fixtures.mjs && tsc --noEmit && vite build && node scripts/create-sw.mjs",
+    "build": "node scripts/copy-assets.mjs && node scripts/generate-fixtures.mjs && tsc --noEmit && vite build && node scripts/create-sw.mjs && node scripts/build-server.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
-  "dependencies": { "pdfjs-dist": "6.3.289" },
-  "devDependencies": {
-    "@playwright/test": "1.63.0",
-    "@types/node": "^24.0.0",
+  "dependencies": {
+    "@libpdf/core": "0.5.1",
+    "@tauri-apps/api": "2.12.1",
+    "asn1js": "3.0.10",
     "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.3.289",
+    "pkijs": "3.4.1",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@pdf-lib/fontkit": "1.1.1",
+    "@playwright/test": "1.63.0",
+    "@tauri-apps/cli": "2.12.1",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@types/node": "^24.0.0",
+    "drizzle-kit": "0.31.11",
+    "drizzle-orm": "0.45.3",
     "typescript": "7.0.2",
     "vite": "8.3.2"
   }

@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The local reader may finish its own confirmed close. No filesystem, shell or network plugins.",
+  "windows": [
+    "main"
+  ],
+  "permissions": ["allow-finish-close"]
+}

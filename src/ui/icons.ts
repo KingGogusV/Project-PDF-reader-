@@ -12,6 +12,7 @@ const paths: Record<string, string> = {
   print: '<path d="M6 8V3h12v5M6 17H3V9h18v8h-3M6 14h12v7H6zM17 11h1"/>',
   rotate: '<path d="M20 8a9 9 0 1 0 0 8M20 3v6h-6"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/>',
+  account: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2z"/>',
   highlight: '<path d="m8 14 7-11 6 4-7 11zM8 14l6 4-3 3H5zM3 22h15"/>',
   text: '<path d="M4 5h16M12 5v15M8 20h8M4 5v3M20 5v3"/>',
   draw: '<path d="m4 17 12-13 4 4L8 21H3zM14 6l4 4M4 17l4 4"/>',
