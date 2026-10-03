@@ -1,0 +1,62 @@
+{
+  "verifiedAt": "2026-10-03T18:05:44.007570+00:00",
+  "repository": "KingGogusV/Project-PDF-reader-",
+  "sourceCommit": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+  "release": "https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1",
+  "tag": "v0.1.1-preview.1",
+  "runId": 37142162439,
+  "anonymousDownloadsVerified": true,
+  "assets": [
+    {
+      "name": "Folio-0.1.1-Third-Party-Notices.zip",
+      "bytes": 5015301,
+      "sha256": "eaa4a0b58c2e424ae65d1e29f9d8d7747b4c6b502747410bd3b98bf5a5b36a3a",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Third-Party-Notices.zip",
+      "status": 200
+    },
+    {
+      "name": "Folio-0.1.1-Windows-x64-Setup.exe",
+      "bytes": 17854309,
+      "sha256": "32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe",
+      "status": 200
+    },
+    {
+      "name": "release-provenance.json",
+      "bytes": 212084,
+      "sha256": "9ef547cf89c52c30040d7caee6761fb46bf4605d725cef17f9a0badc4d71dec9",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/release-provenance.json",
+      "status": 200
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 292,
+      "sha256": "ce41e9a383688daee988667a8b111ba11c1c50b4e7cbd3ee61aa163b6ea5d3d1",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/SHA256SUMS.txt",
+      "status": 200
+    }
+  ],
+  "nativeStatus": "passed",
+  "nativeChecks": 14,
+  "webviewVersion": "153.0.4234.48",
+  "nativeMode": "hosted-ci",
+  "binaryIdentity": {
+    "builtSha256": "6602e388a67dbed9f8966486e9fd8bdc2ee9e2b7d058a21c602aa32bd9a12e6f",
+    "installedSha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c",
+    "expectedInstalledSha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c",
+    "bundleMarkerOffset": 18472962,
+    "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+  },
+  "cleanup": [
+    {
+      "ownedJobEmpty": true,
+      "policyRemoved": true
+    },
+    {
+      "ownedJobEmpty": true,
+      "policyRemoved": true
+    }
+  ],
+  "previousReleasePreserved": true,
+  "normalUserVerification": "Not performed for 0.1.1 in this Linux-hosted session; earlier 0.1.0 evidence is separate."
+}

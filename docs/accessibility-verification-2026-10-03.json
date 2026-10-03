@@ -1,0 +1,311 @@
+{
+  "date": "2026-10-03",
+  "scope": "Targeted accessibility engineering pass; not WCAG or assistive-technology certification",
+  "applicationCommit": "608bf0943627a3d8689ef63ed248f5ae57032eca",
+  "local": {
+    "platform": "Linux",
+    "browser": "Chrome for Testing 153.0.8010.12",
+    "playwright": "1.63.0",
+    "browserTests": 79,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "axe": [
+      {
+        "state": "welcome",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 1
+          }
+        ]
+      },
+      {
+        "state": "help dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "library dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "account dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "multiple documents",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "document tools",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "OCR dialog",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 2
+          }
+        ]
+      },
+      {
+        "state": "page organization dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "certificate signing dialog",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 1
+          }
+        ]
+      },
+      {
+        "state": "document properties",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "search",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 11
+          }
+        ]
+      },
+      {
+        "state": "interactive form",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "local storage consent",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "phone reader",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "phone actions",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 6
+          }
+        ]
+      }
+    ]
+  },
+  "macOS": {
+    "browser": "Playwright WebKit",
+    "runId": 37140750050,
+    "jobId": 111254510232,
+    "browserTests": 79,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "artifactSha256": "f6597a44721b7d9ab7a93ef9635961cb1b547efe7c174aa2fc081ac979ad5a9b",
+    "axe": [
+      {
+        "state": "welcome",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 1
+          }
+        ]
+      },
+      {
+        "state": "help dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "library dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "account dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "multiple documents",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "document tools",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "OCR dialog",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 2
+          }
+        ]
+      },
+      {
+        "state": "page organization dialog",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "certificate signing dialog",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 2
+          }
+        ]
+      },
+      {
+        "state": "document properties",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "search",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 11
+          }
+        ]
+      },
+      {
+        "state": "interactive form",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "local storage consent",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "state": "phone reader",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 9
+          }
+        ]
+      },
+      {
+        "state": "phone actions",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": 6
+          }
+        ]
+      }
+    ]
+  },
+  "deployment": {
+    "version": 4,
+    "sourceCommit": "63dd341f02c4aa1de98ec82dc657a3c751507be7",
+    "equivalentGitHubTreeAt": "86f25470c53cd56e600d51d6c21b7a764e9438f0",
+    "tree": "52a2f8f0546f5301f9145fb27875911f49f8b2f8",
+    "id": "appgdep_6ac13ecd06308191bb865188a4e9c0d6",
+    "status": "succeeded",
+    "at": "2026-10-03T17:43:53.819048+00:00",
+    "url": "https://folio-local-pdf.gogoi-ronnie.chatgpt.site",
+    "serviceWorkerManifest": "18be62c44b734fa5"
+  },
+  "limits": [
+    "No physical screen-reader session",
+    "No branded Safari or physical iOS/Android verification",
+    "Viewport/text/forced-colors emulation is not native OS scaling",
+    "PDF reading order and tagging depend on the document; automated incomplete results remain manual gates"
+  ],
+  "mergedCommit": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+  "pullRequest": "https://github.com/KingGogusV/Project-PDF-reader-/pull/2",
+  "pullRequestVerification": {
+    "head": "86f25470c53cd56e600d51d6c21b7a764e9438f0",
+    "readerRun": 37141480120,
+    "nativeBuildRun": 37141480155,
+    "windowsRun": 37141480108,
+    "windowsChecks": 14,
+    "conclusion": "success"
+  },
+  "mainReaderVerification": {
+    "source": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+    "runId": 37142162437,
+    "conclusion": "success",
+    "unitTestsPerBrowserJob": 63,
+    "unitSkipped": 0,
+    "linuxChromium": {
+      "passed": 79,
+      "flaky": 0,
+      "suiteMinutes": 2.2
+    },
+    "macOSWebKit": {
+      "passed": 79,
+      "flaky": 0,
+      "suiteMinutes": 4.2
+    },
+    "corePassed": 7,
+    "signingPassed": 9
+  },
+  "windowsReleaseVerification": {
+    "sourceCommit": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+    "runId": 37142162439,
+    "status": "success",
+    "nativeChecks": 14,
+    "publicAssetRecord": "windows-preview-2-verification.json"
+  }
+}

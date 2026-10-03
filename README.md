@@ -8,11 +8,11 @@ Original repository purpose: "Project to create free pdf reader that does not su
 
 ## Download for Windows
 
-**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe)**
+**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe)**
 
 Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **unsigned development preview**. No ChatGPT account, subscription or developer tools are required for reading or device storage. If your Windows policy blocks unsigned apps, use the website above.
 
-[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) · [Installation help](docs/windows-installation.md)
+[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) · [Installation help](docs/windows-installation.md)
 
 **Status:** public web application and verified Windows preview. The release passed installation, native reader/export/recovery/close tests and exact-source CI. macOS packages build, but macOS native runtime remains unverified. See [verification](docs/verification.md).
 
@@ -29,7 +29,7 @@ Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain
 
 Reading needs no account. Optional **managed ChatGPT sign-in** supports up to **200 registered Folio accounts**; that is a registration cap, not a concurrent-user benchmark. Only account metadata goes to the service. Stored PDFs remain **unencrypted in this device/browser profile**, may be lost if browser storage is cleared/evicted, and do not synchronize between devices.
 
-Original files are preserved. Reader saves and document tools validate output before offering a copy. Protected PDFs are conservatively read-only; page tools reject structures they cannot preserve. Signature integrity does **not** establish certificate trust, revocation status or trusted time. OCR currently produces separate text, not a searchable PDF, and remains experimental pending a patched native dependency rebuild. Local offline checks and live hosted Chromium offline reload/recovery passed. Deployment v3 includes the WebKit ink-listener correction. Its source passed 63 browser cases each on Linux Chromium and macOS WebKit, plus native package builds. Hosted recovery/offline and WebKit ink export/reopen checks passed.
+Original files are preserved. Reader saves and document tools validate output before offering a copy. Protected PDFs are conservatively read-only; page tools reject structures they cannot preserve. Signature integrity does **not** establish certificate trust, revocation status or trusted time. OCR currently produces separate text, not a searchable PDF, and remains experimental pending a patched native dependency rebuild. Local offline checks and live hosted Chromium offline reload/recovery passed. Deployment v4 includes the accessibility pass: stable keyboard tabs, reliable dialog focus, clearer state announcements and controls that reflow with enlarged text. Its application code passed 79 browser cases each on Linux Chromium and macOS WebKit; all 15 automated accessibility states reported zero violations. See [accessibility evidence and manual limits](docs/accessibility-audit.md).
 
 ## Development
 

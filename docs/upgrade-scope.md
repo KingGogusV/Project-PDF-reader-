@@ -14,7 +14,7 @@ Requested 2026-10-02 America/Los_Angeles (2026-10-03 UTC). Updated after public 
 | Native installers | Windows preview published with a direct GitHub EXE; actual installation, 14 native workflows and checksums passed; macOS app/DMG builds passed | macOS native runtime, signing/notarization, physical printing and deeper OS integrations remain unverified |
 | macOS/Safari and mobile | 66-case macOS WebKit and Linux Chromium runs passed; responsive/touch-emulated browser coverage | Branded Safari, physical iOS/iPadOS/Android and assistive technology unverified |
 | Physical printing | Browser PDF viewer/download handoff verified | No physical printer, native-driver or OS-share-sheet result |
-| Accessibility | Nine production states had zero axe violations; semantics/labels/focus/contrast repaired | Incomplete PDF contrast/reading order and physical screen-reader checks remain |
+| Accessibility | 13 accessibility regressions; 15 states with zero axe violations on Linux Chromium and macOS WebKit; stable tabs, focus, reflow and contrast repaired | Incomplete PDF contrast/reading order and physical screen-reader checks remain |
 | Fidelity | Embedded fonts/Unicode/images/transparency corpus and independent Poppler checks passed | Synthetic corpus is not universal compatibility or print/color certification |
 
 Account metadata is server-backed; PDF bytes remain explicitly device-local. Signing in elsewhere does not synchronize documents. Managed ChatGPT sign-in avoids a new password database. The 200-account cap is not a measured 200-concurrent-user service guarantee.

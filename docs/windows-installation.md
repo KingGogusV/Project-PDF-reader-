@@ -1,12 +1,12 @@
 # Install Folio on Windows
 
-**[Download Folio-0.1.0-Windows-x64-Setup.exe](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe)**
+**[Download Folio-0.1.1-Windows-x64-Setup.exe](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe)**
 
 1. Open the downloaded installer and follow its prompts.
 2. Launch **Folio** from the Windows Start menu.
 3. Choose **Open PDF**. No ChatGPT account, subscription, terminal, Node.js or Rust is needed for PDF reading or device storage.
 
-This is an **unsigned Windows x64 Intel/AMD development preview**. Windows may show an unknown-publisher or reputation warning. Check the [GitHub release](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) and checksum. Do not disable Windows protections; use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site) if your device policy blocks unsigned applications. ARM emulation and all Windows versions have not been verified. The installer obtains Microsoft's WebView2 Runtime if missing; that initial setup needs internet.
+This is an **unsigned Windows x64 Intel/AMD development preview**. Windows may show an unknown-publisher or reputation warning. Check the [GitHub release](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) and checksum. Do not disable Windows protections; use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site) if your device policy blocks unsigned applications. ARM emulation and all Windows versions have not been verified. The installer obtains Microsoft's WebView2 Runtime if missing; that initial setup needs internet.
 
 ## Documents and accounts
 
@@ -16,19 +16,19 @@ The window close button asks about unsaved edits. Choose **Keep open**, **Export
 
 ## Checksums and verification
 
-Installer: 17,844,743 bytes. SHA-256:
+Installer: 17,854,309 bytes. SHA-256:
 
 ```text
-ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac
+32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2
 ```
 
 Use Windows PowerShell to compare your download:
 
 ```powershell
-Get-FileHash -Algorithm SHA256 -LiteralPath .\Folio-0.1.0-Windows-x64-Setup.exe
+Get-FileHash -Algorithm SHA256 -LiteralPath .\Folio-0.1.1-Windows-x64-Setup.exe
 ```
 
-The release includes `SHA256SUMS.txt`, `release-provenance.json` and native dependency notices. All four assets were downloaded anonymously and checked. Source: `61adbfd1c9d582e1203606052c2443270f689366`. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) verifies actual installation, 14 native workflows, original preservation, form/annotation export-reopen, process-restart recovery, OS-close cancel/discard and exact process/policy cleanup. Normal-user Windows build 22621 / WebView2 154 verification also passed; [full evidence](verification.md) distinguishes this from macOS/mobile/browser results. These are synthetic-document tests, not universal compatibility or physical-printer certification.
+The release includes `SHA256SUMS.txt`, `release-provenance.json` and native dependency notices. All four assets were downloaded anonymously and checked. Source: `8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f`. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37142162439) verifies actual installation, 14 native workflows, original preservation, form/annotation export-reopen, process-restart recovery, OS-close cancel/discard and exact process/policy cleanup. The 0.1.1 tests ran on a disposable Windows CI runner with WebView2 153.0.4234.48. Normal-user 0.1.0 verification is separate; [full evidence](verification.md) and [public asset checks](windows-preview-2-verification.json) retain exact revisions. Upgrading an existing 0.1.0 profile is not yet tested; export important PDFs before installing an update. These are synthetic-document tests, not universal compatibility or physical-printer certification.
 
 ## Developer verification
 

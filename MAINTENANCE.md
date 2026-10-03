@@ -136,7 +136,7 @@ The inspected Windows environment has an isolated Rust tool cache but lacks MSVC
 
 ## Windows Download Release Pipeline
 
-The published unsigned x64 prerelease is [`v0.1.0-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1). Native reader/close, strict packaging identity and publication gates passed. Reproduce the build with:
+The published unsigned x64 prerelease is [`v0.1.1-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1). Native reader/close, strict packaging identity and publication gates passed. Reproduce the build with:
 
 ```sh
 cargo install cargo-about --version 0.9.2 --locked --features cli
@@ -174,7 +174,7 @@ macOS WebKit CI, branded Safari, native wrappers, physical Android/iOS/iPadOS, p
 
 ## Source and Publishing Continuity
 
-Current deployment v3 uses Site commit `e3437ffb0d6e45b469f167845c009b2ee24f28e5` and GitHub application commit `85cc5de6378e64372549fb298d383374c74a488a`, with identical tree `8fcd7d07f26969320f361319b9d317930bd136f6`. Deployment `appgdep_6ac0a0deb3108191a9fbce3e650d4019` succeeded at 2026-10-03 06:30:01 UTC. Source-matched Reader CI and native packaging passed; the separate Windows runtime release gate failed and did not publish an EXE. Later Windows changes and their published source are recorded in verification. Website v3 remains on the stated source; native close/release changes did not require republishing the unchanged browser workflows. Documentation-only commits are not separately tested application builds.
+Current deployment v4 uses Site commit `63dd341f02c4aa1de98ec82dc657a3c751507be7`, with tree `52a2f8f0546f5301f9145fb27875911f49f8b2f8` identical to GitHub merge `8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f`. Deployment `appgdep_6ac13ecd06308191bb865188a4e9c0d6` succeeded at 2026-10-03 17:43:53 UTC. Reader CI passed on Linux Chromium/macOS WebKit; Windows/macOS packaging and the Windows installed-reader release gate passed. Later documentation-only commits do not alter the deployed/released application. Preserve Site ancestry when reconciling with the authoritative GitHub source; verify tree equality before publishing.
 
 The Sites 0.1.75 workflow calls a Bash archive wrapper even on Windows. Ensure a real Bash executable is on the invoking process PATH. In this session the already-present portable Git Bash was under `.cache/portable-git/bin`; this ignored tool cache is not a guaranteed future prerequisite. The first v3 attempt successfully built/pushed source but failed archive startup because Bash was absent from PATH. Packaging was completed using the same bundled `prepare-site-build.cjs` validator, preserved hosting metadata/migrations, and Windows `tar.exe`; the unchanged source push and archive entries were independently checked before saving/deploying. The resulting archive was accepted. Do not substitute an unchecked source ZIP for the built Worker/client archive.
 
@@ -216,6 +216,10 @@ Before release: frozen install; type/unit/core/signing/E2E checks; production bu
 
 Debug with synthetic reproductions, stack traces, worker errors, browser traces, saved-output inspection and profiler/render comparisons. Do not hide failures, log document contents/credentials or reclassify incomplete checks as passes. Keep factual limitations and remaining work in BACKLOG rather than undocumented chat memory.
 
-### Windows accessibility preview preparation
+### Windows accessibility preview delivery
 
-The next immutable target is `v0.1.1-preview.1`, with `Folio-0.1.1-Windows-x64-Setup.exe` and matching notices. Package, Tauri and Cargo application versions are 0.1.1; engine/dependency versions are unchanged. Release extraction keeps its exact four-file allowlist, and publication still requires exact-source Reader checks, installed Windows workflows, artifact digests and binary identity. The release notes are `docs/releases/windows-preview-2.md`. Keep existing public download links until the new public assets have actually been downloaded and verified; never overwrite the 0.1.0 tag/assets.
+The current verified immutable release is `v0.1.1-preview.1`, with `Folio-0.1.1-Windows-x64-Setup.exe` and matching notices. Package, Tauri and Cargo application versions are 0.1.1; engine/dependency versions are unchanged. Release extraction keeps its exact four-file allowlist, and publication still requires exact-source Reader checks, installed Windows workflows, artifact digests and binary identity. The release notes are `docs/releases/windows-preview-2.md`. All four new public assets were downloaded and verified before updating README and installation links. For future releases, apply the same gate and never overwrite existing tags/assets.
+
+### Accessibility verification and recovery notes
+
+The current browser update is deployment v4. `docs/accessibility-verification-2026-10-03.json` records its exact source/build identity and both browser scan summaries. Run the repository browser suite against a production build; keep host preview failures separate from app failures. Safari’s default macOS key convention uses Option-Tab for links; the full Tab navigation setting is documented in Help. Pointer-triggered dialog focus must be checked as well as keyboard activation. Windows runtime verification waits for a nonempty CIM process-image path within its existing startup bound before collecting version/profile/port evidence; a timeout is a failure, never an excuse to waive the native release gate.

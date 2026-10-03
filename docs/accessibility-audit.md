@@ -157,3 +157,27 @@ The 320 x 256 viewport models the CSS layout space available at high zoom, not a
 Use NVDA/JAWS with Windows Chromium/WebView2, VoiceOver with branded macOS/iOS Safari, and Android TalkBack. Confirm announced names, selected/expanded/current and unsaved state; reading order; dialog focus; search announcements; field editing and errors; export/recovery; and focus visibility under native zoom/high contrast. Include tagged, untagged, scanned and complex form PDFs. The synthetic keyboard form test is not evidence that arbitrary PDFs have correct labels or reading order.
 
 Final screenshot review also caught phone action buttons compressed into columns of broken words. Actions now wrap into readable rows; a minimum readable-width regression and the complete 13-case accessibility gate passed after that correction. OCR/signing dialog screenshots showed readable foreground content despite the automated overlap/incomplete reports; those reports remain available for assistive-technology review.
+
+### Published browser accessibility update
+
+Website version **4** succeeded at **2026-10-03T17:43:53.819048Z** at the existing public URL. Deployment `appgdep_6ac13ecd06308191bb865188a4e9c0d6` uses Site source `63dd341f02c4aa1de98ec82dc657a3c751507be7`, whose tree exactly matches GitHub `86f25470c53cd56e600d51d6c21b7a764e9438f0`. No account, database schema, document engine or PDF-upload behavior changed. The built shell is `index-DIAAStxT.js`; CSS is `index-DwfgPVrD.css`; service-worker manifest is `18be62c44b734fa5`. Publication status was verified through the hosting service; browser workflows ran against production build output in the test harness, not an authenticated production user session.
+
+[Machine-readable evidence](accessibility-verification-2026-10-03.json) retains both engines’ 15-state summaries, including incomplete checks. The final local 79-case run and downloaded macOS 79-case report both had zero failures, retries or skips. Local Linux WebKit setup remained blocked by host dependency validation; actual macOS WebKit CI supplied the second-engine evidence.
+
+### Manual assistive-technology acceptance checklist (not executed)
+
+Use the generated synthetic fixtures and record browser/OS/assistive-technology versions, actual announcements and pass/fail separately for each setup.
+
+| Workflow | Expected outcome to verify manually |
+| --- | --- |
+| Open two PDFs; switch tabs with arrows/Home/End | Filename, selected tab and named document region remain understandable; focus stays on the tab; Home/End does not also change PDF pages. |
+| Open Help, Properties, library and phone Actions; dismiss with Escape | Dialog name/content is announced, focus stays modal, then returns to a visible initiating control. Check both pointer and keyboard activation. |
+| Navigate pages and search results | Page/search changes are announced without repeating unchanged status or interrupting form entry. |
+| Fill `form.pdf`; export; acknowledge; reopen | Field name/value and unsaved state are announced; keyboard entry and exported value survive reload. |
+| Use OS/browser 400% zoom and high contrast | Focus and selected state remain visible; controls and dialog actions can be reached without hover; the PDF remains usable as a two-dimensional document region. |
+| Read a tagged PDF and an untagged/scanned PDF | Record actual reading order, headings, links and form groups. Do not infer semantic document accessibility from its visible text layer. |
+| VoiceOver/TalkBack on physical phones/tablets | Explore controls, open local files, select text, navigate, dismiss sheets and export without desktop precision; record OS picker/share behavior separately. |
+
+### Merged-source acceptance
+
+Reader CI [37142162437](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37142162437) passed for merge `8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f`: 63 unit/fixture tests with zero skips on each browser runner, 79 Chromium workflows, 79 macOS WebKit workflows, seven checkpoint and nine signing cases. Browser suites reported no flaky cases. Their elapsed times (2.2 and 4.2 minutes) are test-suite durations, not document latency measurements. The merged tree exactly matches the published website source tree.
