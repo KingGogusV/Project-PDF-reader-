@@ -43,7 +43,7 @@ await writeFile(join(ocrTarget, 'lang', 'NOTICE.txt'), 'English LSTM model from 
 const notices = join(root, 'public', 'vendor', 'licenses');
 await mkdir(notices, { recursive: true });
 await cp(join(root, 'third_party', 'signing'), join(notices, 'signing'), { recursive: true });
-for (const name of ['pdf-lib', '@libpdf/core', 'pkijs', 'asn1js']) {
+for (const name of ['pdf-lib', '@libpdf/core', 'pkijs', 'asn1js', '@tauri-apps/api']) {
   const directory = dirname(require.resolve(`${name}/package.json`));
   for (const file of await readdir(directory)) if (/^(LICENSE|NOTICE)/i.test(file)) await cp(join(directory,file),join(notices,`${name.replaceAll('/','-')}-${file}`));
 }

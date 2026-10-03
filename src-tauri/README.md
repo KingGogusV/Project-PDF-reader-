@@ -1,8 +1,10 @@
 # Experimental desktop wrapper
 
 This Tauri 2 shell embeds the existing `dist/client/` web app and its local PDF.js worker.
-It adds no separate document engine, no native commands and no privileged plugins.
-`capabilities/default.json` deliberately grants zero IPC permissions. Ordinary
+It adds no separate document engine. Its only command, `finish_close`, is limited
+to the local main window and completes the shared save/discard flow after a native
+close request. `capabilities/default.json` grants only `allow-finish-close`;
+no filesystem, shell or network plugin is enabled. Ordinary
 HTML file inputs remain the initial opening mechanism; native file associations,
 atomic native saves, OS share sheets and automatic updates are not implemented.
 Do not register it as a default PDF handler until those lifecycle paths are tested.
@@ -94,9 +96,10 @@ Open local, encrypted, restricted and signed synthetic PDFs; search and render;
 fill forms; annotate; export and independently reopen; close with unsaved work;
 check Blob downloads/print windows and external links; open offline; verify worker
 and WebAssembly loading under the packaged CSP. Test on Windows and macOS
-separately. No successful native runtime test is claimed by these files.
+separately. Actual Windows reader/export/recovery tests passed locally and in CI;
+rebuilt native close-safety and release validation remain pending.
 
-The disposable Windows CI launcher now creates a temporary Users-only account,
+The historical, superseded Windows CI launcher created a temporary Users-only account,
 loads its profile using only scoped privileges already assigned to the runner,
 and launches on a private desktop with a separate environment. It checks the
 suspended child's unrestricted, non-elevated Medium token before resuming, then
@@ -104,8 +107,8 @@ checks WebView2's actual data directory/debugging port. Plain `STARTUPINFO` does
 not inherit standard handles; browser logs and owned-process diagnostics are
 retained. Cleanup must empty the owned job, close the private desktop, unload and
 delete the exact temporary profile, and remove the name/SID-matched account.
-The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. Native publication is blocked pending a suitable Windows runtime test environment.
-See the [Windows verification procedure](../docs/windows-installation.md#native-verification-procedure).
+The replaced same-user restricted-token attempt is not passing runtime evidence. Both standard-user token and credential launch attempts also failed before CDP/reader startup with WebView2 ProcessSingleton errors; silent installation passed. These historical failures were superseded by the same-account owned-job route: its 12 native checks and cleanup passed. Native close-safety and release validation now block publication.
+See the [Windows verification procedure](../docs/windows-installation.md#developer-verification).
 
 The browser service worker, browser account redirects, downloads and popups may
 behave differently under custom WebView origins. Do not weaken CSP or grant broad

@@ -2,11 +2,20 @@
 
 Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
+## Native close-safety correction, 2026-10-03
+
+The revised same-account CI route passed 12 actual native checks in run 37118654858, including both process/policy cleanup records. Release preparation then failed its source/binary/cleanup validation; the exact predicate needs the newly added diagnostics. A separate actual OS-close check exposed silent loss of unsaved edits. The close handshake is implemented with local unit/browser tests; rebuilt native close verification and public publication remain pending.
+
+- Source `20b1f48e6a980a5b70cc3cfe41dad9828bb3e19a`: Reader run [37118654848](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654848) and both native build jobs [37118654865](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654865) passed.
+- Release run [37118654858](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37118654858): native WebView2 153.0.4234.48 passed 12 checks at 11:15:42-11:15:54 UTC; prepare failed, publisher skipped. Both jobs emptied and exact test policy was removed. Evidence archive SHA-256 `9960786ae9012f2ae5bb0aa6758ed51dc0da5da3e8d14ecc6168d3a3c822dd2b`.
+- Negative normal-user check at 11:11:33-11:11:37 UTC, source `85cc5de6378e64372549fb298d383374c74a488a`: real OS close exited zero without an unsaved-form prompt. Prior 12-check passes did not cover OS close.
+- Local correction: typecheck and production build passed (manifest `6242986adc1c8c29`); 59 unit tests passed, zero skips, 6.08 seconds. All three shared-UI close tests passed in Edge (6.0 seconds), and all six responsive viewport classes passed (12.3 seconds). The first background-tab attempt requested close while the second PDF was still opening; the app correctly refused, and the test now waits for opening to finish. Rebuilt native verification is pending. Browser tests simulate only the native bridge and are not native close evidence.
+
 ## Normal-user Windows verification, 2026-10-03
 
 Actual Windows 10.0.22621 x64 / WebView2 154.0.4258.53 verification on 2026-10-03 passed 12 native checks: startup, real rendering, storage refusal/consent, immutable originals, form recovery, search, form download/reopen, text annotation download/reopen, and recovery after full owned-process termination/relaunch. Both process jobs emptied; the normal-user route changed no registry policy. The tested installer came from artifact 11266978801, source `85cc5de6378e64372549fb298d383374c74a488a` (installer SHA-256 `48e755d2e3a9596981a11c0a914ae514455ec533e82eb0e8201e65e219da8c31`). All 533 installed notice hashes also passed.
 
-Public Windows publication remains pending a successful run of the revised CI native gate. The existing hosted custom-account failure does not reproduce in the normal Windows user session.
+Public Windows publication remains pending the close-safety/release validation described above. The existing hosted custom-account failure does not reproduce in the normal Windows user session.
 
 Initial expanded-test attempts exposed test-only path joining and plain-array parsing mistakes; neither was marked passed. Corrected full verification passed at 10:57:34–10:57:43 UTC, followed by a final launcher rerun. Evidence is summarized in [native-windows-2026-10-03.json](native-windows-2026-10-03.json). File selection was automated through the real HTML input; physical picker/printing and other devices are not established by this result.
 
@@ -14,7 +23,7 @@ Initial expanded-test attempts exposed test-only path joining and plain-array pa
 
 The corrected reader is now live in **deployment v3**. Its complete Linux Chromium
 and macOS WebKit CI passed, and the hosted forced-GC Ink regression passed.
-The previous custom-account CI runtime failed; subsequent normal-user Windows native checks passed. The revised remote gate and public Windows release remain pending. Earlier results below remain
+The previous custom-account CI runtime failed; subsequent normal-user Windows native checks passed. The later revised runtime gate passed; close-safety/release validation and public publication remain pending. Earlier results below remain
 evidence for their stated source revisions; they are not erased by later passes.
 
 ### WebKit editor lifecycle correction

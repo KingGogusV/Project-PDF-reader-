@@ -69,7 +69,10 @@ try {
   $result.childPid = $owned.Pid; $result.status='launched'; Save-Report
   $deadline = [DateTime]::UtcNow.AddSeconds(210)
   while (-not (Test-Path -LiteralPath $StopFile)) {
-    if ($owned.ExitCode -ne 259) { throw "Installed app exited before test completion: $($owned.ExitCode)" }
+    if ($owned.ExitCode -ne 259) {
+      if ($owned.ExitCode -eq 0 -and (Test-Path -LiteralPath ($StopFile + '.expected-close'))) { $result.status='closed'; break }
+      throw "Installed app exited before test completion: $($owned.ExitCode)"
+    }
     if ([DateTime]::UtcNow -ge $deadline) { throw 'Owned native test exceeded its lifetime.' }
     if (-not $result.Contains('webview')) {
       $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($owned.Pid)" | Where-Object { $_.Name -eq 'msedgewebview2.exe' })
@@ -87,7 +90,7 @@ try {
     }
     Start-Sleep -Milliseconds 100
   }
-  $result.status='stopped'
+  if ($result.status -ne 'closed') { $result.status='stopped' }
 } catch { $result.status='failed'; $result.error=$_.Exception.Message; $exitCode=1 }
 finally {
   if ($owned) {

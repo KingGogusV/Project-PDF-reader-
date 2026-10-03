@@ -4,8 +4,11 @@
 
 ### Added
 
+- Added a narrow native close handshake that reuses each document's save/discard flow, coalesces duplicate OS-close requests and displays the affected background tab. Added race/error unit tests, explicitly simulated browser UI tests, and real owned-window close assertions to the native release gate. Rebuilt native verification is pending.
+- Added granular release identity/cleanup diagnostics after runtime passed but aggregate preparation validation failed.
+
 - Added an explicit normal-user Windows installed-app test route and a same-account owned-job launcher. Twelve native checks passed, including actual PDF form/annotation downloads and recovery after full process termination. All 533 installed notice hashes passed.
-- Updated release CI to use documented per-executable WebView2 debugging/profile overrides on its elevated disposable runner, with exact cleanup and unchanged application binaries. The revised remote gate and public release are pending.
+- Updated release CI to use documented per-executable WebView2 debugging/profile overrides on its elevated disposable runner, with exact cleanup and unchanged application binaries. The revised runtime gate subsequently passed; release validation and public publication remain pending.
 - Strengthened release preparation with installed/build EXE hash, source revision, native workflow and both process/policy cleanup checks.
 
 - Implemented a planned `v0.1.0-preview.1` Windows x64 download pipeline: bundled notices, isolated runner installation, actual installed-WebView2 smoke, and main-only publication after exact-source Reader/artifact/tag validation. Notice generation, compilation and silent installation have passed in later runs; installed-reader workflows and publication remain pending.
@@ -39,6 +42,9 @@
 - Native Windows CLI argument forwarding; separate CI verification records preserve the initial failure.
 
 ### Verification
+
+- Source `20b1f48` passed Reader run 37118654848 and both native build jobs in 37118654865. Windows release run 37118654858 passed 12 actual runtime checks and cleanup, then failed preparation validation; publisher skipped.
+- A separate real Windows OS-close test exposed silent loss of unsaved forms despite the earlier reader/recovery passes. The correction passed 59 local unit tests, typecheck/build, three shared-UI close cases and six responsive viewport cases; rebuilt native verification remains pending.
 
 - [Reader run 37098740604](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37098740604) exposed the ink lifecycle defect: macOS WebKit 62 passed, one failed after export. Windows WebKit reproduced the exact failure before the fix (1/1); the patched forced-GC regression passed 3/3 and six focused editor cases passed on WebKit and Edge (6/6 each). Typecheck/build and all 55 unit cases passed with zero skips; the subsequent patched macOS CI pass is recorded below.
 - [Windows run 37096782242](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37096782242) verified privilege reduction but exited before reader assertions. [Run 37097697001](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37097697001) captured WebView2 153 initialization error `RPC_E_DISCONNECTED` despite an honored debugging port and passing profile-write probe. These failures do not establish native reader or release success.

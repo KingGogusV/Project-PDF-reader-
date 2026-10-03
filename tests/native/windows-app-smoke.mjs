@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
@@ -42,7 +42,12 @@ const report = { startedAt:new Date().toISOString(), platform:process.platform, 
   checks:[], launches:[], requests:[], blockedExternalRequests:[], unexpectedWriteRequests:[], nativeIpcRequests:[], pageErrors:[], consoleErrors:[],
   networkScope:'Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation.' };
 const checked=(name,evidence={})=>{report.checks.push({name,status:'passed',...evidence});console.log(`PASS ${name}`)};
-let helper, browser, page, stopFile, launchReport, timer, helperOutput='', ending=false;
+let helper, browser, page, stopFile, launchReport, timer, helperOutput='', ending=false, ownedPid;
+function requestWindowClose() {
+  const result=spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-close-request.ps1'),
+    '-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable],{windowsHide:true,encoding:'utf8',timeout:10000});
+  assert.equal(result.status,0,result.stderr || 'OS close request failed');
+}
 async function stopOwned() {
   if (!helper) return;
   if (helper.exitCode===null && helper.signalCode===null) {
@@ -54,7 +59,7 @@ async function stopOwned() {
   const ended=JSON.parse(await readFile(launchReport,'utf8'));
   report.launches.push(ended);
   assert.equal(helper.exitCode,0,ended.error || 'Native launcher failed');
-  assert.equal(ended.status,'stopped');
+  assert.ok(ended.status==='stopped'||(report.nativeCloseConfirmed&&ended.status==='closed'),'Unexpected native close state');
   assert.equal(ended.cleanup.ownedJobEmpty,true); assert.equal(ended.cleanup.policyRemoved,true);
   if(browser) { await browser.close().catch(()=>{}); browser=undefined; }
   helper=undefined;
@@ -86,6 +91,7 @@ async function startOwned() {
           browser=await chromium.connectOverCDP(`http://127.0.0.1:${port}`,{timeout:5000});
           report.webviewVersion=browser.version();
           assert.equal(launch.parentPid,helper.pid);
+          ownedPid=launch.childPid;
           if(local)assert.equal(launch.elevated,false);
           checked('same-account installed app starts with isolated loopback debugging', { mode:report.mode,elevated:launch.elevated,version:browser.version() });
           return;
@@ -100,6 +106,17 @@ async function workflow() {
   await startOwned();
   const flow=await verifyNativeReader({browser,output,fixtures,report,checked}); page=flow.page;
   await page.getByRole('tab',{name:/form.pdf/}).click();
+  await flow.active().locator('input[name="reader_name"]').fill('Pending native close check');
+  await page.locator('#page-total').click();
+  // A real OS close request must enter the shared save/discard workflow.
+  requestWindowClose();
+  await expect(page.locator('#dialog-title')).toHaveText('Keep your changes?');
+  await page.getByRole('button',{name:'Keep open',exact:true}).click();
+  await expect(flow.active().locator('input[name="reader_name"]')).toHaveValue('Pending native close check');
+  assert.equal(helper.exitCode,null);
+  checked('OS window close asks about unsaved changes and cancellation keeps edits open');
+  await flow.active().locator('input[name="reader_name"]').fill('Folio Windows native recovery verified');
+  await page.locator('#page-total').click();
   const event=page.waitForEvent('download');
   await page.locator('#export').click(); const download=await event;
   const saved=join(output,'form-export.pdf');await download.saveAs(saved);assert.equal(await download.failure(),null);
@@ -151,6 +168,18 @@ async function workflow() {
   await expect(page.locator('.document-host:not([hidden]) input[name="reader_name"]')).toHaveValue(recoveredValue);
   await page.screenshot({path:join(output,'process-recovery.png')});
   checked('full native process termination and relaunch recover the last completed form checkpoint');
+  await page.locator('.document-host:not([hidden]) input[name="reader_name"]').fill('Explicitly discarded native close test');
+  await page.locator('#page-total').click();requestWindowClose();
+  await expect(page.locator('#dialog-title')).toHaveText('Keep your changes?');
+  await writeFile(stopFile+'.expected-close','expect a clean exit after explicit confirmation');
+  const closed=page.waitForEvent('close');
+  await page.getByRole('button',{name:'Discard changes',exact:true}).click();await closed;
+  const until=Date.now()+10000;
+  while(helper.exitCode===null&&Date.now()<until)await delay(100);
+  assert.equal(helper.exitCode,0,'Confirmed native close must exit cleanly');
+  const exit=JSON.parse(await readFile(launchReport,'utf8'));assert.equal(exit.status,'closed');
+  report.nativeCloseConfirmed=true;
+  checked('explicit native discard confirmation closes the real application cleanly');
   assert.deepEqual(report.pageErrors,[]);assert.deepEqual(report.blockedExternalRequests,[]);assert.deepEqual(report.unexpectedWriteRequests,[]);
 }
 try {

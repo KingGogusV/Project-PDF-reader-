@@ -36,11 +36,17 @@ async function prepare() {
   const bytes = await readFile(join(directory, files[0]));
   if (bytes.length < 1024 * 1024 || bytes.toString('ascii', 0, 2) !== 'MZ') throw new Error('Invalid installer executable.');
   const report = JSON.parse(await readFile('test-results/native-windows/report.json', 'utf8'));
+  const builtExecutableSha256 = sha256(await readFile('src-tauri/target/release/folio-desktop.exe'));
+  console.log(JSON.stringify({ nativeStatus: report.status, nativeMode: report.mode,
+    reportSource: report.sourceCommit, expectedSource: revision,
+    installedExecutableSha256: report.executable?.sha256, builtExecutableSha256,
+    launches: report.launches?.map(launch => ({ status:launch.status, cleanup:launch.cleanup, webview:launch.webview })),
+    checks: report.checks?.length, allChecksPassed: report.checks?.every(check => check.status === 'passed') }));
   if (report.status !== 'passed' || report.mode !== 'hosted-ci' || report.sourceCommit !== revision ||
-      report.executable?.sha256 !== sha256(await readFile('src-tauri/target/release/folio-desktop.exe')) ||
-      report.launches?.length !== 2 || !report.launches.every(launch => launch.status === 'stopped' &&
+      report.executable?.sha256 !== builtExecutableSha256 ||
+      report.launches?.length !== 2 || !report.nativeCloseConfirmed || !report.launches.every(launch => ['stopped','closed'].includes(launch.status) &&
         launch.cleanup?.ownedJobEmpty && launch.cleanup?.policyRemoved && launch.webview?.profileVerified && launch.webview?.portVerified) ||
-      report.checks?.length < 12 || !report.checks.every(check => check.status === 'passed'))
+      report.checks?.length < 14 || !report.checks.every(check => check.status === 'passed'))
     throw new Error('Installed native verification, source/binary identity, or process/policy cleanup did not pass.');
   const manifest = JSON.parse(await readFile('src-tauri/generated-notices/manifest.json', 'utf8'));
   await mkdir(output, { recursive: true });

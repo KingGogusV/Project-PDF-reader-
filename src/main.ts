@@ -4,6 +4,8 @@ import type { ReaderController, ReaderState } from './core/document-controller';
 import { pickFiles, downloadPdf, printPdf, reservePrintWindow, getRecent, rememberRecent, clearRecent } from './platform/browser';
 import { createDeviceLibrary } from './features/device-library';
 import { createDocumentTools } from './features/document-tools';
+import { isTauri, invoke } from '@tauri-apps/api/core';
+import { registerNativeCloseGuard } from './platform/native-close';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const btn = (id: string, glyph: string, label: string, extra = '') => `<button id="${id}" class="icon-button ${extra}" title="${label}" aria-label="${label}">${icon(glyph)}</button>`;
@@ -80,6 +82,7 @@ let toastTimer: ReturnType<typeof setTimeout>;
 let searchTimer: ReturnType<typeof setTimeout>;
 let opening = false;
 let exporting = false;
+let closingApplication = false;
 let cancelDialog: (()=>void)|undefined;
 const active = () => sessions.find(s => s.id === activeId);
 const errorText = (e: unknown) => e instanceof Error ? e.message : 'The operation could not be completed. Please try again.';
@@ -174,6 +177,7 @@ function activate(id: number) {
 }
 async function choose() { try { const files=await pickFiles();await openFiles(files); }catch(e){toast(errorText(e),true);} }
 async function openFiles(files: File[]) {
+ if(closingApplication){toast('Folio is finishing its close checks.');return;}
  if(opening){toast('Wait for the current document to finish opening.');return;}
  opening=true;
  try { const {ReaderController}=await import('./core/document-controller');for(const file of files){
@@ -197,6 +201,19 @@ async function closeSession(id: number) {
  catch(error){s.closing=false;s.host.inert=false;throw error;}
  sessions.splice(sessions.indexOf(s),1);await s.controller.destroy();s.host.remove();if(id===activeId)activate(sessions.at(-1)?.id||0);else renderTabs();
 }
+async function prepareNativeClose(): Promise<boolean> {
+ if(opening||exporting||sessions.some(s=>s.closing)||$<HTMLDialogElement>('dialog').open){toast('Finish or cancel the current task before closing Folio.');return false;}
+ closingApplication=true;
+ try {
+  for(const session of [...sessions]){
+   activate(session.id); // Show the document whose edits the close dialog describes.
+   await closeSession(session.id);
+   if(sessions.includes(session))return false; // Cancel/export keeps the native app open.
+  }
+  return sessions.length===0;
+ }finally{if(sessions.length)closingApplication=false;}
+}
+if(isTauri())registerNativeCloseGuard(window,prepareNativeClose,()=>invoke<void>('finish_close'),error=>{closingApplication=false;toast(`Folio remains open. ${errorText(error)}`,true);});
 function setToolUI(tool: string) {for(const name of ['select','highlight','text','draw']){const b=$(`tool-${name}`);b.classList.toggle('active',name===tool);b.setAttribute('aria-pressed',String(name===tool));}}
 function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!s)return;s.controller.setTool(tool);setToolUI(tool);const hints={select:'',highlight:'Select text on the page to highlight it. Choose Select text to return to reading.',text:'Click or tap the page to add text. Use the editor controls to change size and color.',draw:'Draw on the page with a pointer or stylus. Switch to Select text to scroll normally.'};$('tool-hint').textContent=hints[tool];$('tool-hint').hidden=!hints[tool];}
 async function renderSidebar() {

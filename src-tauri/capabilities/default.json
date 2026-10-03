@@ -1,9 +1,9 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Local web reader only. No native IPC commands or privileged plugins are granted.",
+  "description": "The local reader may finish its own confirmed close. No filesystem, shell or network plugins.",
   "windows": [
     "main"
   ],
-  "permissions": []
+  "permissions": ["allow-finish-close"]
 }

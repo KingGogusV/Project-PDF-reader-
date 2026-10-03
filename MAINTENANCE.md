@@ -101,7 +101,7 @@ The 200-account ceiling concerns registered accounts, not measured concurrent tr
 
 ## Experimental Native Commands
 
-The Tauri wrapper shares `dist/client`, with no privileged commands/plugins. Actual convenience scripts are `pnpm native:dev` and `pnpm native:build`. Use explicit platform bundles and a locked dependency graph for repeatable packaging:
+The Tauri wrapper shares `dist/client`; its single local-main-window command `finish_close` completes the shared save/discard workflow. No filesystem/shell/network plugins are granted. Preserve the generated command ACL and actual OS-close regression gate. Actual convenience scripts are `pnpm native:dev` and `pnpm native:build`. Use explicit platform bundles and a locked dependency graph for repeatable packaging:
 
 ```sh
 pnpm exec tauri info
@@ -124,11 +124,11 @@ node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles app,dmg -- 
 
 The first is Windows; the second requires macOS. Direct Node invocation preserves the final `-- --locked` delimiter when PowerShell's pnpm wrapper would otherwise consume it; that delimiter forwards locking to Cargo. These produce unsigned development artifacts, not trusted releases. Native CI conditionally generates a missing lockfile, retains dependency metadata and packages, and archives the macOS app to preserve executable permissions. Preserve the committed, verified Cargo lockfile; review any future resolution change and its notices.
 
-The inspected Windows environment has an isolated Rust tool cache but lacks MSVC and Windows SDK; WebView2 alone does not permit a local build. The checksum-verified CI installer was installed and tested locally without compiler SDKs. Remote run 37091186893 successfully built both Windows NSIS and macOS app/DMG; silent Windows installation was later verified in run 37101691271, while runtime and signing/notarization remain unverified. See [native prerequisites and runtime gates](src-tauri/README.md). Test custom-origin workers, local opening, PDF export/print, recovery, accounts and offline behavior on actual Windows/macOS wrappers before release.
+The inspected Windows environment has an isolated Rust tool cache but lacks MSVC and Windows SDK; WebView2 alone does not permit a local build. The checksum-verified CI installer was installed and tested locally without compiler SDKs. Remote run 37091186893 successfully built both Windows NSIS and macOS app/DMG; silent Windows installation was later verified in run 37101691271, while later Windows runtime checks passed as recorded in verification; macOS runtime and signing/notarization remain unverified. See [native prerequisites and runtime gates](src-tauri/README.md). Test custom-origin workers, local opening, PDF export/print, recovery, accounts and offline behavior on actual Windows/macOS wrappers before release.
 
 ## Windows Download Release Pipeline
 
-The planned unsigned x64 prerelease is `v0.1.0-preview.1`. Actual normal-user native checks passed; publication remains pending the revised CI run. Use:
+The planned unsigned x64 prerelease is `v0.1.0-preview.1`. Normal-user and revised CI native reader checks passed; publication remains pending native close-safety verification and release validation. Use:
 
 ```sh
 cargo install cargo-about --version 0.9.2 --locked --features cli
@@ -148,7 +148,7 @@ node tests/native/windows-app-smoke.mjs --local <absolute-installed-exe-path> <e
 
 Local mode refuses elevation, verifies the executable and temporary-path boundaries, changes no registry policy and creates a separate profile/report directory. It does not install, overwrite or uninstall applications. Synthetic fixtures must exist. Reports and screenshots are under `test-results/native-windows-local-*`; CI uses `test-results/native-windows/`. Profiles contain only synthetic PDFs and are retained for diagnosis. Never point tests at an end user's real profile.
 
-The shared test checks real rendering, form fields, storage consent, immutable originals, search, form/annotation PDF downloads and independent reopen. It terminates the entire owned app/WebView job after a verified form checkpoint, restarts it, and checks recovery. This establishes completed-checkpoint recovery, not recovery of unfinished drafts or writes. Printing and native file-picker UI interaction remain separate tests; file selection uses Playwright's real input mechanism.
+The shared test checks real rendering, form fields, storage consent, immutable originals, search, form/annotation PDF downloads and independent reopen. It terminates the entire owned app/WebView job after a verified form checkpoint, restarts it, and checks recovery. This establishes completed-checkpoint recovery, not recovery of unfinished drafts or writes. The current gate additionally sends OS close requests to the exact owned process and requires cancellation to preserve edits, then explicit discard to exit cleanly. Natural exit is permitted only after the test marks an expected confirmed close. Printing and native file-picker UI interaction remain separate tests; file selection uses Playwright's real input mechanism.
 
 Release preparation checks the installed EXE hash against the just-built EXE, exact source revision, native pass and both cleanup records. Main-only publication also checks exact-source Reader CI, archive digest, bounded payload inventory, checksums and tag identity. Draft retries never overwrite conflicting assets. Verify anonymous downloads before adding a direct link to README. The old `windows-smoke.mjs`/temporary-account route and manual diagnostic workflow remain historical evidence, not a local invocation path.
 

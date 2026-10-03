@@ -4,7 +4,7 @@ Folio targets **Windows x64 Intel/AMD PCs**. No ChatGPT account, subscription,
 Node.js, Rust or developer tools are needed for local PDFs or optional device storage.
 
 **Publication status:** actual Windows native checks passed; public delivery is
-pending the revised remote release gate. No public EXE has been released yet.
+pending native close-safety and release validation. No public EXE has been released yet.
 Check [GitHub Releases](https://github.com/KingGogusV/Project-PDF-reader-/releases)
 or use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
@@ -42,8 +42,10 @@ terminating and restarting the entire owned app/WebView process job. Both jobs
 emptied. All 533 installed notice hashes matched.
 
 The earlier custom-account CI failure did not reproduce in the normal user
-session. The revised same-account CI route still needs its own passing result
-before publication. See [verification](verification.md) and
+session. The revised same-account CI route subsequently passed all 12 checks and cleanup
+in run 37118654858. Preparation then failed a separate validation gate.
+An additional OS-close test found that dirty forms could exit without prompting;
+the correction and expanded native gate await a rebuilt installer. See [verification](verification.md) and
 [native evidence](native-windows-2026-10-03.json).
 
 These checks do not certify every Windows version, ARM emulation, physical

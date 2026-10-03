@@ -169,7 +169,7 @@ Primary references: [cargo-about generation](https://embarkstudios.github.io/car
 
 ## Licensing, Security and Performance Record
 
-Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. The verified native Cargo lockfile is retained. The Windows-specific native notice/source gate and build/install checks passed as described above; public release verification remains blocked by native startup, and other native platform inventories need separate review. Test-only dependencies must not be silently bundled into the client.
+Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. The verified native Cargo lockfile is retained. The Windows-specific native notice/source gate and build/install checks passed as described above; public release verification remains blocked by the latest close-safety/release validation described below, and other native platform inventories need separate review. Test-only dependencies must not be silently bundled into the client.
 
 Security review must include parser/worker boundaries, account identity dispatch, device-storage expectations and embedded WASM components. An earlier zero-advisory package audit does not establish the upgraded dependency graph's current status; exact new commands/results belong in verification.
 
@@ -186,4 +186,18 @@ Existing initial-reader timings use small synthetic localhost fixtures, not high
 
 **DESIGN DECISION:** Keep the shipped app unchanged. Use the runner's existing account for CI, supplying only the documented executable-scoped debugger/profile settings on the disposable elevated machine and removing the exact values afterward. Local normal-user testing uses process environment only. Require verified actual profile/port, owned-job cleanup, original preservation, independent PDF reopen and process-restart recovery. No sandbox switch, shared namespace ACL change or persistent debugging configuration is introduced.
 
-**UNRESOLVED:** Revised CI outcome and public prerelease remain pending; native print/file-picker UI, physical devices and live managed account sessions still require their own evidence.
+**FACT:** Revised CI runtime passed 12 checks and exact cleanup in run 37118654858; preparation validation failed and publication was skipped.
+
+**UNRESOLVED:** Native close-safety, release validation and public prerelease remain pending; native print/file-picker UI, physical devices and live managed account sessions still require their own evidence.
+
+## Native close safety and API dependency - 2026-10-03
+
+**FACT (observed):** Actual Windows OS-close testing on source `85cc5de` exited with dirty form edits and no prompt. Browser `beforeunload` alone did not protect this native window. Existing 12-check reader/recovery passes did not include that operation.
+
+**FACT (primary sources):** [Tauri capabilities](https://v2.tauri.app/security/capabilities/), [command permissions](https://v2.tauri.app/security/permissions/) and [core JavaScript API](https://v2.tauri.app/reference/javascript/api/namespacecore/) document local-window ACLs and invocation. Exact cached Rust source for tauri 2.12.1 / tauri-build 2.7.1 confirms `on_window_event`, prevented `CloseRequested`, `WebviewWindow::destroy` and AppManifest command permission generation.
+
+**FACT (license):** npm metadata and packaged original license files for `@tauri-apps/api` 2.12.1 declare `Apache-2.0 OR MIT`; the lockfile pins the package integrity. Original license files are copied into distribution assets. The API supports the existing web frontend/native bridge; it introduces no additional PDF engine or Rust dependency. This records inspected terms, not legal advice.
+
+**DESIGN DECISION:** Prevent native closure first, then reuse the shared validated per-document workflow. Only `finish_close` is granted to the local main window; no filesystem/shell/network permission is added. The wrapper fails closed if the frontend cannot respond. Browser bridge simulations test UI only; release verification must also send actual OS-close requests and prove cancel-preservation and confirmed clean exit.
+
+**UNRESOLVED:** Compile and execute the corrected native binary, then resolve the independent release identity/cleanup validation using explicit diagnostics; never remove a gate to conceal its failure.
