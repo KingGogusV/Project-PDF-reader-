@@ -144,7 +144,7 @@ test('print uses pre-reserved tab and retains Blob until tab closes', () => {
   window.open = () => { throw new Error('Should not open another tab'); };
   const result = printPdf(new Uint8Array([37, 80, 68, 70]), 'source.pdf', tab);
   assert.equal(tab.location.url, 'blob:test/0');
-  assert.match(result.message, /Print copy opened/);
+  assert.match(result.message, /Print copy sent to your browser/);
   intervals[0]();
   assert.deepEqual(revokedUrls, []);
   tab.close();
@@ -159,4 +159,15 @@ test('popup denial and failed print preparation do not claim success or leave bl
   assert.throws(() => printPdf(new Uint8Array(), 'empty.pdf', tab), /could not open/);
   assert.equal(tab.closed, true);
   assert.equal(createdUrls.length, 0);
+});
+
+
+test('print fallback explains browsers that download instead of opening a PDF viewer', () => {
+  const tab = fakeTab();
+  tab.location.href = 'about:blank';
+  const result = printPdf(new Uint8Array([37, 80, 68, 70]), 'source.pdf', tab);
+  assert.match(result.message, /may open or download the PDF/);
+  timers[0]();
+  assert.match(tab.document.body.textContent, /may have downloaded the print copy/);
+  assert.match(tab.document.body.textContent, /Check your downloads/);
 });

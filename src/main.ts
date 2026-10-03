@@ -64,7 +64,7 @@ app.innerHTML = `
 `;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-type Session = { id: number; name: string; file: File; host: HTMLDivElement; controller: ReaderController; state?: ReaderState };
+type Session = { id: number; name: string; file: File; host: HTMLDivElement; controller: ReaderController; state?: ReaderState; position?: { page: number; top: number; left: number; width: number } };
 const sessions: Session[] = [];
 let activeId = 0;
 let nextId = 1;
@@ -142,14 +142,15 @@ function applyState(session: Session, state: ReaderState) {
  renderTabs();
 }
 function activate(id: number) {
- const previous=active();if(previous)previous.controller.setTool('select');
+ const previous=active();if(previous){if(previous.id!==id)previous.position={page:previous.controller.currentPage,top:previous.host.scrollTop,left:previous.host.scrollLeft,width:previous.host.clientWidth};previous.controller.setTool('select');}
  activeId=id; const current=active();
  $('welcome').hidden=!!current;$('reader').hidden=!current;
  // PDF.js form widgets resolve some fields through document-wide queries.
  // Keep only one document DOM attached, so identical PDF field IDs cannot cross tabs.
- for(const s of sessions){if(s.id===id){s.host.hidden=false;if(!s.host.isConnected)$('stage').prepend(s.host);}else{s.host.remove();}}
+ for(const s of sessions)if(s.id!==id)s.host.remove();
+ if(current){current.host.hidden=false;if(!current.host.isConnected)$('stage').prepend(current.host);}
  renderTabs();
- if(current){current.controller.refresh();if(current.state)applyState(current,current.state);void renderSidebar(); document.title=`${current.name} — Folio`;}
+ if(current){current.controller.refresh();if(current.position){const position=current.position;current.controller.goToPage(position.page);if(current.host.clientWidth===position.width){current.host.scrollTop=position.top;current.host.scrollLeft=position.left;}current.controller.refresh();}if(current.state)applyState(current,current.state);void renderSidebar(); document.title=`${current.name} — Folio`;}
  else{document.title='Folio — your documents, your space';renderRecents();}
  $('tool-hint').hidden=true;
  $<HTMLInputElement>('search-input').value='';current?.controller.clearSearch();
@@ -233,7 +234,7 @@ $('print').addEventListener('click',()=>void printCopy());
 on('mobile-more',async()=>{const body=document.createElement('div');body.append(copy('Choose a document action. Printing opens a local PDF copy in your browser.'));
  const actions=[{label:'Rotate view',value:'rotate'},{label:'Properties',value:'properties'},{label:'Reading mode',value:'mode'},{label:'Print copy',value:'print'}];
  const result=await dialog('Document actions',body,actions);if(result==='rotate')active()?.controller.rotate();if(result==='properties')await showProperties();if(result==='mode'){const mode=$<HTMLSelectElement>('view-mode');mode.value=mode.value==='continuous'?'page':'continuous';active()?.controller.setScrollMode(mode.value as 'continuous'|'page');}if(result==='print')await printCopy();});
-on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom and print shortcuts remain available. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. PDF JavaScript, OCR and certificate signing are not enabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
+on('help',async()=>{const body=document.createElement('div');body.innerHTML='<p class="dialog-copy">Local PDFs stay on your device. Export creates a separate PDF; the original is never overwritten. Supported text fields and checkboxes can be filled directly on the page. Recent history stores filenames only.</p><div class="shortcut-list"><kbd>Ctrl / ⌘ O</kbd> Open a PDF<br><kbd>Ctrl / ⌘ F</kbd> Find in document<br><kbd>Ctrl / ⌘ S</kbd> Export copy<br><kbd>Ctrl / ⌘ Z</kbd> Undo annotation<br><kbd>Ctrl / ⌘ Shift Z</kbd> Redo annotation<br><kbd>Alt +</kbd> / <kbd>Alt −</kbd> Document zoom<br><kbd>Alt 0</kbd> Fit width<br><kbd>Page Up / Down</kbd> Navigate pages</div><p class="dialog-copy">Browser zoom remains available; Ctrl/Command P opens a local print copy. Touch: pinch to magnify the browser view; use Fit width or the zoom controls for document scale. PDF JavaScript, OCR and certificate signing are not enabled.</p>';await dialog('A few useful shortcuts',body,[{label:'Got it',value:'done',primary:true}]);});
 document.addEventListener('keydown',e=>{
  if($<HTMLDialogElement>('dialog').open)return;const target=e.target as HTMLElement;const editing=target.matches('input,textarea,select,[contenteditable="true"]')||target.closest('[contenteditable="true"]');const mod=e.ctrlKey||e.metaKey;
  if(mod&&e.key.toLowerCase()==='o'){e.preventDefault();void choose();return;}

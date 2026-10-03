@@ -43,7 +43,9 @@ self.addEventListener('fetch', event => {
   }
   if (!assetUrls.has(request.url)) return;
   event.respondWith((async () => {
-    const cached = await caches.match(request, { cacheName: CACHE_NAME });
+    // The allowlist contains only identical static assets, never personalized data.
+    // Module/CSS requests send Origin; Vite adds Vary: Origin to otherwise identical bytes.
+    const cached = await caches.match(request, { cacheName: CACHE_NAME, ignoreVary: true });
     return cached || fetch(request);
   })());
 });

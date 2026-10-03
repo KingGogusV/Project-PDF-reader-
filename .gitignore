@@ -13,3 +13,4 @@ public/vendor/
 public/demo.pdf
 docs/screenshots/
 *.tsbuildinfo
+.tmp/

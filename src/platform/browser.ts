@@ -116,7 +116,16 @@ export function printPdf(bytes: Uint8Array, name: string, reservedWindow?: Windo
       URL.revokeObjectURL(url);
     }
   }, 2_000);
-  return { filename, message: 'Print copy opened. Use the PDF tab’s Print or Share controls; availability depends on your browser.' };
+  // Browsers without a built-in PDF viewer may download the Blob and leave the reserved tab blank.
+  window.setTimeout(() => {
+    try {
+      if (!output.closed && output.location.href === 'about:blank') {
+        output.document.title = 'Print copy - Folio';
+        output.document.body.textContent = 'Your browser may have downloaded the print copy. Check your downloads, open the PDF in a reader, and choose Print or Share. You can close this tab.';
+      }
+    } catch { /* A browser PDF viewer may be isolated from the opener; leave its UI alone. */ }
+  }, 1_500);
+  return { filename, message: 'Print copy sent to your browser. It may open or download the PDF; use its Print or Share controls.' };
 }
 
 function readStored(key: string): string | null {

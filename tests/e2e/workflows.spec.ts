@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo, type Download } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
@@ -52,9 +52,19 @@ async function openFile(page: Page, name: string, touch = false) {
 }
 
 async function exportCopy(page: Page, testInfo: TestInfo, originalName: string, prefix = '') {
-  const downloadEvent = page.waitForEvent('download');
+  const downloadEvent = page.waitForEvent('download').catch(() => null);
   await page.locator('#export').click();
+  let exportError = '';
+  await expect.poll(async () => {
+    const error = page.locator('#toast.error:not([hidden])');
+    if (await error.count()) exportError = (await error.textContent()) || 'Export failed';
+    if (exportError) return exportError;
+    if (!(await page.locator('#dialog').isVisible())) return 'Waiting for export confirmation';
+    return await page.locator('#dialog-title').textContent();
+  }, { message: 'Export must reach its confirmation dialog without a save error' }).toBe('Your PDF copy is ready');
   const download = await downloadEvent;
+  expect(download).not.toBeNull();
+  if (!download) throw new Error('The browser did not emit a PDF download.');
   expect(download.suggestedFilename()).toBe(originalName.replace(/\.pdf$/i, '') + '-folio.pdf');
   const path = testInfo.outputPath(prefix + download.suggestedFilename());
   await download.saveAs(path);
@@ -243,15 +253,36 @@ test('dirty close requires an explicit choice and cancellation preserves the ope
   await expect(page.locator('#welcome')).toBeVisible();
 });
 
-test('print opens a local PDF copy and reports the handoff without claiming printing completed', async ({ page }) => {
+test('print hands a real local PDF to the browser viewer or download without claiming printing completed', async ({ page, context }, testInfo) => {
   await openFile(page, 'text-outline.pdf');
+  const downloads: Download[] = [];
+  const blobRequests: string[] = [];
+  const captureDownload = (download: Download) => downloads.push(download);
+  page.on('download', captureDownload);
+  context.on('page', popup => popup.on('download', captureDownload));
+  context.on('request', request => { if (request.url().startsWith('blob:')) blobRequests.push(request.url()); });
   const popupEvent = page.waitForEvent('popup');
   await page.locator('#print').click();
   const popup = await popupEvent;
-  await expect.poll(() => popup.url()).toMatch(/^blob:/);
-  await expect(page.locator('#toast')).toContainText('Print copy opened');
-  await expect(page.locator('#toast')).toContainText('depends on your browser');
-  await popup.close();
+  await expect.poll(() => popup.url().startsWith('blob:') || downloads.length > 0).toBe(true);
+  if (downloads.length) {
+    const destination = testInfo.outputPath('browser-print-copy.pdf');
+    await downloads[0].saveAs(destination);
+    expect(await downloads[0].failure()).toBeNull();
+    const bytes = await readFile(destination);
+    const original = await readFile(fixture('text-outline.pdf'));
+    expect(bytes.equals(original)).toBe(true);
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(3);
+    if (!popup.isClosed() && popup.url() === 'about:blank') {
+      await expect(popup.locator('body')).toContainText('may have downloaded the print copy');
+    }
+  } else {
+    await expect.poll(() => blobRequests.length).toBeGreaterThan(0);
+    expect(popup.url()).toMatch(/^blob:/);
+  }
+  await expect(page.locator('#toast')).toContainText('Print copy sent to your browser');
+  await expect(page.locator('#toast')).toContainText('may open or download the PDF');
+  if (!popup.isClosed()) await popup.close();
   await expect(page.locator('#reader')).toBeVisible();
 });
 
@@ -411,3 +442,6 @@ for (const viewport of viewports) {
     });
   });
 }
+
+
+
