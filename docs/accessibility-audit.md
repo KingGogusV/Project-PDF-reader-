@@ -5,18 +5,30 @@ conformance certification or a screen-reader compatibility claim.
 
 ## Latest result
 
-The latest development-source audit completed at 2026-10-03 01:42 UTC in
-Microsoft Edge 154.0.4258.53 on Windows, using a separate local Vite server on
-port 5190. Eight of nine scanned states had zero axe violations. The remaining
-finding was `#search-status` contrast: 3.41:1 (`#7b8778` on `#f4f4ef`, 14px text),
-below the rule's 4.5:1 requirement. This is a development-server result; a final
-production-preview rescan remains required after rebuilding.
+The final production-preview audit completed at 2026-10-03 01:58 UTC in Microsoft
+Edge 154.0.4258.53 on Windows, against `http://127.0.0.1:4173`. The inspected build
+has service-worker manifest version `2e61d5c66548dcdc`; the audit context blocked
+service workers to avoid stale cached assets. All nine scanned states had zero
+axe violations. No rules or page content were excluded.
 
-The earlier tab semantics, form-label and other contrast findings were absent in
-that latest scan. Search-close now restored focus to `#toggle-search`; Escape
-from help restored focus to `#help`. The four native form widgets received their
-actual PDF field names as fallback accessible names. PDF content contrast still
-produced incomplete checks that require manual inspection.
+| Production state | Axe violations | Incomplete automated checks |
+| --- | ---: | --- |
+| Welcome, desktop | 0 | None |
+| Device-library dialog | 0 | None |
+| Account dialog | 0 | None |
+| Reader, desktop | 0 | PDF text/canvas color contrast |
+| Document-tools dialog | 0 | None |
+| Search, desktop | 0 | PDF text/canvas color contrast |
+| Demo interactive form, desktop | 0 | PDF text/canvas color contrast |
+| Reader, 390 x 844 viewport | 0 | PDF text/canvas color contrast |
+| Actions dialog, 390 x 844 viewport | 0 | None |
+
+The earlier tab semantics, form-label and contrast findings were absent in this
+production scan. Closing search restored focus to `#toggle-search`; Escape from
+help restored focus to `#help`. All four native form widgets received their actual
+PDF field names as fallback accessible names. At the phone viewport, body and
+toolbar widths both measured 390 pixels. These results do not resolve the
+incomplete PDF-content checks or establish screen-reader compatibility.
 
 ## Method and repeatability
 
@@ -54,8 +66,8 @@ observed findings from that rendered preview, not hypothetical advice:
 
 The core owner subsequently added an annotation-layer label fallback from native
 field names while preserving existing ARIA, title and HTML labels, and reported a
-passing focused Edge form-label regression. The latest complete development audit
-also confirmed the four labels; production-preview verification remains separate.
+passing focused Edge form-label regression. The final production audit also
+confirmed all four labels.
 
 The mobile actions dialog had zero automatically detected violations in the
 initial run. The 390-pixel viewport had body and toolbar widths of 390 pixels,
@@ -82,11 +94,11 @@ alone is not evidence that background application controls became focusable.
 
 Playwright documents that its WebKit builds are patched versions, often ahead of
 Safari, and cannot drive branded Safari. macOS-hosted WebKit is a closer proxy
-than Windows/Linux WebKit for platform behavior. A useful next CI lane is a
-`macos-latest` job that installs the repository-pinned Playwright WebKit build and
-runs core opening/search/form/export/keyboard workflows with both desktop and
-mobile viewport configurations. Passing that lane should be labeled **WebKit on
-macOS**, not Safari, iPhone, iPad, or VoiceOver verification.
+than Windows/Linux WebKit for platform behavior. `.github/workflows/checks.yml`
+now defines a `macos-latest` lane that installs the repository-pinned Playwright
+WebKit build and runs the browser workflow suite, including responsive viewport
+configurations. A configured lane is not a verified run. Passing that lane should
+be labeled **WebKit on macOS**, not Safari, iPhone, iPad, or VoiceOver verification.
 
 The current Tauri wrapper shares the web UI/document engine. Its Windows WebView2
 and Apple WKWebView need their own runtime tests; native installer compilation

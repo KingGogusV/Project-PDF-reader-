@@ -5,6 +5,6 @@ export default defineConfig({
   reporter: 'list', outputDir: '../../test-results/signing',
   use: { browserName: 'chromium', channel: channel === 'chromium' ? undefined : channel,
     baseURL: 'http://127.0.0.1:5176', headless: true, serviceWorkers: 'block', trace: 'retain-on-failure' },
-  webServer: { command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5176 --strictPort',
-    url: 'http://127.0.0.1:5176/tests/core/signing.html', cwd: '../..', reuseExistingServer: !process.env.CI, timeout: 30_000 },
+  webServer: { command: 'node node_modules/vite/bin/vite.js --config tests/core/signing.vite.config.ts --host 127.0.0.1 --port 5176 --strictPort',
+    url: 'http://127.0.0.1:5176/tests/core/signing.html', cwd: '../..', reuseExistingServer: false, timeout: 30_000 },
 });

@@ -48,8 +48,14 @@ test('original and recovery checkpoint survive reload with independent verified 
     const estimate = await library.estimateStorage();
     document.originalBytes[0] = 0;
     const pristine = await library.readOriginal(id);
+    const db = await new Promise<IDBDatabase>((resolve, reject) => { const r = indexedDB.open(window.vaultModule.LOCAL_LIBRARY_DATABASE_NAME); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+    const portableStores = await Promise.all(['originals', 'latest'].map(store => new Promise<boolean>((resolve, reject) => {
+      const r = db.transaction(store).objectStore(store).get(['account:account-a', id]);
+      r.onsuccess = () => resolve(r.result.bytes instanceof ArrayBuffer); r.onerror = () => reject(r.error);
+    })));
+    db.close();
     return { originalHash: pristine.originalSha256, originalFirstByte: pristine.bytes[0], latestHash: document.latestSha256,
-      latest: Array.from(document.latestBytes), list, estimate };
+      latest: Array.from(document.latestBytes), list, estimate, portableStores };
   }, result.id);
   expect(recovered.originalHash).toBe(digest(original));
   expect(recovered.originalFirstByte).toBe(original[0]);
@@ -58,6 +64,7 @@ test('original and recovery checkpoint survive reload with independent verified 
   expect(recovered.list).toHaveLength(1);
   expect(recovered.list[0]).not.toHaveProperty('originalBytes');
   expect(recovered.estimate.storedBytes).toBe(original.length + updated.length);
+  expect(recovered.portableStores, 'new original and latest bytes use portable IndexedDB ArrayBuffers').toEqual([true, true]);
 });
 
 test('account namespaces and guest storage cannot read or delete each other through the API', async ({ page }) => {
@@ -164,17 +171,28 @@ test('bounded storage rejects excess writes and stale deletion without losing or
   expect(result.usage.storedBytes).toBe(0);
 });
 
-test('damaged latest bytes are detected while the separately stored original remains recoverable', async ({ page }) => {
-  const result = await page.evaluate(async ({ initial, next }) => {
+test('damaged latest bytes are detected while the separately stored original remains recoverable', async ({ page, browserName }) => {
+  const result = await page.evaluate(async ({ initial, next, legacyBlobs }) => {
     const { createLocalLibrary, LOCAL_LIBRARY_DATABASE_NAME } = window.vaultModule;
     const library = createLocalLibrary('integrity');
     const added = await library.add({ name: 'integrity.pdf', bytes: new Uint8Array(initial) });
     await library.saveRevision(added.id, { bytes: new Uint8Array(next), expectedRevision: 1, needsRecovery: true });
     const db = await new Promise<IDBDatabase>((resolve, reject) => { const r = indexedDB.open(LOCAL_LIBRARY_DATABASE_NAME); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+    let legacyVerified = false;
+    // Existing released Chromium profiles may contain Blob records. WebKit's
+    // Blob-backed IDB persistence is the incompatibility this regression fixes.
+    if (legacyBlobs) {
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction('latest', 'readwrite');
+        tx.objectStore('latest').put({ schemaVersion: 1, owner: 'account:integrity', id: added.id, bytes: new Blob([new Uint8Array(next)], { type: 'application/pdf' }) });
+        tx.oncomplete = () => resolve(); tx.onabort = () => reject(tx.error);
+      });
+      legacyVerified = (await library.read(added.id)).latestBytes.every((value, index) => value === next[index]);
+    }
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction('latest', 'readwrite');
       const corrupted = new Uint8Array(next); corrupted[corrupted.length - 4] ^= 0xff;
-      tx.objectStore('latest').put({ schemaVersion: 1, owner: 'account:integrity', id: added.id, bytes: new Blob([corrupted], { type: 'application/pdf' }) });
+      tx.objectStore('latest').put({ schemaVersion: 1, owner: 'account:integrity', id: added.id, bytes: corrupted.buffer });
       tx.oncomplete = () => resolve(); tx.onabort = () => reject(tx.error);
     });
     db.close();
@@ -183,12 +201,13 @@ test('damaged latest bytes are detected while the separately stored original rem
     const source = await library.readOriginal(added.id);
     await library.saveRevision(added.id, { bytes: new Uint8Array(next), expectedRevision: 2, needsRecovery: true });
     const repaired = await library.read(added.id);
-    return { code, original: Array.from(source.bytes), stillListed: (await library.list()).length, repairedHash: repaired.latestSha256 };
-  }, { initial: Array.from(original), next: Array.from(updated) });
+    return { code, original: Array.from(source.bytes), stillListed: (await library.list()).length, repairedHash: repaired.latestSha256, legacyVerified };
+  }, { initial: Array.from(original), next: Array.from(updated), legacyBlobs: browserName !== 'webkit' });
   expect(result.code).toBe('CORRUPT');
   expect(result.original).toEqual(Array.from(original));
   expect(result.stillListed).toBe(1);
   expect(result.repairedHash).toBe(digest(updated));
+  expect(result.legacyVerified).toBe(browserName !== 'webkit');
 });
 
 test('recovery acknowledgment uses revision checks and never discards the stored checkpoint', async ({ page }) => {

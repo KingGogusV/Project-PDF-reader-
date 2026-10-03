@@ -1,41 +1,122 @@
 # Research record
 
-Research checked: **2026-10-02, America/Los_Angeles**. Facts, developer claims, inferences, decisions and unresolved questions are distinguished. Vendor figures are not independent Folio measurements.
+Updated: **2026-10-03 UTC**. **FACT** records inspected code/artifacts or primary evidence; **DEVELOPER CLAIM** records upstream assertions; **INFERENCE** records an engineering assessment; **DESIGN DECISION** records Folio's choice; **UNRESOLVED** records remaining questions. Marketing figures and dependency capabilities are not Folio verification.
 
-## Evidence
+## Evidence Index
 
-- [Product references](docs/reference-research.md): Adobe Reader versus paid Acrobat/Pro and optional cloud/AI; desktop/web/tablet/phone differences; separate revpdf.com/Pawandeep and bikash1376 projects; licenses/privacy/source inspection.
-- [Engine research](docs/engine-research.md): PDF standards, candidate engines/frameworks, licenses, web/native/mobile, OCR, printing, signatures and accessibility.
-- [Requirements](docs/requirements.md) and [verification](docs/verification.md): acceptance criteria and actual implementation evidence.
+- [Product references](docs/reference-research.md): current Adobe Reader/paid Acrobat/cloud-AI matrix and desktop/web/mobile differences; three separately identified RevPDF references.
+- [Engine and platform research](docs/engine-research.md): PDF standards; PDFium, PDF.js, MuPDF, Poppler, Qt PDF, PDFBox, PoDoFo and native options; browser, desktop and mobile architecture; printing/signatures/accessibility.
+- [OCR research and provenance](docs/ocr-research.md), [OCR notices](third_party/ocr/README.md): worker/model/native licensing, local delivery, bounded recognition and evidence.
+- [Page organization](docs/organize-research.md): pdf-lib capabilities/limitations, conservative eligibility and independent output checks.
+- [Accessibility audit](docs/accessibility-audit.md): observed findings, repairs, manual gaps and WebKit/native verification boundaries.
+- [Requirements](docs/requirements.md), [upgrade scope](docs/upgrade-scope.md), [architecture](ARCHITECTURE.md) and [verification](docs/verification.md): actual product contract and evidence.
 
-## Selected Engine
+Earlier research remains historical context. The current decisions below supersede initial plans to defer all OCR, organization, certificate signing, accounts and document recovery.
 
-**FACT:** Mozilla documents core/display/viewer layers in [PDF.js getting started](https://mozilla.github.io/pdf.js/getting_started/). Its [license](https://github.com/mozilla/pdf.js/blob/master/LICENSE) is Apache-2.0.
+## Adobe Acrobat Reader
 
-**FACT:** Registry/package inspection identified PDF.js 6.3.289, Vite 8.3.2, TypeScript 7.0.2 and Playwright 1.63.0. The lockfile records the actual dependency graph.
+**FACT:** Authoritative Adobe sources in the reference report distinguish free reading, navigation, review, form completion and basic signing from paid content editing/OCR/redaction and subscription/cloud features. Desktop, browser and phone/tablet functionality differs; one product name is not evidence of feature parity.
 
-**FACT:** [CVE-2024-4367](https://github.com/mozilla/pdf.js/security/advisories/GHSA-wgrm-67xf-hhpq) concerns older releases. The installed 6.3.289 package no longer has the historical isEvalSupported option. Do not invent that switch. Current boundaries include no scripting manager, filtered actions, enabled permissions, matched local assets, CSP and workers.
+**DESIGN DECISION:** Benchmark useful workflows and reliability, not Adobe branding, artwork, layout or proprietary implementation. Folio's current unsupported tools remain explicit.
 
-**DESIGN DECISION:** One shared browser core, modular DOM UI and thin platform adapters. PDF.js handles supported incremental saving; pdf-lib generates/checks synthetic fixtures only.
+## Adobe Acrobat / Acrobat Pro and Optional Services
 
-## Reference Conclusions
+**FACT:** Adobe's paid editing/conversion/OCR and optional cloud/AI/collaboration services have distinct capability and processing boundaries. Online tools and some mobile document transformations can require remote processing; the reference matrix preserves those distinctions.
 
-**FACT:** Adobe separates basic reading/review/forms from paid editing/OCR/redaction and cloud/AI services. Its online tools and Liquid Mode may process files remotely; Folio does not adopt that architecture.
+**DESIGN DECISION:** No cloud PDF processor, AI upload, analytics of document contents or collaboration backend is introduced. Optional Folio accounts store identity/account metadata only. Account registration is not a prerequisite for local reading.
 
-**FACT:** revpdf.com describes a closed-source Flutter/C++/CMake implementation. Pawandeep's release EULA is not open source. Public performance claims were not independently reproduced.
+## RevPDF from revpdf.com
 
-**FACT:** bikash1376/revpdf is a separate Expo/React Native/SQLite/WebView/PDF.js project associated with revpdf.in. Source inspection found whole-file base64 transfer, a typed bridge, local highlight metadata and bundled reader assets; these do not prove annotation PDF export or platform parity.
+**DEVELOPER CLAIM:** revpdf.com describes local/offline processing, a Flutter/C++ implementation and performance/size advantages. Public architecture and product claims are recorded with dates in the reference report; Folio has not independently benchmarked its binaries.
 
-**DESIGN DECISION:** Reuse no Adobe/RevPDF implementation or assets; apply independently implemented local workflow/platform-boundary concepts only.
+**FACT:** Privacy/source/release inspection does not justify treating every product network request as absent or all platforms as equivalent. Refer to the separate privacy, update/font/model and mobile-ad findings rather than repeating an unqualified offline claim.
 
-## Licensing and Security
+**DESIGN DECISION:** Apply the useful principle of local document processing without copying closed-source code or adopting unverified benchmark claims.
 
-Original source remains **UNLICENSED** pending the owner's distribution decision. This does not replace dependency obligations. Copied PDF.js resources retain licenses; future fonts/WASM/native/codecs need separate review.
+## Pawandeep-prog/revpdf-release
 
-Production dependency audit reported zero advisories in this session. It is a dated dependency result, not proof of application safety. Exact command/results belong in verification.
+**FACT:** This is the public release/binary repository associated with revpdf.com, not an assumed reusable application source tree. Its inspected EULA is not an open-source grant.
 
-## Open Questions
+**DESIGN DECISION:** No source, binary, asset or proprietary implementation from this repository is incorporated.
 
-**UNRESOLVED:** Safari/macOS/physical-mobile compatibility and interactive Linux workflows beyond headless Chromium CI; touch/stylus/palm handling; assistive reading order; CJK/RTL/unusual fonts; large scans and constrained memory; real certificate trust workflows; native packaging/updating; product-name clearance and original-source licensing.
+## bikash1376/revpdf
 
-**DESIGN DECISION:** Defer OCR/destructive editing/cryptographic signatures until engine, license, preservation and platform plans are defensible. Folio's actual offline/performance measurements are recorded separately in verification.
+**FACT:** This separate project is associated with revpdf.in and has inspectable Expo/React Native, SQLite, WebView and PDF.js architecture. The reference report records exact inspected versions/license provenance. Its base64 document transfer, typed bridge and local highlight metadata do not prove PDF annotation export or platform parity.
+
+**DESIGN DECISION:** Keep this evidence separate from revpdf.com. Reuse no project source; shared local-domain boundaries and responsive interaction are independently implemented.
+
+## PDF Format, Standards and Reader Engine
+
+**FACT:** [PDF.js getting started](https://mozilla.github.io/pdf.js/getting_started/) describes core/display/viewer layers. Its [license](https://github.com/mozilla/pdf.js/blob/master/LICENSE) is Apache-2.0. The installed, pinned reader is 6.3.289 with matched local assets.
+
+**FACT:** [CVE-2024-4367](https://github.com/mozilla/pdf.js/security/advisories/GHSA-wgrm-67xf-hhpq) affects older releases. The installed version lacks the historical `isEvalSupported` switch. Folio's actual boundaries are absence of a scripting manager, filtered actions, permission enforcement, local matched assets, CSP and worker isolation.
+
+**DESIGN DECISION:** Retain one shared PDF.js rendering/search/reader stack and its supported incremental annotation/form saving. Separate original-byte retention, snapshot consistency, reopen verification and independent visual checks. No claim of universal PDF fidelity, PDF/A preservation or PDF/UA conformance follows from parsing successfully.
+
+## Candidate Engines and Page Mutation Decision
+
+**FACT:** The engine report evaluates licensing/platform tradeoffs for PDFium, MuPDF, Poppler, Qt PDF, PDFBox, PoDoFo and native frameworks. Public source visibility is not unrestricted reuse. Copyleft/commercial/native packaging obligations were considered before selecting permissive browser-capable components.
+
+**FACT:** Installed pdf-lib **1.17.1** includes the MIT grant. Its [official API](https://pdf-lib.js.org/docs/api/classes/pdfdocument) supports page copying/serialization, while its [limitations](https://github.com/Hopding/pdf-lib#limitations) do not provide ordinary existing-text editing or encryption support. The old stable release is not evidence of active security maintenance.
+
+**DESIGN DECISION:** Promote pdf-lib from fixture-only use to a bounded production page organizer. Reject document structures the page-copy contract cannot preserve. PDF.js independently checks all retained pages' text, geometry and bounded rendered pixels; output is a new copy with disclosed metadata omission. This does not replace the reader's incremental save path or support general destructive editing.
+
+## Cross-Platform Frameworks and Web Architecture
+
+**INFERENCE:** A browser-capable core and adaptive shared DOM UI minimize duplicate document stacks across browser and native-webview targets. Flutter/Qt/React Native require different integration/bridge work; Electron does not solve phone/browser distribution; PDFium/native engines add packaging/binding responsibilities.
+
+**DESIGN DECISION:** Keep TypeScript/Vite/PDF.js and thin platform adapters. Lazy tool integration and self-hosted resources preserve local processing. Browser Web Crypto/worker/IndexedDB availability is checked at capability boundaries rather than assumed universally.
+
+**FACT:** Account service and device persistence are separate implemented systems: `server/` stores account metadata; `src/platform/local-library.ts` stores original/latest PDFs locally. IndexedDB partitions are not encryption, cloud sync or authentication against another user of the same browser profile.
+
+**DESIGN DECISION:** Use explicit local-storage consent, SHA-256 validation, transactional updates and revision-based conflict refusal. Keep the original copy separate and show failed/corrupt recovery honestly. A 200-slot database constraint enforces account registration capacity; it is not a concurrency benchmark.
+
+**UNRESOLVED:** Hosted identity correctness depends on the managed dispatcher stripping client identity headers. Local mocked-header/unit results do not verify this boundary, live migration, capacity behavior or account sign-in on the eventual host. Deployment remains pending.
+
+## Desktop and Mobile Architecture
+
+**FACT:** Experimental Tauri source embeds the existing client. The [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) require platform toolchains. Inspected local Windows lacks Rust/cargo/MSVC/Windows SDK; no local native build is claimed. Existing WebView2 alone is insufficient.
+
+**DESIGN DECISION:** Start with zero custom native commands or privileged plugin permissions. Configure Windows NSIS and macOS app/DMG targets while retaining one document UI/core. Native association/atomic-save/updater/share integrations await actual product and platform evidence.
+
+**FACT:** [Playwright's WebKit documentation](https://playwright.dev/docs/browsers#webkit) distinguishes its patched WebKit from branded Safari. A macOS WebKit CI lane and native build workflows are configured; configuration is not a passed run. Physical iOS/iPadOS/Android, Safari and native WebView2/WKWebView workflows still require independent verification.
+
+## OCR Options and Decision
+
+**FACT:** [Tesseract.js](https://github.com/naptha/tesseract.js) consumes images, not PDF files. Pinned wrapper/core 7.0.0 and English model delivery are documented in the OCR report. Wrapper/core/Tesseract/model licenses include Apache-2.0; the model npm packaging MIT label does not replace the model's upstream Apache license. Embedded native codecs/runtime notices and hashed provenance are preserved separately.
+
+**DESIGN DECISION:** Render permitted base pages locally through PDF.js, recognize sequentially in one cancellable worker and offer plain-text output. Do not alter original PDFs or claim a searchable layer. Use self-hosted worker/core/model URLs; disable separate engine model caching and use versioned optional app-asset caching.
+
+**FACT:** The worker adapter uses an inspected internal protocol because the public factory did not provide early ownership during initialization. This is a pinned integration boundary requiring upgrade tests, not a claimed stable public API.
+
+**FACT:** Optional OCR asset caching and recognition after offline reload have now passed the Windows browser workflow checks, in addition to recognition/cancellation/permission coverage. The exact final run is recorded in verification; this is not a physical-mobile or Safari claim.
+
+**UNRESOLVED:** Physical mobile memory, multilingual/handwriting/layout quality, other browsers' offline behavior and embedded-native vulnerability review remain release tasks. Package audits alone do not cover WASM's compiled native dependencies; the OCR report specifically flags the pinned zlib source version for review.
+
+## Digital-Signature Options and Decision
+
+**FACT:** Installed **@libpdf/core 0.5.1** has a top-level MIT license. The [upstream repository](https://github.com/LibPDF-js/core) documents browser/Web Crypto support, incremental writing and P12 signing, identifies the project as beta, and does not supply its own signature verifier. These are upstream capability statements; Folio uses a narrower tested path.
+
+**FACT:** The same upstream README identifies `src/fontbox/` as Apache-2.0 derived from Apache PDFBox, and the installed bundle contains fontbox modules. Therefore a top-level MIT notice alone is not a complete distribution-license inventory. The exact `v0.5.1` upstream FontBox license and provenance README are now preserved unmodified under [third_party/signing](third_party/signing/README.md); both recorded SHA-256 hashes were independently recomputed and matched. The license includes inherited attribution/BSD/font notices. Asset generation copies these alongside the top-level MIT and other package notices into the distribution. Keep this complete set on upgrades rather than reverting to an MIT-only label.
+
+**FACT:** Installed **PKI.js 3.4.1** and **ASN.1.js 3.0.10** have three-clause BSD notices. [PKI.js](https://github.com/PeculiarVentures/PKI.js) supplies CMS/X.509 primitives; it is not an operating-system trust-store policy or general PDF preservation engine. The OCR report records alternatives such as @signpdf and why fragile string-placeholder paths were rejected.
+
+**DESIGN DECISION:** Implement an explicit local P12/PFX inspection and confirmation flow, an invisible RSA/SHA-256 incremental signature and independent strict CMS/byte-range/preservation checks. Reject unsupported/protected/already-signed documents. Keep key material in short-lived workers; never persist credentials, fetch certificate chains or silently contact TSA/OCSP endpoints.
+
+**VERIFICATION BOUNDARY:** Cryptographic integrity checks and independent test signatures do not establish trusted identity, revocation status, trusted time, legal validity, arbitrary-existing-signature validation or PAdES conformance. Those capabilities remain unimplemented. JavaScript cannot guarantee physical erasure of every secret copy.
+
+## Printing and Accessibility
+
+**DESIGN DECISION:** Browser printing hands a verified local copy to the native viewer or download route. Native/physical output needs separate verification; a print popup or PDF download is not proof that paper was produced.
+
+**FACT:** [Playwright's accessibility guide](https://playwright.dev/docs/accessibility-testing) recommends automated and manual assessment. Axe is a test-only MPL-2.0 dependency. The audit records actual contrast/semantics/label/focus findings and partial repairs; automated zero findings, where achieved, are not a conformance or screen-reader verdict.
+
+**UNRESOLVED:** PDF reading order, incomplete canvas/text contrast checks, tagged-document handling, NVDA/JAWS/VoiceOver/TalkBack, browser/OS scaling and physical stylus/touch remain separate checks.
+
+## Licensing, Security and Performance Record
+
+Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. Native Cargo lockfile/transitive notice review follows the first verified build. Test-only dependencies must not be silently bundled into the client.
+
+Security review must include parser/worker boundaries, account identity dispatch, device-storage expectations and embedded WASM components. An earlier zero-advisory package audit does not establish the upgraded dependency graph's current status; exact new commands/results belong in verification.
+
+Existing initial-reader timings use small synthetic localhost fixtures, not high-byte scans or physical phones. New OCR/signing/organization assets and memory costs require separate measurements. No competitor benchmark, suite duration or account count is presented as application performance evidence.

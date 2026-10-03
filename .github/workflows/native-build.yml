@@ -51,7 +51,8 @@ jobs:
           fi
           cargo metadata --locked --format-version 1 > native-dependency-metadata.json
       - name: Build development native package
-        run: pnpm exec tauri build --no-sign --bundles ${{ matrix.bundles }} -- --locked
+        # Invoke Node directly: pnpm's Windows wrapper consumes the Cargo separator.
+        run: node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles ${{ matrix.bundles }} -- --locked
       - name: Archive macOS application preserving file permissions
         if: runner.os == 'macOS'
         run: tar -czf src-tauri/target/release/bundle/Folio-macos-app.tar.gz -C src-tauri/target/release/bundle/macos Folio.app

@@ -35,8 +35,8 @@ async function latestBytes(page: Page): Promise<Uint8Array> {
       const metadata = await new Promise<StoredRecord[]>((resolve, reject) => { const request = db.transaction('documents').objectStore('documents').getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
       const record = metadata[0];
       const store = record.latestIsOriginal ? 'originals' : 'latest';
-      const blob = await new Promise<Blob>((resolve, reject) => { const request = db.transaction(store).objectStore(store).get([record.owner, record.id]); request.onsuccess = () => resolve(request.result.bytes); request.onerror = () => reject(request.error); });
-      return Array.from(new Uint8Array(await blob.arrayBuffer()));
+      const stored = await new Promise<Blob | ArrayBuffer>((resolve, reject) => { const request = db.transaction(store).objectStore(store).get([record.owner, record.id]); request.onsuccess = () => resolve(request.result.bytes); request.onerror = () => reject(request.error); });
+      return Array.from(new Uint8Array(stored instanceof ArrayBuffer ? stored : await stored.arrayBuffer()));
     } finally { db.close(); }
   }));
 }

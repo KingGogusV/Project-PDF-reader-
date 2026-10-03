@@ -1,88 +1,132 @@
 # Architecture
 
-Updated: 2026-10-02, America/Los_Angeles. Implemented development architecture; [verification](docs/verification.md) controls platform and final-test claims.
+Updated: **2026-10-03 UTC**. This records implemented development architecture, not deployment or cross-platform certification. [Verification](docs/verification.md) controls completed test/build/CI claims.
 
-~~~mermaid
+```mermaid
 flowchart TD
- UI["Adaptive shell and sessions"] --> Core["Document controller"]
- Core --> Viewer["PDF.js viewer and editors"]
- Viewer --> Worker["PDF.js worker"]
- Core --> Adapters["Browser adapters"]
- Adapters --> Files["Local files and copy output"]
- Adapters --> State["Recent metadata and settings"]
- UI --> Cache["Versioned app cache"]
-~~~
+ UI["Adaptive shell and tool dialogs"] --> Reader["Per-document controller"]
+ Reader --> PDF["PDF.js viewer and worker"]
+ Reader --> Vault["Device originals and checkpoints"]
+ UI --> Tools["Local document tools"]
+ Tools --> OCR["OCR worker and English model"]
+ Tools --> Writers["Page-copy and signing engines"]
+ UI --> Account["Account adapter"]
+ Account --> Dispatch["Trusted managed identity dispatch"]
+ Dispatch --> API["Account-only worker and SQLite"]
+```
 
-## Selected Approach
+PDF bytes flow through local browser memory, output and opt-in IndexedDB storage. The account branch carries account metadata only.
 
-One responsive TypeScript/DOM UI, Vite and PDF.js 6.3.289 with matching legacy display/viewer/worker modules. Production parsing/rendering/supported mutation use PDF.js; pdf-lib is a development fixture and independent checking tool. No server, account, document database or upload endpoint.
+## Selected Approach and Boundaries
 
-The initial shell does not need a UI framework. Native integration remains an adapter choice after real platform evidence. Alternatives/licensing are in RESEARCH.md and docs/engine-research.md.
+The shared application uses TypeScript/DOM, adaptive CSS and Vite. PDF.js 6.3.289 remains the sole reader/rendering stack. Its matching legacy viewer, display and worker modules share locally served fonts, CMaps, WASM and ICC resources. Browser and experimental Tauri targets reuse this UI and document core.
 
-## UI and Sessions
+PDF.js owns supported annotation/form incremental writes. pdf-lib 1.17.1 supplies a deliberately restricted page-copy writer and independent object checks. @libpdf/core 0.5.1 supplies the certificate-signing incremental writer, with separate ASN.1/PKI.js verification. Tesseract recognizes bounded raster images. These engines have distinct contracts; a successful operation in one does not imply arbitrary editing support in another.
 
-src/main.ts owns tabs, dialogs, controls, adaptive navigation and keyboard handling. Each of up to three sessions retains its own controller/state. Inactive form-bearing DOM is detached to prevent global widget lookups/duplicate radio names crossing documents. Saved per-session position is restored on reattachment. Switching commits/exits editors; loading/closing and modal ownership are explicit.
+The static client builds to `dist/client`; the account worker is built separately. A static preview remains useful without account endpoints. No document upload, cloud OCR or server-side PDF processing endpoint exists.
 
-Original CSS/icons form the product design. Phone actions remain reachable without desktop-only controls.
+## UI, Sessions and Platform Adapters
+
+`src/main.ts` owns tabs, dialogs, controls, adaptive navigation and keyboard handling. Each of up to three sessions retains a controller. Inactive form DOM is detached to prevent PDF.js global widget lookups and duplicate radio names crossing documents. Page position survives reattachment.
+
+`src/features/document-tools.ts` owns actual OCR, organization and certificate dialogs, including cancellation, progress, validated output and focus restoration. `src/features/device-library.ts` coordinates consent, local copies, recovery and optional account state. Tool results open as separate documents only on an explicit action.
+
+`src/platform/browser.ts` owns file selection, downloads, print handoff and bounded recent metadata. Downloads report initiation, not disk completion. Print reserves a window during user activation and offers a local PDF to the browser's native viewer or download route. Physical printers and platform share sheets remain separate verification gates. Browser selection/clipboard and native text editing retain platform conventions.
 
 ## Document Controller and Lifecycle
 
-src/core/document-controller.ts owns original bytes, loading task/document proxy, viewer/link/find/editor managers, restrictions, dirty hash, export snapshot, timing and cancellation.
+`src/core/document-controller.ts` owns retained original bytes, loading/document proxies, viewer/link/find/editor managers, restrictions, dirty/revision state and serialized output.
 
-Local File → preserve original bytes → worker parse → inspect permissions/signatures/XFA → render/interact → supported annotation storage → snapshot/serialize → fresh-parser checks → new-copy download → explicit acknowledgment.
+Open -> preserve bytes -> worker parse -> inspect restrictions -> render/interact -> snapshot supported storage -> serialize -> reopen/check -> output or device checkpoint.
 
-Inspection failures fail safely. Encrypted, signature-bearing, XFA and restricted PDFs are conservatively read-only. A signature field/appearance is not certificate validity.
+Encrypted, signed/signature-field, XFA and insufficiently permitted inputs are conservatively read-only. Inspection failures do not enable mutation. Read-only annotation-storage interception also prevents ResetForm actions from changing a protected document. A displayed signature or field is not a trust verdict.
 
-## Rendering and Performance
+A monotonic content revision distinguishes editing from navigation. Dirty detection includes unfinished FreeText drafts and pointer strokes; `checkpointPending` prevents pretending those drafts are safely serialized. Explicit consequential operations use `flushPendingEdits`; background recovery does not steal editor focus.
 
-PDF.js provides canvas, text/annotation layers, lazy page rendering and bounded buffers. Current safeguards include four-million-pixel page canvases, 8192 maximum dimension, disabled detail canvases, 150 MB input cap and three-document limit.
+## Rendering, Search and Navigation
 
-Thumbnail work is sequential/cancellable with limited dimensions/DPR. Offscreen preview backing buffers are released and replaced observers disconnected. Page placeholders still scale with document length. These limits are not demonstrated maximum capacity; the measured 200-page fixture is only about 343 KB.
+PDF.js provides text/annotation layers, lazy canvas rendering and bounded buffers. Current safeguards include four-million-pixel page canvases, an 8192 dimension limit, disabled detail canvases, 150 MiB input cap and three-document limit. Sequential/cancellable thumbnails have bounded dimensions/DPR. Page placeholders and parsed document structures still consume memory proportional to document complexity.
 
-## Search, Navigation and Properties
+PDFFindController performs local text search and result navigation. OCR text is currently separate output, not injected into search or saved as a hidden layer. PDFLinkService resolves destinations; named actions/external URL schemes are restricted. Metadata and outlines are inserted as text. Reader view rotation is temporary; the organization tool's verified-copy rotation is permanent.
 
-PDFFindController performs local text search, matches and result navigation. Image-only PDFs need future OCR. PDFLinkService resolves destinations; named actions and external URL schemes are restricted. Outlines/properties come from document metadata and are inserted safely as text.
+## Annotations, Forms and Undo/Redo
 
-View rotation is temporary. Zoom/fit/reading-mode controls reflect the active viewer. Native selection/clipboard obey engine permissions and browser behavior.
+Authoring supports text/freehand highlight, FreeText and ink. Rendering existing annotations does not imply authoring every subtype; new underline, strikethrough and sticky notes are absent.
 
-## Annotations, Forms and History
+Supported AcroForm values use PDF.js annotation storage, including tested text, multiline, checkbox, dropdown and radio workflows. Existing accessible labels are preserved; unnamed widgets receive a field-name fallback. XFA, PDF calculations/scripts and submission remain disabled.
 
-Authoring: text/freehand highlight, FreeText and ink. Existing annotation rendering does not imply authoring all subtypes; underline/strikethrough/sticky-note creation are absent.
+Annotation undo/redo delegates to PDF.js. Browser field/text editing keeps its native history; no unified form-history claim is made. Pending edits are flushed before explicit tools/export and document transitions.
 
-AcroForm text, multiline, checkbox and dropdown values use PDF.js annotation storage. Duplicate-widget/radio isolation has specific regression coverage. XFA, PDF scripting/calculations/submission and certificate signing are not enabled. Read-only ResetForm actions are intercepted.
+## Reader Export and Checkpoint Strategy
 
-Annotation undo/redo delegates to PDF.js. Native field/text editing retains browser conventions; no unified form-history claim. Dirty state follows serialized storage and is flushed before consequential actions.
+All serialization goes through one controller queue. It takes an immutable storage snapshot, serializes supported changes, requires the exact original byte prefix, reopens output, checks page count/relevant geometry and verifies changed form values and annotation objects. Failure retains live edits and yields no successful output.
 
-## Save Strategy
+`exportBytes` tracks the exported snapshot; user acknowledgment marks only that version saved. Later edits remain dirty. `createCheckpoint` returns validated bytes/revision without acknowledging a save, and refuses unfinished editor/stroke states. Read-only output preserves original bytes. Prefix/object checks are complemented by fixture, browser and independent-reader tests; they do not establish universal visual fidelity.
 
-Commit pending input; clone an immutable snapshot/hash; serialize supported changes; require source bytes as exact prefix; reopen output; check page count, relevant geometry, changed fields and annotation objects; offer a safely named new copy; acknowledge only the exported snapshot after user confirmation.
+There is no native atomic overwrite path. Neither downloads nor device checkpoints replace an external original file.
 
-Later edits remain dirty. Print/export serialization is coordinated. Read-only output preserves original bytes. Failed verification retains edits. Prefix preservation alone does not establish visual fidelity, so fixture/browser/independent checks complement it. Native atomic overwrite is absent.
+## Device Library and Recovery
 
-## Platform Adapters and Persistence
+`src/platform/local-library.ts` owns an **unencrypted IndexedDB** database with documents, originals, latest and usage stores. Keys partition guest or account-owner records. Partitions are organization, not a cryptographic security boundary. The database stores immutable original bytes and one latest full PDF revision, with SHA-256 integrity, sizes, revision counters and recovery flags.
 
-src/platform/browser.ts owns user-triggered picker, downloads, print-copy windows and localStorage. Recent metadata is bounded to 12 records; no document/password/file handle is stored. Reopening requires selecting the file again. Storage failure leaves reading available.
+Default per-owner limits are 500 documents and 512 MiB of combined original/distinct-latest PDF bytes, with a 150 MiB document limit. Browser quota/overhead may reduce available capacity. Transactions update records and usage together; compare-and-swap expected revisions refuse conflicting writers. Crypto and Blob reads occur outside transactions. Quota/transaction failures preserve previously committed records.
 
-Downloads report initiation, not disk completion. Print reserves a popup during user activation and opens a local PDF copy for native browser print/share; fallback behavior depends on popup permission. Physical printing is unverified. App-shell print styling prevents accidental document/chrome output through browser-menu paths.
+The UI requires opt-in storage consent. Checkpoints are debounced 650 ms on actual content revisions, serialized per binding, and retried for newer changes. Unfinished annotations are deferred. Background persistence does not clear the document's dirty state. Closing/flushing checks for edits arriving during persistence. Discard restores the session's opened baseline, including a recovered baseline when applicable.
 
-## Offline Cache
+Reads validate metadata, PDF header and hash. Corrupt latest bytes do not silently fall back: the UI offers the preserved original explicitly and retains the damaged record. Record deletion is explicit and revision-guarded. Storage persistence requests are browser-controlled and do not guarantee retention. Browser/OS termination before a checkpoint, profile clearing and eviction can still lose work.
 
-Production generates a versioned asset allowlist. User PDFs/arbitrary URLs are excluded. Cached HTML and resources stay on one build; updates do not force activation over open documents. First setup needs network, while cached reload/local opening was verified offline. No unsaved-document recovery database exists.
+Account switching flushes tracked edits, closes old bindings and selects a partition; it does not migrate PDFs or synchronize devices. An optional cached account hint permits clearly labeled offline local access only. It is not authenticated server identity, and signing out does not erase local files.
 
-## Security, Errors and Logging
+## Hosted Account Service
 
-No scripting manager/QuickJS resource is integrated. The old isEvalSupported option does not exist in this engine version. Permissions are explicitly enabled. HTTP(S)/mailto links use filtered schemes and safe relationships. Launch/embedded media/attachment execution is disabled.
+`server/index.ts` exposes GET/POST `/api/account`; `server/accounts.ts` implements identity extraction and capacity registration. The managed host must strip user-supplied identity headers and inject authenticated user ID/email. **The worker must not be directly exposed on an endpoint that trusts client-controlled identity headers.** Actual deployed authentication remains a release gate.
 
-CSP exists in HTML metadata and development/preview headers; deployment headers still need review. Metadata uses safe text insertion. No content telemetry or remote processing path. Input/password/render/storage/permission/save/print failures remain visible; logs must exclude contents/passwords.
+The SQLite-compatible schema has unique user/account IDs and a checked slot primary key from 1 through 200. A single insert/select allocates an available slot atomically; existing accounts can be retrieved after capacity is full. This enforces registered-account count, not concurrent request throughput.
 
-## OCR, Signatures and Native Integrations
+POST requires identity, same-origin request checks, JSON content type and a bounded 1 KiB body; it never accepts a client-chosen identity. Responses are private/no-store. Unknown routes, capacity, authentication and database outages produce explicit statuses. Only identity/account metadata is retained server-side; no PDF names, bytes, passwords or signing keys enter this API. Account deletion/admin operations are not implemented.
 
-OCR and both basic signing workflow/cryptographic signatures are deferred. Signature fields trigger conservative read-only behavior; trust, revocation/timestamps and validity are not evaluated. Native menus/filesystem/share sheets, installers and updates are absent.
+Platform sign-in/sign-out/callback routes belong to managed dispatch, not this worker. Static preview reports account service unavailable while guest local reading continues.
 
-## Alternatives and Testing
+## OCR
 
-PDFium adds bindings/native/WASM packaging responsibilities. MuPDF/Poppler require a deliberate licensing model. Qt/Flutter add browser/accessibility integration work. Electron does not solve phone/web. React Native needs reader bridges. Tauri may become a thin wrapper later. None justifies multiple document stacks now.
+`src/core/ocr.ts` renders permitted base PDF content and coordinates one sequential Tesseract worker. `ocr-worker.ts` owns the worker immediately so cancellation can terminate model/core initialization. Its inspected message protocol is version-sensitive; dependency upgrades require cancellation and recovery tests.
 
-Unit tests cover adapters/fixtures; browser checks cover the shell; independent values/parser and screenshot reviews inspect output/layout. Isolated Edge checks additionally cover export races and read-only actions. Offline/benchmark runs are separate from ordinary E2E.
+English model, worker and LSTM variants are self-hosted. Tesseract's independent model database is disabled; the application controls asset caching. Copy-restricted documents are rejected before engine/model work. Editor/form overlays are not flattened into OCR.
 
-PROJECT.md contains platform status; docs/requirements.md contains acceptance; docs/verification.md contains exact latest results and limits. Emulation does not establish native/physical-device or full screen-reader support.
+Jobs are bounded to 50 pages, four-million-pixel/4096-side rasters, 180 nominal DPI, two million text characters and explicit worker/page timeouts. Canvases and worker resources are released. Text, confidence and word geometry are estimates in original PDF coordinates. The UI exports plain text only: no source mutation, searchable layer, automatic deskew/orientation or semantic-layout guarantee. See [OCR research](docs/ocr-research.md).
+
+## Safe-Copy Page Organization
+
+`src/core/organize.ts` accepts copied input bytes and a copied one-based operation: extraction, full reorder, deletion retaining at least one page, permanent rotation or merge. Limits are 50 MiB combined input, 500 combined source pages and ten inputs.
+
+Every source page is preflighted, including omitted pages. Reject encryption/permissions, forms, annotations/links, signatures, XFA, outlines, destinations, tags, layers, attachments/actions and unsupported catalog/page structures. Metadata/viewer preferences are deliberately omitted in the new page-only document, with an explicit UI explanation.
+
+For each retained page, PDF.js captures text/geometry and normalized-rotation rendered pixels bounded to 512 pixels per dimension. After pdf-lib writes the new copy, PDF.js reopens and compares every output page; a separate pdf-lib reparse checks all page boxes. A failure returns no verified result. Sequential bounded canvases avoid retaining all page images, but writer/parser object graphs coexist and mutation is not a dedicated worker job. This is not full-resolution print or general semantic preservation. See [organization research](docs/organize-research.md).
+
+## Certificate Signing
+
+A fresh cancellable worker inspects a local P12/PFX certificate before explicit confirmation. Supported signing uses RSA 2048-8192-bit keys, SHA-256 and an invisible new field. Certificate date/key-usage checks and a key/certificate challenge precede signing. PDF input is limited to 20 MiB/200 pages and the certificate container to 1 MiB.
+
+Preflight rejects encrypted/restricted, existing signature/DocMDP/FieldMDP/signature-field, XFA, repaired or linearized inputs that cannot satisfy this incremental path. The output must preserve the exact input prefix and page/form/annotation resources. Independent ASN.1/PKI.js checks verify exact byte-range coverage, detached CMS digest/signature and certificate correspondence; unexpected trailing unsigned bytes or tampering fail.
+
+The result deliberately says **integrity verified; trust not verified; revocation not checked; timestamp not requested**. It does not verify arbitrary existing signatures, legal identity, trusted timestamps or PAdES conformance. No OCSP/AIA/TSA contact is performed. Password/key material stays in worker memory, controlled buffers/references are cleared and workers terminated; JavaScript cannot guarantee physical erasure of every runtime copy.
+
+## Offline, Security and Logging
+
+The generated service worker versions an asset allowlist and keeps builds consistent. Optional OCR assets are cached on explicit use, avoiding an initial download of every engine variant. User PDF/Blob URLs and account requests are excluded from that app cache. Opt-in PDF persistence belongs only to the separate device library. First retrieval needs network; browser eviction and optional OCR offline behavior require separate evidence.
+
+No PDF scripting manager/QuickJS resource, launch command or embedded-media execution is integrated. The obsolete `isEvalSupported` switch is not available in the installed PDF.js version. Permission checks, safe URL schemes, same-origin engine assets, CSP and worker isolation form the actual boundaries.
+
+The account worker adds CSP and response headers; development/preview and native contexts have their own policy. Deployment must verify effective headers and identity dispatch. Logs must exclude PDF content, account identity details, passwords and keys. Visible errors preserve editable state or previously committed copies rather than claiming success.
+
+## Native Integration
+
+`src-tauri/` embeds the same client with Windows WebView2/macOS WKWebView. Configured targets are NSIS, app and DMG; no custom native commands, filesystem/shell plugins or privileged IPC permissions are enabled. Native menus, file associations, atomic saves, signing/notarization, updates and share sheets are absent.
+
+The inspected Windows environment lacks Rust/cargo/MSVC/Windows SDK prerequisites. Local native compilation/runtime is blocked; remote build and macOS verification remain pending. Native custom-origin workers, downloads/popups, account flow and offline behavior require their own tests even after compilation. See `src-tauri/README.md`.
+
+## Alternatives and Verification
+
+PDFium adds native/WASM bindings and packaging; MuPDF/Poppler require deliberate copyleft/commercial-license decisions; Flutter/Qt add browser/accessibility integration; Electron does not address phone/browser sharing; React Native needs document bridges. A thin Tauri wrapper can reuse the current core without claiming native integration already exists.
+
+Tests cover adapters, SQLite account rules, device persistence, fixtures, controller checkpoints, page operations, signing cryptography and browser workflows. Fidelity fixtures and visual reviews supplement parser/object checks. Accessibility automation is targeted, with unresolved manual reading-order/assistive-technology work recorded in [the audit](docs/accessibility-audit.md). Browser emulation is not physical-device evidence, and a prior green reader CI run is not proof of the upgraded build.

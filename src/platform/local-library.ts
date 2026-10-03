@@ -71,7 +71,10 @@ export interface LocalStorageEstimate {
 }
 
 type DocumentRecord = LocalDocumentMetadata & { owner: string };
-type BytesRecord = { schemaVersion: 1; owner: string; id: string; bytes: Blob };
+// ArrayBuffer is portable across IndexedDB implementations, including WebKit
+// builds that cannot persist Blob backing files. Read legacy Blob records too;
+// the stores, keys and metadata schema stay unchanged and never require a reset.
+type BytesRecord = { schemaVersion: 1; owner: string; id: string; bytes: ArrayBuffer | Blob };
 type UsageRecord = { schemaVersion: 1; owner: string; storedBytes: number; documentCount: number };
 const STORES = ['documents', 'originals', 'latest', 'usage'];
 
@@ -168,10 +171,12 @@ function hasPdfHeader(bytes: Uint8Array): boolean {
 
 async function verifyBytes(value: unknown, owner: string, id: string, expectedSize: number, expectedDigest: string): Promise<Uint8Array<ArrayBuffer>> {
   const item = value as Partial<BytesRecord> | undefined;
-  if (!item || item.schemaVersion !== 1 || item.owner !== owner || item.id !== id || !(item.bytes instanceof Blob) || item.bytes.size !== expectedSize) {
+  const stored = item?.bytes;
+  const size = stored instanceof ArrayBuffer ? stored.byteLength : stored instanceof Blob ? stored.size : -1;
+  if (!item || item.schemaVersion !== 1 || item.owner !== owner || item.id !== id || size !== expectedSize) {
     throw new LocalLibraryError('CORRUPT', 'The stored PDF copy is missing or damaged. Do not clear site data; the original may still be recoverable.');
   }
-  const bytes = new Uint8Array(await item.bytes.arrayBuffer());
+  const bytes = new Uint8Array(stored instanceof ArrayBuffer ? stored : await (stored as Blob).arrayBuffer());
   if (!hasPdfHeader(bytes) || await sha256(bytes) !== expectedDigest) {
     throw new LocalLibraryError('CORRUPT', 'The stored PDF copy failed its integrity check. The original is kept separately; try opening the original.');
   }
@@ -237,11 +242,11 @@ export class LocalLibrary {
     finally { this.opening = undefined; }
   }
 
-  private async prepare(bytes: Uint8Array): Promise<{ bytes: Blob; digest: string; size: number }> {
+  private async prepare(bytes: Uint8Array): Promise<{ bytes: ArrayBuffer; digest: string; size: number }> {
     if (!(bytes instanceof Uint8Array) || bytes.byteLength === 0 || !hasPdfHeader(bytes)) throw new LocalLibraryError('INVALID_INPUT', 'A nonempty PDF is required for local storage.');
     if (bytes.byteLength > this.limits.maxDocumentBytes) throw new LocalLibraryError('LIMIT_EXCEEDED', 'This PDF exceeds the local library per-document size limit. Export it as a file instead.');
     const copy = new Uint8Array(bytes);
-    return { bytes: new Blob([copy], { type: 'application/pdf' }), digest: await sha256(copy), size: copy.byteLength };
+    return { bytes: copy.buffer, digest: await sha256(copy), size: copy.byteLength };
   }
 
   private checkBudget(usage: UsageRecord): void {
@@ -328,7 +333,7 @@ export class LocalLibrary {
         latestSize: prepared.size, latestSha256: prepared.digest, latestIsOriginal, needsRecovery: revision.needsRecovery };
       if (latestIsOriginal) await request(tx.objectStore('latest').delete(key));
       // Write the supplied verified bytes even when their digest matches metadata:
-      // this also repairs a damaged checkpoint without trusting its old Blob.
+      // this also repairs a damaged checkpoint without trusting its old stored bytes.
       else await request(tx.objectStore('latest').put({ schemaVersion: 1, owner: this.owner, id, bytes: prepared.bytes } satisfies BytesRecord));
       await request(tx.objectStore('documents').put(updated));
       await request(tx.objectStore('usage').put(usage));

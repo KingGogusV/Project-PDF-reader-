@@ -1,12 +1,13 @@
-import { test, expect, type Page, type Route } from '@playwright/test';
+import { expect, type Page, type Route } from '@playwright/test';
+import { test } from './support/offline-fixture';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'generated');
 
-async function openOcr(page: Page, name = 'scanned.pdf') {
-  await page.goto('/');
+async function openOcr(page: Page, name = 'scanned.pdf', destination = '/') {
+  await page.goto(destination);
   const chooser = page.waitForEvent('filechooser');
   await page.locator('#open').click();
   await (await chooser).setFiles(join(fixtures, name));
@@ -94,7 +95,7 @@ test('OCR cannot bypass a document copy restriction', async ({ page }) => {
 test.describe('optional offline OCR assets', () => {
   test.use({ serviceWorkers: 'allow' });
 
-  test('OCR runs after an offline reload once its local assets were used online', async ({ page, context }, testInfo) => {
+  test('OCR runs after reload during network or origin loss once its assets were used online', async ({ page, networkOutage }, testInfo) => {
     test.setTimeout(60_000);
     const exceptions: string[] = [];
     const offlineAssetResponses: string[] = [];
@@ -112,12 +113,12 @@ test.describe('optional offline OCR assets', () => {
       return urls;
     });
 
-    await page.goto('/');
+    await page.goto(networkOutage.baseURL);
     await page.evaluate(async () => { await navigator.serviceWorker.ready; });
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     expect((await cacheUrls()).filter(url => url.includes('/vendor/ocr/'))).toEqual([]);
 
-    await openOcr(page);
+    await openOcr(page, 'scanned.pdf', networkOutage.baseURL);
     await page.locator('#ocr-start').click();
     await expect(page.locator('#ocr-output')).toHaveValue(/A SYNTHETIC SCANNED PAGE/, { timeout: 30_000 });
     const firstText = await page.locator('#ocr-output').inputValue();
@@ -127,11 +128,11 @@ test.describe('optional offline OCR assets', () => {
     expect(prepared.some(url => url.endsWith('/vendor/ocr/lang/eng.traineddata.gz'))).toBeTruthy();
     expect(prepared.filter(url => /\.pdf(?:$|[?#])/i.test(url) || url.startsWith('blob:'))).toEqual([]);
 
-    await context.setOffline(true);
+    await networkOutage.begin(page);
     offline = true;
     // A fresh navigation discards the old document, OCR worker, and result memory.
     // Re-select the local PDF; it is deliberately absent from the service-worker cache.
-    await openOcr(page);
+    await openOcr(page, 'scanned.pdf', networkOutage.baseURL);
     await page.locator('#ocr-start').click();
     await expect(page.locator('#ocr-output')).toHaveValue(firstText, { timeout: 30_000 });
     expect(offlineAssetResponses.some(url => url.endsWith('/worker.min.js'))).toBeTruthy();

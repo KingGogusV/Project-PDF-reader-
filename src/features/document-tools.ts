@@ -108,7 +108,7 @@ export function createDocumentTools(hooks: DocumentToolsHooks) {
     const canCopy = current.controller.state.canCopy;
     const pdf = current.controller.pdfDocument!;
     const body = toolsBody();
-    body.append(paragraph('Recognize English text locally from page images. Review the result for recognition errors. This exports text; it does not add a searchable layer to the PDF or include annotation text.'));
+    body.append(paragraph('Experimental: recognize English text locally from page images. Review the result for recognition errors. This exports text; it does not add a searchable layer to the PDF or include annotation text.'));
     const pages = input('ocr-pages'); pages.value = String(current.controller.currentPage); pages.placeholder = '1-3, 5';
     const start = button('ocr-start', 'Recognize text', true); const cancel = button('ocr-cancel', 'Cancel recognition'); cancel.disabled = true;
     const progress = document.createElement('progress'); progress.id = 'ocr-progress'; progress.max = 1; progress.value = 0; progress.style.width = '100%'; progress.setAttribute('aria-label', 'Text recognition progress');

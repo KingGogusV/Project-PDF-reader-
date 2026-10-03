@@ -1,90 +1,83 @@
 # Verification record
 
-Session: 2026-10-02 America/Los_Angeles; measurements and final CI continued into 2026-10-03 UTC.
+Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
-## Scope and evidence
+## Current local evidence
 
-This is a verified initial browser implementation, not a production-readiness certification. Native installers, physical mobile devices and macOS were not tested. A desktop browser at a phone viewport is emulation, not an iPhone or Android device.
+Stable production build 2e61d5c66548dcdc was served at http://127.0.0.1:4173 on Windows. Source changes after this build are tracked separately through Git and CI.
 
-| Environment | Completed verification |
+| Check | Verified result |
 | --- | --- |
-| Windows / Node 24 | Strict TypeScript check, production build; 23 unit/fixture tests passed, zero failed or skipped |
-| Windows / Edge | Full 24 browser tests passed in 35.3 seconds |
-| Windows / Chrome 153.0.8010.54 | Five focused browser tests passed in 9.8 seconds: offline, form export/reopen, print handoff, duplicate-widget tabs, phone touch/layout |
-| Linux / Chromium headless 153.0.8010.12 | GitHub Actions: strict typecheck, production build, all 23 unit/fixture tests and all 24 browser tests passed (browser suite 49.1 seconds) |
-| macOS / Safari / Firefox / physical iOS and Android | Not tested |
+| Strict TypeScript and production client/Worker build | Passed |
+| Node unit/fixture tests | 55 passed, zero failures/skips; 5.85 seconds |
+| Windows Edge reader/offline regressions | 24 passed; 35.4 seconds |
+| Windows Edge local library | 14 shell + 9 IndexedDB cases passed; 29.4 seconds |
+| Windows Edge OCR | 4 passed; 9.9 seconds, including offline-after-first-use |
+| Windows Edge page organization | 8 passed; 18.3 seconds |
+| Windows Edge signing UI | 3 passed; 5.9 seconds |
+| Windows Edge checkpoint/core tests | 7 passed; 13.6 seconds |
+| Windows Edge signing core | 9 passed; independent Node crypto checks |
+| Accessibility | 9 production UI states: zero axe violations; four PDF-content contrast checks incomplete |
+| Runtime npm audit | Zero known advisories returned for 44 runtime/optional dependencies; compiled WASM is not covered |
 
-The 23 unit/fixture checks comprise 10 browser-adapter boundary tests and 13 actual PDF.js fixture tests. Browser workflows check unexpected external requests and uncaught errors. Separate Windows Chrome visual inspection covered selectable text, all three "amber heron" search matches, and six viewport classes with no uncaught page/console errors.
+Together the E2E files contain62 tests; the separate core/signing suites contain16. Suite durations are execution times, not application performance. Windows Edge production audit version154.0.4258.53; Chrome measurement version153.0.8010.54.
 
-Production dependency audit (`pnpm audit --prod --json`): zero known advisories returned on 2026-10-02. This is a point-in-time database result, not a guarantee of vulnerability absence.
+## Verified workflows and safety
 
-## Workflows verified
+Reader checks exercise actual PDFs, selection/search/outlines, annotations/forms, original-byte preservation and fresh reopen, tabs/widget isolation, bad input/password/permissions, print-copy handoff and six responsive viewport classes. They check uncaught errors and external document requests.
 
-The final browser suite covers local opening/rendering/closing; search/results/clear; page navigation and outlines; fit-page use during editing; tabs with preserved position and isolated duplicate form widgets/radios; text annotation, ink and freehand highlight; supported form fields; export/reopen; original-file preservation; dirty-close cancellation; print-copy handoff; password/cancellation/restrictions; malformed input recovery; denied browser storage; offline operation; and six adaptive layouts.
+Local library checks exercise explicit consent/refusal, reload recovery, exact immutable original download, clean/dirty checkpoint transitions, continuous-scrolling debounce, quota rollback, damaged-copy detection, stale-tab conflicts, namespace separation, encrypted-source/password preservation, offline/account-service outages and canceled signout. Account API tests used220 concurrent registration attempts: exactly200 accounts; repeated registrations reused the same account. This is not a200-concurrent-user load test.
 
-Thumbnail selection, zoom/fit-mode edge cases, temporary view rotation, page-by-page mode, clipboard, drag/drop and properties exist but lack a dedicated end-to-end acceptance matrix. The requirements trace preserves these gaps.
+Page operations verify every retained page's text, geometry and bounded rendered pixels before download; unsupported document structures are rejected. Signing tests verify real downloaded CMS/ByteRange with independent Node cryptography, preserve original bytes and form appearances, reopen signed output, reject wrong passwords/unsupported certificates and cancel workers. Certificate trust, revocation and trusted timestamps remain unverified.
 
-Isolated Windows Edge controller checks additionally cover text-selected highlights, multiline/check/dropdown/radio/repeated fields, concurrent export/edit snapshots, and read-only ResetForm interception.
+OCR recognizes a real image-only fixture, exports text and cancels during model initialization. The offline test confirms no OCR preload, selected worker/core/model cached after use, complete offline reload/reselection, matching output and no PDF/blob CacheStorage entries. Device-library PDFs are separately stored in IndexedDB only with consent.
 
-The controller reopens each modified export, verifies page count/geometry and changed form/annotation values, and requires the original input bytes to remain an identical prefix. Fixture tests independently check output fields with pdf-lib and preserve input SHA-256. Export is not acknowledged as a filesystem save until the user confirms the copy. Later concurrent edits remain dirty after acknowledging an earlier snapshot.
+Fidelity checks embed static Latin/Greek/Cyrillic/CJK/Arabic fonts, verify meaningful Unicode/rendering, preserve unrelated transparency pages through mutation and compare output using independent Poppler. This is a synthetic corpus, not broad compatibility certification.
 
-Encrypted PDFs require a password and export unchanged original bytes. Password cancellation settles. Permission-restricted and signature-field documents are read-only. The signature fixture is unsigned: no certificate validity or signed-document mutation claim.
+## Responsive, accessibility and physical boundaries
 
-Print verification means a local PDF copy reaches the browser's viewer or download flow. Windows exercised the viewer handoff; Linux headless exercised PDF download, byte equality and successful parsing. No physical print, print-driver fidelity, mobile print-sheet or completed print receipt was verified.
+Desktop1600x1000, laptop1280x800, tablet1024x768/768x1024 and phone390x844/844x390 reader workflows passed. A discovered768px toolbar clipping defect was repaired and the affected regression passed. Phone organization/library dialogs were inspected.
 
-## Responsive and visual checks
+The audit verifies accessible form-name fallbacks, valid tab semantics, contrast repairs, visible keyboard focus and focus restoration. [Audit details](accessibility-audit.md) record incomplete PDF contrast checks. Physical touch/stylus, screen-reader reading order, VoiceOver/TalkBack/NVDA and full WCAG conformance remain unverified.
 
-| View | Dimensions | Result |
-| --- | --- | --- |
-| Large desktop | 1440 x 1000 | Inspected welcome/reader; no body overflow |
-| Laptop | 1280 x 800 | Inspected |
-| Tablet landscape | 1024 x 768 | Inspected |
-| Tablet portrait | 768 x 1024 | Inspected; navigation collapses |
-| Phone portrait | 390 x 844 | Inspected; compact tools and full-width document |
-| Phone landscape | 844 x 390 | Inspected; compact chrome |
-
-The automated desktop layout additionally uses 1600 x 1000. Browser tests exercise touch input emulation. Physical gestures, stylus/palm rejection, VoiceOver/TalkBack, full PDF reading order and comprehensive WCAG conformance remain unverified.
+Printing verification means a local PDF reaches browser viewer/download handling. No physical printer output, native driver fidelity or mobile print sheet was verified. A download event is not a filesystem durability guarantee.
 
 ## Performance
 
-Source data: [benchmark-2026-10-02.json](benchmark-2026-10-02.json). Reproduce with a built preview running, then `node scripts/benchmark.mjs`. The default channel is installed Chrome; E2E_BROWSER_CHANNEL can select another available Chromium browser.
+[Raw measurements](benchmark-2026-10-03.json): one run per configuration, Windows Chrome153, localhost, a synthetic200-page342,975-byte PDF. Phone is390x844 emulation with4x CPU throttling, not a physical device.
 
-One run per configuration, Windows/Chrome 153, localhost, a synthetic **200-page, 342,975-byte** PDF. This is a many-page test, not a large-byte stress test. Startup includes navigation until the Open control is ready; first-page timing is measured by the document controller; search includes UI debounce and extraction.
-
-| Measurement | Desktop 1440 x 1000 | Phone viewport 390 x 844, 4x CPU throttling |
+| Measurement | Desktop | Phone emulation |
 | --- | ---: | ---: |
-| Shell ready | 113 ms | 303 ms |
-| First page | 229 ms | 516 ms |
-| Search to final-page match | 446 ms | 572 ms |
-| Live page canvases at sample | 4 | 6 |
-| Canvas pixel count at sample | 7,222,996 | 949,200 |
-| Reported JS heap at sample | 10,536,891 bytes | 11,542,087 bytes |
+| Shell ready | 122ms | 287ms |
+| First page, controller timing | 230ms | 493ms |
+| Open workflow, including picker/test overhead | 417ms | 1080ms |
+| Search to final-page match, including debounce | 449ms | 572ms |
+| Live canvases at sample | 4 | 5 |
+| Canvas pixels at sample | 7,222,996 | 791,000 |
+| Reported JS heap at sample | 10,663,756B | 11,617,220B |
 
-Heap readings are Chromium estimates; they exclude total browser/native/worker/canvas memory and are neither peaks nor mobile hardware measurements. The engine is lazy loaded; initial app JS is approximately 32 KB (11 KB gzip), followed by the PDF engine/viewer/worker as needed. Offline app assets total approximately 6.22 MiB; Vite warns that the engine chunk is approximately 501 KB. The warning is retained, not suppressed.
+Heap samples exclude total browser/native/worker/canvas memory and are not peaks. Single-run values are not benchmark distributions. Initial JS is approximately75.8KB (24.6KB gzip); mandatory offline assets8.06MiB. OCR loads its worker, one selected core and English model on request. Large-byte scans, battery and physical low-memory devices remain unmeasured.
 
-## Offline result
+## Remote CI and native packaging
 
-**Verified** in Windows Edge/Chrome and Linux Chromium: after the first completed service-worker installation, browser networking was disabled; the shell reloaded and a local PDF rendered. Cache inspection found **zero PDF URLs**. No document bytes are deliberately persisted by the application.
+GitHub repository: KingGogusV/Project-PDF-reader-. Upgrade branch: feature/hosted-local-library; [PR1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1). Initial upgrade commit33adba0d154c2504772fa8f6dc8f6b0604014e9d has a byte-identical verified local/remote source tree997d6ff62eb3463f7e272695f4f8d7eeacce1b61.
 
-A real failure was found and fixed: the preview server's Vary: Origin header caused module and stylesheet cache lookups to miss. The worker ignores Vary only for the exact build-generated static-asset allowlist, never for user files or dynamic content. Cached navigation serves the active app version so waiting updates do not mix new HTML with old engine assets. App updates wait for old tabs to close.
+[Reader run37088665148](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37088665148):
+- Linux Chromium job111104088127 succeeded: all62 E2E passed,55 unit/fixture checks, typecheck and build passed.
+- Core job passed7 controller tests; first signing case was interrupted by development-harness navigation, with8 others passing. Investigation/retest pending; this run is not an overall pass.
+- macOS WebKit job remains pending/in progress at this record update. Patched WebKit is not branded Safari.
 
-## CI and repository evidence
+[Native run37088665153](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37088665153):
+- macOS arm64 release compilation and Folio.app/DMG packaging succeeded. [Artifact](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37088665153/artifacts/11261144589) retained14 days. Not notarized or runtime-tested.
+- Windows failed at argument parsing before compilation; direct Node CLI forwarding is now the corrective change, awaiting retry.
+- Native dependency lock/metadata artifacts were produced; source lock retention is being completed.
 
-- Preserved original commit: 65059af146c826bcb317f55435894332710e6881.
-- Architecture/research foundation: ff120621ad761cae66626822ae49a6e9585beb00.
-- Reader implementation: 76af2358450413afec56158249b4d468dcfe97ca.
-- Offline/tab/print fixes: d2dbfa4086503a0667ea93d13b8cfadeb5b42430.
-- Initial [run 37081514855](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37081514855) failed three browser checks: tab position, duplicate-widget radio isolation, and headless print handoff. Its unit/build steps passed. The failures were investigated and repaired, not skipped.
-- Corrected source [run 37082312401](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37082312401), commit d2dbfa4: **SUCCESS**. Completed job logs independently confirmed 23 unit/fixture passes with zero failures/skips and 24 browser passes.
-- GitHub connection write access was verified through actual tree/commit/ref writes to main; no forced remote history rewrite. Local source trees were compared with the resulting remote commit trees before alignment.
-- This document is a subsequent documentation-only handoff. Its own commit/run identifiers must be read from Git history and Actions, avoiding a self-referential commit identifier.
+## Hosting and identity
 
-## Remaining verification gaps
+The site is registered and its requested multi-account audience is public. Deployment and live managed-sign-in/database/anti-spoof checks are still pending at this record update. Local API simulations do not verify the hosted trust boundary. No live website/account-completion claim follows from frontend or mocked-identity tests.
 
-- Real iOS/iPadOS Safari and Android, Firefox/WebKit, macOS and native shells; interactive Linux desktop/printing beyond headless CI.
-- Large-byte/image-heavy memory stress, peak memory, battery, constrained physical devices, and fidelity corpus expansion.
-- Embedded/CJK/RTL/unusual fonts, real signed/certified PDFs, XFA and specialized form logic.
-- Broad preservation testing of existing unsupported annotation types.
-- Physical printing, download destination failures and post-download filesystem durability.
-- Durable unsaved-edit crash recovery; beforeunload cannot guarantee recovery after browser/OS termination.
-- Advanced editing/OCR/redaction/certificate signing are not implemented.
+## Security review and remaining gates
+
+OCR's native inventory includes older zlib/libwebp affected by known advisories. Independent review traced Folio's only recognition input to a fresh browser-encoded PNG; production worker interception confirmed PNG IHDR/IDAT/IEND only, fixed same-origin model and bounded actions. The reviewed gzip-header/WebP paths were not found reachable through this interface. This supports constrained experimental OCR, not a patched-binary or production-security claim. A reproducible patched native rebuild and wider advisory review remain stable-release gates; see [OCR research](ocr-research.md).
+
+Physical iOS/Android, Safari itself, native installation/runtime, signing/notarization, physical printing, comprehensive assistive technology, high-byte stress, XFA, broad pre-existing annotation preservation, certificate trust/revocation/timestamping and arbitrary content editing/redaction remain unverified or unimplemented. Browser eviction or a crash before a validated checkpoint can still lose recent work.

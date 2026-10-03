@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-10-03
+
+### Added
+
+- Opt-in local PDF library with immutable originals, validated recovery checkpoints, SHA-256 checks, atomic writes and stale-tab conflict protection.
+- Managed-identity account API and UI, database-enforced maximum of 200 registrations, guest operation and clearly labeled offline account hints.
+- Experimental local English OCR with cancellation, text export and offline operation after initial model setup.
+- Conservative extract/reorder/delete/rotate/merge to independently verified new PDF copies.
+- Local P12 certificate inspection/signing with independent CMS verification, strict preservation checks and explicit trust/revocation limitations.
+- Expanded synthetic embedded-font, transparency and cryptographic fixtures; independent Poppler rendering checks.
+- Experimental Tauri wrapper, native dependency lock, Windows/macOS build workflows and macOS WebKit verification lane.
+- Complete OCR native/runtime and LibPDF FontBox distribution notices with pinned provenance.
+
+### Fixed
+
+- WebKit IndexedDB rejected Blob-backed documents; portable ArrayBuffer writes now retain read compatibility with earlier Blob records, without resetting storage.
+- Cold signing-test dependency discovery caused page navigation; an isolated preoptimized harness removes that interruption.
+- WebKit automation's network-offline limitation is measured separately with a real isolated-origin outage; Chromium retains actual offline emulation.
+- Persistent recovery scheduling during continuous reader updates, canceled-signout recovery ownership, account-outage fallback and optional-storage logout.
+- Tablet toolbar overflow, contrast, PDF form accessible names, tab semantics and focus restoration.
+- Native Windows CLI argument forwarding; separate CI verification records preserve the initial failure.
+
+### Verification
+
+- Windows: 55 unit/fixture cases; 62 E2E cases across focused suites; 7 controller and 9 signing-core cases passed.
+- Nine production accessibility states returned zero axe violations, with PDF-content contrast checks still incomplete.
+- Linux Chromium: 55 unit/fixture and 62 E2E cases passed in the first upgrade CI lane.
+- macOS arm64 release compilation and app/DMG packaging succeeded; installation/runtime and notarization remain unverified.
+- Remote signing harness navigation and Windows packaging failures are tracked with their corrective work in the verification record.
+- New performance samples and hosted delivery status are recorded in docs/verification.md.
+
+### Known limitations
+
+- Device storage is unencrypted and evictable; unfinished edits or writes before transaction completion can still be lost.
+- OCR native dependencies retain advisory/update work; constrained PNG input is not proof that the bundle is patched.
+- Physical iOS/Android, Safari itself, physical printing, comprehensive accessibility and broad real-world PDF fidelity remain verification gates.
+- No certificate trust/revocation/timestamp verdict, visible signing placement, arbitrary existing-content editing or redaction.
+
 ## 2026-10-02
 
 ### Added

@@ -1,44 +1,70 @@
 # Backlog
 
-Updated: 2026-10-02, America/Los_Angeles. Planning record, not unlimited implementation authorization.
+Updated: **2026-10-03 UTC**. This is specific future work, not blanket authorization for unlimited expansion. Implemented recovery, account registration, OCR, safe page operations, certificate signing and the native wrapper are described in PROJECT/ARCHITECTURE; they are not listed as wholly unimplemented here. Exact current verification remains in [verification](docs/verification.md).
 
 ## Critical
 
-- Keep the verified Reader checks baseline green; require its build, fixture and browser gates for consequential changes.
-- Preserve regression gates for export snapshots/acknowledgment, pending edits, ResetForm, duplicate widgets and per-tab position.
-- Design safe recovery for OS/browser termination before promising durable unsaved work.
+- Complete upgraded build/unit/core/signature/browser CI and retain actual results for the exact committed revision. Historical green reader CI is not the upgraded baseline.
+- Verify hosted managed authentication end to end: client identity headers must be stripped/replaced; sign-in, registration, sign-out, unauthenticated requests and forged-header attempts must behave correctly. Never expose the account worker behind a dispatcher that trusts client headers.
+- Apply and verify account database migrations on the intended host, enforce 200 registered accounts without disrupting existing accounts, test capacity/outage behavior and document operational backup/recovery. Local SQLite/mock identity checks do not establish deployed behavior or concurrent load.
+- Preserve save/recovery regression gates: immutable input, pending editor/stroke handling, asynchronous snapshot races, explicit export acknowledgment, ResetForm restrictions, duplicate widgets/radios, per-tab position, quota failures and revision conflicts.
+- Preserve the completed pinned LibPDF FontBox license/provenance and OCR/signing notices through builds and upgrades. Complete eventual native Cargo transitive notice review. Review embedded-native advisories, including the zlib version recorded in OCR research; an npm audit alone is insufficient.
+- Keep unsupported signed/encrypted/restricted/form/annotation/document-structure cases fail-closed in each writer. Do not broaden supported documents by suppressing validation failures.
 
 ## High Priority
 
-- Expand fixtures to embedded/unusual fonts, CJK/RTL, transparency/color profiles and high-resolution scans.
-- Verify all shipped mutations visually in independent readers beyond object/value persistence.
-- Test actual signed/certified PDFs without claiming trust validation.
-- Audit keyboard/screen readers, tab semantics/focus, contrast and scaled touch targets.
-- Test Safari/macOS and physical Android/iOS/iPadOS opening, selection, memory, output and offline behavior.
+- Verify the finished hosted client/API, effective CSP/cache/security headers and absence of document-content uploads. Record the actual URL only after deployment and runtime checks succeed.
+- Exercise crash/forced-termination recovery around debounced checkpoints, incomplete strokes/text drafts, storage eviction, corrupt originals/latest copies, multiple browser tabs and account switching. Explain unrecoverable windows honestly; never silently overwrite a newer revision.
+- Complete production accessibility rescans after current repairs, resolve remaining findings, and retain manual results for keyboard flows, focus restoration, contrast and representative tagged PDFs. See [accessibility audit](docs/accessibility-audit.md); incomplete automated checks are not passes.
+- Run and inspect macOS WebKit CI, then branded Safari and physical iPhone/iPad/Android workflows. Keep those results separate from Chromium and viewport emulation.
+- Build the configured Tauri Windows/macOS outputs in suitable environments; retain lockfile/notices and artifacts, then test actual WebView runtime opening, workers, PDF output, local storage and account behavior. Installer compilation alone does not establish runtime correctness.
+- Expand independent-reader rendering comparisons for every shipped mutation, including newly generated embedded/Unicode-font, transparency/image and mixed-box fixtures. Successful object/value checks do not prove full visual fidelity.
+- Verify signing with independently generated certificate/document variants and external readers while preserving the explicit no-trust/no-revocation/no-timestamp boundary. Retain strict tamper, trailing-data, wrong-key, cancellation and preservation tests.
+- Extend the now-passing Windows OCR offline asset/reload workflow to other supported engines and actual devices. Keep model-load cancellation/retry, version consistency, resource cleanup and absence of PDF/account caching under regression coverage.
 
 ## Medium Priority
 
-- Measure sustained scrolling, memory/cancellation and constrained physical-device behavior with large-byte files.
-- Expand form appearances/international text and repeated-widget/radio coverage while scripting stays disabled.
-- Verify physical printers and mobile print/share flows.
-- Evaluate optional persistent recent-file handles without implying metadata can reopen files.
-- Add sticky-note/underline/strikethrough authoring only with safe serialization and round trips.
+- Measure sustained scrolling, time to first page, search, peak memory, cancellation and long OCR/organization jobs on high-byte scans and representative physical phones. Existing protective limits are not capacity guarantees.
+- Review and, where evidence requires, lower per-tool memory/page/byte limits. Page organization currently retains writer/parser object graphs and does not run mutation in a dedicated worker.
+- Expand OCR tests for crop/rotation, low-resolution/noisy scans and confidence/coordinate behavior; add languages only with model provenance, payload/memory budgets and real tests.
+- Add individual organizer preservation capabilities only with explicit reference/semantic tests: outlines, links/annotations, forms, tagged reading order, metadata, layers and other currently refused structures. Do not merely drop them during copying.
+- Broaden certificate/container interoperability deliberately, with algorithm/key-usage validity tests. Design visible signature placement separately from invisible certificate signing and handwritten marks.
+- Test physical printers, browser PDF-viewer fallbacks and mobile print/share behavior. Provide clearer capability-specific output without claiming completed disk/print actions.
+- Improve form appearances, international text and repeated-widget grouping while PDF scripting remains disabled.
+- Add sticky-note, underline and strikethrough creation only with undo, safe serialization, reopen and visual verification.
+- Define account deletion/admin support, abuse/rate controls and recovery policy if required for hosted operation. Avoid collecting unnecessary personal/document metadata.
+- Evaluate optional encryption for device-stored PDFs only with a usable key/recovery design; current account partitions do not secure files from the same browser profile.
 
 ## Low Priority
 
-- Optional themes/preferences after contrast review.
-- Refine search discovery, empty states and long-document navigation from actual use.
+- Refine discovery, empty/error states, long-document navigation and tool workflows using observed usage.
+- Add themes/preferences after contrast and forced-colors review.
+- Evaluate opt-in persistent file handles/native associations where supported without weakening safe-copy behavior or implying cross-platform equivalence.
 
 ## Platform Gaps
 
-Physical Safari/iOS/iPadOS/Android; macOS and interactive Linux desktop browsers beyond headless Chromium CI; stylus/palm/selection/memory pressure; screen readers; native packages, associations, menus, share sheets, atomic writes, signing and updates.
+| Environment | Specific unfinished evidence/integration |
+|---|---|
+| Hosted web | Managed identity dispatch, live account database, deployment/header/cache checks and concurrent-request measurement |
+| Linux browser | Upgraded CI result; interactive desktop, real printer and assistive-technology sessions |
+| macOS browser | Configured WebKit lane result, branded Safari, VoiceOver, local picker/output and offline behavior |
+| Windows native | Rust/MSVC/SDK build, WebView2 runtime, installer signing, associations and lifecycle/recovery |
+| macOS native | Build/runtime, WKWebView/custom-origin workers, signing/notarization, installer and lifecycle/recovery |
+| Physical phone/tablet | Safari/Android file flows, memory pressure, selection/keyboard, OCR, stylus/palm, share/print, storage eviction and screen readers |
+| Linux native | No native package target currently configured; evaluate only after browser/native evidence and product need |
 
 ## Research
 
-Broader interoperability/visual corpus; local recovery/privacy tradeoffs; product-name clearance and source license; OCR model licenses/offline delivery; PDF/A validation; certificate trust/revocation; WASM/native integrations when justified.
+- Review current engine advisories and maintenance before dependency updates/releases; test the pinned OCR worker protocol after any upgrade.
+- Finish product-name clearance and choose an original-source license/distribution policy.
+- Design certificate trust-store policy, chain building, explicit revocation/timestamp requests and privacy disclosures before any trusted-signature verdict.
+- Assess searchable-PDF OCR export separately from recognition, with protected-file guards, text placement, selectable reading order and original preservation.
+- Investigate PDF/A/PDF/UA validation and broader color/font/image interoperability with real independent validators.
+- Establish a realistic 200-account workload model if capacity/performance commitments are needed; registration count is not a throughput result.
+- Determine native platform adapter needs from measured runtime limitations before adding filesystem/shell privileges or duplicate document logic.
 
 ## Deferred
 
-Permanent page organization, merge/split, OCR, compression, true redaction, comparison, conversion/image export, PDF/A, content editing/find-replace, headers/footers/watermarks, automation, basic signatures, cryptographic signing/validation and cloud/AI collaboration.
+General existing-content editing/find-and-replace, true redaction, compression, comparison, broad document conversion/image export, PDF/A production, headers/footers/watermarks, automation workflows, collaborative cloud documents/AI, searchable OCR layer export, and cryptographic trust/revocation/timestamp validation remain outside the completed scope.
 
-Every advanced/destructive operation needs engine/license decisions, source preservation, operation-specific verification and explicit platform status. A painted rectangle is not redaction; ink is not a verified digital signature.
+Advanced operations need a defensible engine/license choice, preserved originals, operation-specific verification and explicit platform status. A painted rectangle is not redaction; an ink mark is not a certificate signature; a mathematically valid signature is not a trusted identity.

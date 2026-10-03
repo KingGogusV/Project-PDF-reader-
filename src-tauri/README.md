@@ -14,8 +14,10 @@ signing arrangements remain a release decision.
 ## Commands
 
 - `pnpm exec tauri dev` builds/runs the wrapper and starts `pnpm dev`.
-- `pnpm exec tauri build --bundles nsis` builds the Windows NSIS installer.
-- `pnpm exec tauri build --bundles app,dmg` builds macOS artifacts on a Mac.
+- `node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis -- --locked`
+  builds the unsigned Windows NSIS installer with locked Cargo dependencies.
+- `node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles app,dmg -- --locked`
+  builds unsigned macOS artifacts on a Mac with locked Cargo dependencies.
 - `pnpm exec tauri icon public/icon.svg --output src-tauri/icons` regenerates
   icons from Folio's original existing SVG. Extra generated platform icon files
   are not required for these initial desktop targets.
@@ -25,16 +27,31 @@ The CLI is pinned in the root package manifest; direct Rust crates are pinned in
 build. Native CI build success establishes compilation/packaging, not runtime
 document correctness, installer trust or release readiness.
 
-An initial GitHub Actions job should run on `windows-latest` or `macos-latest`,
-install Node 24 plus the repository's pinned pnpm, install stable Rust with rustup,
-then run `pnpm install --frozen-lockfile` followed by the matching build command
-above. On Windows collect `src-tauri/target/release/bundle/nsis/*.exe`; on macOS
-collect `src-tauri/target/release/bundle/dmg/*.dmg` and the `.app` inside
-`src-tauri/target/release/bundle/macos/`. Retain Rust's generated lockfile as an
-artifact for inspection and commit it only after a successful reproducible build.
-These are unsigned development artifacts; no signing credentials are configured.
+`.github/workflows/native-build.yml` defines Windows and macOS jobs using Node 24,
+pnpm 11.25.0 and stable Rust. The job generates `Cargo.lock` only when absent, then
+runs `cargo metadata --locked` followed by
+`node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis -- --locked` (Windows), or the
+same build command with `--bundles app,dmg` (macOS).
+The final `-- --locked` forwards dependency locking to Cargo. Invoke Node directly
+for this command: the pnpm wrapper on Windows consumed the separator in the first
+CI run, causing argument parsing to fail before compilation.
+
+The workflow collects `src-tauri/target/release/bundle/nsis/*.exe` on Windows and
+`src-tauri/target/release/bundle/dmg/*.dmg` on macOS. It archives the `.app` as a
+tarball to preserve executable permissions. Cargo's lockfile and resolved
+dependency metadata are separate artifacts for inspection; retain the verified
+lockfile in source control after a successful reproducible build. The workflow
+definition alone does not establish that these jobs ran or artifacts were built.
+These are unsigned development packages; no signing credentials are configured.
 
 ## Prerequisites and current evidence
+
+The macOS job in [native build run 37088665153](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37088665153/job/111104088555)
+completed release compilation and app/DMG packaging. The Windows job in that run
+stopped before compilation because of the argument-forwarding issue described
+above; the corrected direct-Node command requires a fresh CI run. No installer
+execution, application runtime, signing or notarization claim follows from the
+macOS packaging result.
 
 The Windows work environment inspected on 2026-10-03 has no Rust/cargo, MSVC build
 tools, Windows SDK, or Android SDK at their usual installation paths; commands are

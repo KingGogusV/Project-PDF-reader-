@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './support/offline-fixture';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,21 +7,21 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), '..', 'fixtures',
 
 test.use({ serviceWorkers: 'allow' });
 
-test('installed application reloads and reads local PDFs offline without caching document bytes', async ({ page, context, baseURL }, testInfo) => {
+test('installed application reloads and reads local PDFs during network or origin loss without caching document bytes', async ({ page, context, networkOutage }, testInfo) => {
   const externalRequests: string[] = [];
   const errors: string[] = [];
-  const origin = new URL(baseURL!).origin;
+  const origin = new URL(networkOutage.baseURL).origin;
   context.on('request', request => {
     const url = new URL(request.url());
     if (['http:', 'https:'].includes(url.protocol) && url.origin !== origin) externalRequests.push(url.href);
   });
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto(networkOutage.baseURL);
   await expect(page.locator('#choose')).toBeVisible();
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
 
-  await context.setOffline(true);
+  await networkOutage.begin(page);
   await page.reload({ waitUntil: 'domcontentloaded' });
   // Regression: module and style requests may carry Origin while precaching does not.
   // Their server Vary: Origin header must not make the static allowlist miss offline.
