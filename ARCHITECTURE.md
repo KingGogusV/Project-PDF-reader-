@@ -125,6 +125,14 @@ The account worker adds CSP and response headers; development/preview and native
 
 The inspected Windows environment lacks Rust/cargo/MSVC/Windows SDK prerequisites. Local native compilation/runtime is blocked. Remote CI successfully built Windows NSIS and macOS app/DMG packages using the retained Cargo lockfile; upgraded macOS WebKit browser CI also passed. Native custom-origin workers, downloads/popups, account flow and offline behavior require their own tests even after compilation. See `src-tauri/README.md`.
 
+### Windows Release Boundary
+
+The new `windows-release.yml` workflow separates building/installing from publishing. The release-specific Tauri config adds native notices as installer resources and uses current-user installation; it adds no privileged app commands. The planned output is an unsigned x64 EXE under `v0.1.0-preview.1`. This workflow and its installed-app smoke are implemented but not yet evidenced as successful or published.
+
+The build collects notices with pinned `cargo-about 0.9.2`, original license texts, Cargo checksum validation, exact-version MPL source archives and Rust/NSIS/WebView2 platform notices. It then compiles, installs only beneath a validated disposable runner directory, and tests the actual installed WebView2 application with an isolated profile and process-scoped loopback debugging. Network observation covers app requests from a controlled reload, not OS/runtime update traffic.
+
+Publication is a separate main-only job: exact-commit Reader checks, same-workflow artifact digest, bounded inventory extraction, per-file checksums and release-tag identity must agree. Mismatched existing tags/assets are refused; validated files pass through a draft prerelease before publication. `release-provenance.json` links source, workflow, native report and notice manifest. Guest desktop reading/storage has no ChatGPT/account dependency; managed accounts remain a website integration. A passed gate, once observed, establishes only its explicit coverage.
+
 ## Alternatives and Verification
 
 PDFium adds native/WASM bindings and packaging; MuPDF/Poppler require deliberate copyleft/commercial-license decisions; Flutter/Qt add browser/accessibility integration; Electron does not address phone/browser sharing; React Native needs document bridges. A thin Tauri wrapper can reuse the current core without claiming native integration already exists.

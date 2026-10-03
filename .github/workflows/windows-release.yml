@@ -1,0 +1,99 @@
+name: Windows download release
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/windows-release.yml'
+      - 'scripts/windows-release.mjs'
+      - 'scripts/unpack-release.py'
+      - 'scripts/native-*'
+      - 'src-tauri/tauri.windows-release.conf.json'
+      - 'tests/native/**'
+      - 'docs/releases/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    name: Install and verify Windows preview
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
+        with:
+          toolchain: stable
+      - name: Install pinned tools and dependencies
+        run: |
+          npm install --global pnpm@11.25.0
+          pnpm install --frozen-lockfile
+          cargo install cargo-about --version 0.9.2 --locked
+      - name: Generate native distribution notices
+        run: node scripts/native-notices.mjs src-tauri/generated-notices
+      - name: Verify release extraction boundaries
+        run: python -m unittest discover -s tests/release -v
+      - name: Build Windows installer with bundled notices
+        run: node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis --config src-tauri/tauri.windows-release.conf.json -- --locked
+      - name: Install into an isolated disposable runner directory
+        shell: pwsh
+        run: |
+          $root = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\') + '\'
+          $target = [IO.Path]::GetFullPath((Join-Path $root 'FolioNativeSmoke'))
+          if (-not $target.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -or $target -match '\s' -or (Test-Path -LiteralPath $target)) { throw 'Unsafe or occupied test installation directory.' }
+          $installers = @(Get-ChildItem -LiteralPath src-tauri/target/release/bundle/nsis -Filter '*.exe' -File)
+          if ($installers.Count -ne 1) { throw 'Expected exactly one built installer.' }
+          $process = Start-Process -FilePath $installers[0].FullName -ArgumentList @('/S', "/D=$target") -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer returned $($process.ExitCode)." }
+          $app = Join-Path $target 'folio-desktop.exe'
+          if (-not (Test-Path -LiteralPath $app) -or -not (Test-Path -LiteralPath (Join-Path $target 'third-party-notices'))) { throw 'Installed application or bundled notices are missing.' }
+          "FOLIO_NATIVE_EXE=$app" >> $env:GITHUB_ENV
+      - name: Verify actual installed WebView2 application
+        run: node tests/native/windows-smoke.mjs
+      - name: Prepare named download and checksums
+        run: node scripts/windows-release.mjs prepare
+      - name: Retain installer and release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: folio-windows-release-${{ github.run_id }}
+          path: .cache/windows-release/*
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Retain native test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-runtime-evidence-${{ github.run_id }}
+          path: test-results/native-windows/
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish:
+    name: Publish verified Windows EXE
+    needs: installer
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.repository == 'KingGogusV/Project-PDF-reader-'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Require reader checks and publish the verified artifacts
+        env:
+          CI: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/windows-release.mjs publish

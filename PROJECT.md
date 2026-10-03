@@ -27,6 +27,14 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 
 Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. Missing local Rust/MSVC/SDK prerequisites still prevent local Windows compilation. These are unsigned development packages, not verified installations or trusted releases.
 
+## Windows Preview Delivery
+
+A new release pipeline targets **`v0.1.0-preview.1`**, with the direct versioned asset `Folio-0.1.0-Windows-x64-Setup.exe`. It is an **unsigned Windows x64 development preview**; publication and the new installed-runtime check have not yet been verified. Earlier CI package builds remain separate evidence.
+
+The packaged reader needs no ChatGPT account, subscription or Folio registration for local PDFs and opt-in local storage. Optional website accounts use managed ChatGPT/OpenAI sign-in; the desktop app is a guest reader. Device copies remain unencrypted and separate from website browser storage. Initial installation may need internet to obtain WebView2.
+
+The workflow bundles generated native notices, installs into a disposable CI directory, checks the actual installed WebView2 app, and permits publication only after Reader checks pass on the exact main revision plus artifact/tag checks. See [maintenance](MAINTENANCE.md) and [Windows installation](docs/windows-installation.md). This implemented pipeline is not a published-release or runtime-pass claim.
+
 ## Current Technology Stack
 
 | Concern | Actual choice |

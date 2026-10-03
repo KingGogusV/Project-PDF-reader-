@@ -119,9 +119,23 @@ Earlier research remains historical context. The current decisions below superse
 
 **UNRESOLVED:** PDF reading order, incomplete canvas/text contrast checks, tagged-document handling, NVDA/JAWS/VoiceOver/TalkBack, browser/OS scaling and physical stylus/touch remain separate checks.
 
+## Windows Release Inventory and Gates (2026-10-03)
+
+Primary references: [cargo-about generation](https://embarkstudios.github.io/cargo-about/cli/generate/index.html), [Tauri bundled resources](https://v2.tauri.app/develop/resources/), [Playwright WebView2 testing](https://playwright.dev/docs/webview2), [Mozilla MPL 2.0](https://www.mozilla.org/MPL/2.0/), and [GitHub release download links](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases). Exact component URLs/hashes are retained in the collectors and generated manifest.
+
+**FACT - inspected implementation:** `scripts/native-notices.mjs` invokes pinned `cargo-about 0.9.2` for the locked `x86_64-pc-windows-msvc` graph, includes build dependencies conservatively, requires original license text rather than SPDX fallback text, and checks original crate archives/notices against Cargo checksums. `scripts/native-licenses.toml` selects reviewed permissive alternatives; it is not a blanket allowlist for every dependency.
+
+**DESIGN DECISION:** Accept MPL-2.0 only for the enumerated unchanged versions (`cssparser 0.37.0`, `cssparser-macros 0.7.1`, `dtoa-short 0.3.5`, `option-ext 0.2.0`, `selectors 0.38.0`) and distribute their original checksum-matched registry source archives with notices. Changed/new versions require review. Hash-pinned upstream MIT clarifications cover the selected WebView2 Rust crates whose archives omit workspace-root notices.
+
+**FACT - platform scope:** `scripts/native-platform-notices.mjs` collects the actual build compiler's Rust standard-library copyright/licenses, hash-pinned WebView2 SDK loader license/NOTICE, NSIS 3.11 licenses and unchanged source, and installer-plugin attribution. NSIS's included LZMA terms/linking exception and Microsoft static runtime terms mean the whole executable must not be described as only permissively licensed Rust. WebView2 Evergreen installation is separate; the app does not embed a fixed Chromium runtime. The upstream installer plugin lacks an exact dependency/compiler inventory, which remains explicitly disclosed rather than invented.
+
+**DESIGN DECISION:** Bundle these materials in the installer and an accompanying notices ZIP. The implemented release gate requires exact main Reader checks, an installed WebView2 smoke report, same-run artifact/provenance hashes and a matching immutable tag before publishing a draft as `v0.1.0-preview.1`. These are inspected code paths, not completed runtime/publication results. The planned direct EXE avoids requiring end users to obtain expiring CI artifacts.
+
+**UNRESOLVED:** Execute and inspect the notice/build/install/publish workflow, check its distributed bytes, and record actual evidence before claiming the preview is available or native workflows passed. The Windows inventory does not certify another platform, a security audit, legal advice or a new license for Folio's own **UNLICENSED** source.
+
 ## Licensing, Security and Performance Record
 
-Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. The verified native Cargo lockfile is retained; full native transitive notice review remains a release task. Test-only dependencies must not be silently bundled into the client.
+Original source remains **UNLICENSED**, pending owner choice. PDF.js, page writer, signing components, OCR models/native components, fonts and Tauri transitive artifacts each retain their own obligations. The verified native Cargo lockfile is retained. A Windows-specific native notice/source gate is now implemented as described above; successful generated-distribution verification remains pending, and other native platform inventories need separate review. Test-only dependencies must not be silently bundled into the client.
 
 Security review must include parser/worker boundaries, account identity dispatch, device-storage expectations and embedded WASM components. An earlier zero-advisory package audit does not establish the upgraded dependency graph's current status; exact new commands/results belong in verification.
 

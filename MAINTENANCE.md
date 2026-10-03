@@ -126,6 +126,28 @@ The first is Windows; the second requires macOS. Direct Node invocation preserve
 
 The inspected Windows environment lacks Rust/cargo, MSVC and Windows SDK; WebView2 alone does not permit a build. No local native build/runtime is claimed. Remote run 37091186893 successfully built both Windows NSIS and macOS app/DMG; installation/runtime and signing/notarization remain unverified. See [native prerequisites and runtime gates](src-tauri/README.md). Test custom-origin workers, local opening, PDF export/print, recovery, accounts and offline behavior on actual Windows/macOS wrappers before release.
 
+## Windows Download Release Pipeline
+
+As inspected on **2026-10-03**, `.github/workflows/windows-release.yml` implements the planned unsigned x64 prerelease `v0.1.0-preview.1`. No successful execution/publication is claimed by this procedure. Ordinary native builds above do not include all release gates.
+
+The release build uses these actual commands on a suitable Windows runner:
+
+```sh
+cargo install cargo-about --version 0.9.2 --locked
+node scripts/native-notices.mjs src-tauri/generated-notices
+node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis --config src-tauri/tauri.windows-release.conf.json -- --locked
+```
+
+Notice generation requires a fresh/empty output directory within this repository, the committed Cargo lockfile, exact `cargo-about 0.9.2`, original license texts and approved dependency versions. It refuses unknown licensing, altered archives/notices and new unreviewed MPL versions. Keep its Windows-specific policy and pinned platform notices together; do not bypass failures or broaden accepted licenses to make a build pass. The release config installs generated notices as `third-party-notices` and explicitly selects current-user installation.
+
+The workflow silently installs exactly one built installer beneath an unoccupied, validated `RUNNER_TEMP/FolioNativeSmoke`, verifies the installed executable/notices, and sets `FOLIO_NATIVE_EXE`. Only then does it run `node tests/native/windows-smoke.mjs`. This test is restricted to disposable Windows GitHub Actions with `CI=true`; it resolves the executable beneath `RUNNER_TEMP`, uses an isolated WebView2 profile and loopback debugging, and terminates only its owned process tree. Do not spoof these guards or run it as an end-user installation procedure. Its synthetic PDF render/form/storage/recovery/search checks are implemented; passing evidence must come from an actual run.
+
+`node scripts/windows-release.mjs prepare` is restricted to this repository's Windows CI context. It requires a passed native report, exactly one valid installer and empty release output. It prepares the named EXE, notices ZIP, `SHA256SUMS.txt` and `release-provenance.json` under `.cache/windows-release`.
+
+`node scripts/windows-release.mjs publish` is restricted to authenticated repository CI on `main`, never a pull request. The workflow provides a scoped `GITHUB_TOKEN` through its secret environment. The script waits up to 25 minutes for successful push-triggered Reader checks on the exact main SHA, verifies same-run artifact provenance/digest and bounded flat extraction, validates every named file/checksum, and refuses an existing tag or asset that points to different bytes/source. It uploads to a draft prerelease and only publishes after digest checks; it does not mark the preview latest. Failures must remain visible; never force-move a release tag, overwrite a mismatched published asset or substitute a build from another revision. Record the resulting release URL only after actual publication verification.
+
+The installer lets guests read/store local PDFs without ChatGPT or a Folio account. Optional website accounts still use managed sign-in. Native installed-smoke coverage does not imply all Windows versions, physical printers, accessibility, OS update traffic or production readiness. Original Folio source remains UNLICENSED; bundled dependency notices do not grant a license to that source.
+
 ## Platform Test Procedure
 
 Record OS, browser/version, headless/manual mode and input emulation. Layout classes include desktop 1600x1000, laptop 1280x800, tablet landscape 1024x768, tablet portrait 768x1024, phone portrait 390x844 and phone landscape 844x390. These are viewport checks, not physical-device certifications.
