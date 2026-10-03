@@ -14,7 +14,7 @@ in this guide does not mean an installer has been published.
    installation for your Windows user account.
 3. Open **Folio** from Start. Try the included demo, or choose a local PDF.
 
-[Release notes, checksums and notices](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) are on GitHub. The source-code ZIP is for developers, not installation.
+Release notes, checksums and notices will accompany the installer on [GitHub Releases](https://github.com/KingGogusV/Project-PDF-reader-/releases) once verification succeeds. The source-code ZIP is for developers, not installation.
 
 The installer uses Microsoft's WebView2 Runtime. If it is missing, the installer
 downloads Microsoft's bootstrapper, so an internet connection may be needed for
@@ -38,6 +38,8 @@ are separate from document processing.
   alternative if your device's policy blocks unsigned applications.
 
 ## Verification status
+
+The latest corrected-source [run 37102794622](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102794622) passed notice generation, installer build and silent installation, but WebView2 exited before the reader opened. Publication was skipped. No public EXE is currently available; normal interactive Windows behavior still needs verification.
 
 [Build 37091186893](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37091186893)
 successfully compiled and packaged the Windows installer from application

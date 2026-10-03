@@ -4,10 +4,11 @@ Updated 2026-10-03 UTC. This is a development implementation, not a production-r
 
 ## Current verification addendum: reader correction and Windows release gates
 
-The following results concern later Windows release work and the local WebKit
-correction. **Hosted deployment v2 remains unchanged.** The local signal-retention
-fix has not been deployed to the website, and its patched macOS CI has not yet run.
-Earlier results below remain evidence for their stated source revisions.
+The corrected reader is now live in **deployment v3**. Its complete Linux Chromium
+and macOS WebKit CI passed, and the hosted forced-GC Ink regression passed.
+Windows installation passed, but native runtime verification still failed and
+the public Windows release remains unpublished. Earlier results below remain
+evidence for their stated source revisions; they are not erased by later passes.
 
 ### WebKit editor lifecycle correction
 
@@ -28,7 +29,7 @@ document destruction. The regression adds `page.requestGC()` during the existing
 Ink workflow and retains its exception, original-byte, PDF-annotation and fresh
 reopen assertions; no exceptions are suppressed.
 
-| Later local check | Verified result |
+| Correction verification | Verified result |
 | --- | --- |
 | Forced-GC Ink regression against the unpatched production app | One failed with the exact CI exception |
 | Same regression against the corrected production bundle | Three passed |
@@ -36,16 +37,47 @@ reopen assertions; no exceptions are suppressed.
 | Windows WebKit editor workflows | Six passed; 19.3 seconds |
 | Typecheck and full production client/Worker build | Passed; manifest `4336354ebff242c2` |
 | Unit/fixture tests on the local corrected source | 55 passed; zero skips |
-| Corrected-source macOS CI | Not yet run |
+| Corrected-source macOS WebKit CI | 63 passed; 3.0 minutes, run 37102794616 |
+| Hosted v3 Windows WebKit forced-GC Ink regression | One passed; 6.1 seconds, with real PDF export/reopen |
 
 The six browser cases cover forms, free text, text-highlight undo/redo, Ink under
 GC, freehand highlight and canceled dirty close. They retain independent output
 inspection, original-prefix preservation, reopen checks and zero external
-requests/page exceptions. Three repetitions and six scoped cases are not a new
-full-suite or physical Safari certification. The local build is not the hosted
-v2 build.
+requests/page exceptions. These scoped local checks preceded the full corrected-source
+CI below. Deployment v3 now uses the same manifest `4336354ebff242c2`; none of
+these tests certify physical Safari or Apple devices.
+
+### Corrected-source CI and packaging
+
+[Reader run 37102794616](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102794616)
+**passed all three jobs** for the v3 reader source. Typecheck, production build and
+unit/fixture checks passed; Linux Chromium passed **63 E2E cases in 2.3 minutes**,
+macOS WebKit passed **63 in 3.0 minutes**, controller checkpoints passed **7 in
+12.3 seconds**, and signing-core checks passed **9 in 12.7 seconds**. These are
+suite execution times, not document performance measurements. The previously
+failing Ink workflow now forces GC during a live stroke and retains strict
+exception/export/reopen checks.
+
+[Native packaging run 37102794636](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102794636)
+**passed on both Windows and macOS** for the updated source. This establishes
+compilation and unsigned package creation, not native PDF runtime correctness or
+a public release. GitHub implementation `85cc5de6378e64372549fb298d383374c74a488a`
+and its matching hosted source/tree are recorded in the hosting section below.
+[PR 1](https://github.com/KingGogusV/Project-PDF-reader-/pull/1) remains open; no
+merge is claimed.
 
 ### Windows installation passed; native runtime failed
+
+[Latest Windows release run 37102794622](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37102794622)
+built a new installer from the corrected source. Standard-user preflight, native
+notices, all **eight** extraction-boundary tests, installer build and silent
+installation **passed**. The actual installed application then exited with code
+**101**, so native runtime verification **failed** and publication was **skipped**.
+This confirms that the current source was built and installed; it does not turn
+the prior diagnostic failures into native passes. No public EXE/release has been
+published.
+
+The earlier release/harness comparisons remain relevant diagnostic history:
 
 [Windows release run 37101691271](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37101691271)
 tested PR merge `a2b7697e7913ff7420a47a48defd54103932892e` (head
@@ -100,9 +132,9 @@ verification is blocked here** and next requires a normal interactive Windows
 session or another suitable test environment. These failures do not prove Folio
 fails on ordinary Windows installations. The public Windows release remains
 unpublished. Native PDF workflows and release gates still need actual passing
-evidence; an older diagnostic installer cannot verify the local reader fix or
-other changed application inputs. Corrected-source macOS browser CI also remains
-pending, separately from this native blocker.
+evidence. The latest release run above rebuilt and installed the corrected source
+but still failed runtime startup. Corrected-source macOS browser CI has since
+passed; that browser result is separate from this native blocker.
 
 ## Historical local evidence: upgrade and v2 delivery
 
@@ -177,7 +209,42 @@ These CI downloads expire **2026-10-17** and may require GitHub access. They are
 
 ## Hosting and identity
 
-Current deployment **v2** `appgdep_6ac06d8fe58c819181427cd4cea78796` reached terminal success at **2026-10-03 02:51:08 UTC**. URL: [Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site). App manifest: `b2837e77c6ac14a7`.
+Current deployment **v3** `appgdep_6ac0a0deb3108191a9fbce3e650d4019` reached terminal
+success at **2026-10-03 06:30:01.366914 UTC**. URL:
+[Folio](https://folio-local-pdf.gogoi-ronnie.chatgpt.site). App manifest:
+`4336354ebff242c2`.
+
+Published Site source `e3437ffb0d6e45b469f167845c009b2ee24f28e5` and GitHub
+implementation `85cc5de6378e64372549fb298d383374c74a488a` have identical verified
+tree `8fcd7d07f26969320f361319b9d317930bd136f6`. GitHub remains authoritative;
+the separate Site ancestry is preserved. Later documentation-only commits must
+not be described as independently deployed or tested application revisions.
+
+At **06:30:37.083 UTC**, the live v3 smoke report passed:
+
+- Anonymous account GET returned **200**, null identity/account, limit **200** and registered **0**.
+- Forged identity headers were refused with **401**; sign-in redirected with **302** to `auth.openai.com`.
+- A local form was explicitly stored, edited, reloaded and recovered with its value intact.
+- Chromium network-offline reload and reopening the device-local PDF passed.
+- The 390-pixel phone viewport had no horizontal overflow; its screenshot was inspected and usable.
+- Observed document workflows made no POST/document-upload requests and produced no page errors. The separate forged-header API probe was deliberately sent and refused.
+
+Against this deployed v3 URL, Windows Playwright WebKit also passed the real
+forced-GC Ink export/reopen regression: **one passed in 6.1 seconds**. An initial
+test invocation could not locate the installed browser; setting
+`PLAYWRIGHT_BROWSERS_PATH` to the existing `.cache/playwright` installation fixed
+the test setup. That invocation did not exercise or demonstrate an application
+failure. It remains a Windows WebKit test, not branded Safari or a physical Apple
+device test.
+
+Actual managed sign-in, account registration/sign-out sessions and live
+capacity/load remain **unverified**. A provider redirect is not a completed
+authenticated session. The hosted update contains the reader correction; it does
+not publish or validate the Windows installer.
+
+### Historical deployment v2
+
+Deployment **v2** `appgdep_6ac06d8fe58c819181427cd4cea78796` reached terminal success at **2026-10-03 02:51:08 UTC** at the same URL. Its app manifest was `b2837e77c6ac14a7`.
 
 Published Site source `cae5f95b0255f6278c485c78da834adf606e6a60` and GitHub implementation `710ff978c4f59b907bce108921ade34b6d2b5326` have identical verified tree `09642b4ac086bf603510c5fc75fcf1aa14862650`. Their ancestry differs. GitHub remains authoritative. Preserve Site history on `site-publication`; align `feature/hosted-local-library` with the actual fetched GitHub HEAD by branch switching without resets/history rewriting. Future publishing must merge/reconcile Site and GitHub feature/main ancestry without force-pushing. Final documentation commits are separate from this delivered implementation snapshot.
 
@@ -199,13 +266,13 @@ Deployment v1 `appgdep_6ac06a440c048191bac16353afd60fa4` succeeded at 02:37:09 U
 
 The worker now normalizes cached navigation responses. The added regression failed against the old worker, then the two direct/canonical offline cases passed on Edge and WebKit before v2 deployment. The live Chromium pass above verifies the actual hosted repair. WebKit's automated test uses an unavailable origin because its offline-emulation limitation differs; it is not a physical Safari test.
 
-V2-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs, as detailed above. The later local editor correction and Windows release diagnostics do not change this deployed source identity.
+V2-source Reader run 37091186897 and native run 37091186893 both succeeded in all jobs, as detailed above. Those results remain tied to the historical v2 identity; the current corrected deployment is v3.
 
 Historical Reader run 37089902258 passed 62 cases before the added redirect regression; the primary artifact table refers exclusively to the v2-source packages. CI evidence attaches to the tested application commit, not a later documentation-only HEAD. Engineering-record updates do not require republishing unchanged application inputs and must not be described as a separately tested build.
 
 ### Hosting header boundary
 
-Static responses bypass the worker's static-response header code. Restrictive document metadata CSP and `referrer=no-referrer` metadata are active in v2. HTTP CSP/frame-ancestors/nosniff and Referrer-Policy header enforcement were not established through the attempted static-header route; the experiment was reverted. Supported host-level header configuration remains a release task. CSP was not weakened to allow host-injected inline code.
+Static responses bypass the worker's static-response header code. Restrictive document metadata CSP and `referrer=no-referrer` metadata were confirmed in v2; the v3 smoke confirms its restrictive metadata CSP remains present. HTTP CSP/frame-ancestors/nosniff and Referrer-Policy header enforcement remain unestablished; the unsuccessful static-header experiment was reverted. Supported host-level header configuration remains a release task. CSP was not weakened to allow host-injected inline code.
 
 ## Security review and remaining gates
 

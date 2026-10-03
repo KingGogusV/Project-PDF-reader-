@@ -15,7 +15,7 @@ Updated: **2026-10-03 UTC**. This is specific future work, not blanket authoriza
 
 ## High Priority
 
-- Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks; record a source-matched macOS rerun and retain the instance-scoped signal cleanup on future PDF.js upgrades.
+- Preserve the deterministic mid-stroke garbage-collection regression for editor cancellation. The WebKit stale-listener fix passed focused Windows Edge/WebKit checks, source-matched macOS CI and hosted ink export/reopen. Retain instance-scoped signal cleanup on future PDF.js upgrades.
 
 - Keep the repaired canonical-redirect cache path under regression coverage; the second deployment passed true Chromium offline reload/recovery. Retain the passed final-source 63-case Reader CI and Windows/macOS packaging evidence; rerun affected gates after consequential changes.
 - Obtain supported host-level HTTP CSP/frame-ancestors/nosniff/referrer-header enforcement. Metadata CSP and no-referrer metadata are active; do not weaken it for host-injected scripts or claim ineffective worker/static-header configuration protects live static responses.
