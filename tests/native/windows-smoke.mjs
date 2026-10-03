@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, realpath, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, open, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +29,7 @@ let browser;
 let page;
 let overallTimer;
 let processOutput = '';
+let nativeLogPath;
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 function inside(root, target) {
@@ -184,6 +185,7 @@ async function workflow() {
   const profile = await mkdtemp(join(runnerTemp, 'folio-native-profile-'));
   assert.ok(inside(runnerTemp, await realpath(profile)));
   report.retainedProfile = profile;
+  nativeLogPath = join(profile,'native-process.log');
   const port = await freePort();
   report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned restricted test process environment' };
   await writeFile(tokenReportPath,JSON.stringify({ status:'starting' }));
@@ -191,6 +193,8 @@ async function workflow() {
     cwd: dirname(executable), shell: false, windowsHide: true, stdio: ['ignore','pipe','pipe'],
     env: { ...process.env,
       FOLIO_TOKEN_REPORT: tokenReportPath,
+      FOLIO_NATIVE_LOG_PATH: nativeLogPath,
+      RUST_BACKTRACE: '1',
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1`,
       WEBVIEW2_USER_DATA_FOLDER: profile,
     },
@@ -351,6 +355,24 @@ try {
     if (stopped.error || stopped.status !== 0) { report.status = 'failed'; process.exitCode = 1; }
   }
   if (browser) { try { await browser.close({ reason:'Native CI smoke completed; owned app process stopped.' }); } catch {} }
+  if (ownedProcess?.pid) {
+    try {
+      const token = JSON.parse(await readFile(tokenReportPath,'utf8'));
+      if (token.parentPid === ownedProcess.pid) report.tokenLaunch = token;
+    } catch (error) { report.finalTokenReportError = describeError(error); }
+  }
+  if (nativeLogPath) {
+    let handle;
+    try {
+      handle = await open(nativeLogPath,'r');
+      const size = (await handle.stat()).size;
+      const buffer = Buffer.alloc(Math.min(size,256_000));
+      const { bytesRead } = await handle.read(buffer,0,buffer.length,Math.max(0,size-buffer.length));
+      await writeFile(join(output,'native-process.log'),buffer.subarray(0,bytesRead));
+      report.nativeOutput = { bytes:size, retainedBytes:bytesRead, truncated:size>bytesRead };
+    } catch (error) { report.nativeOutputError = describeError(error); }
+    finally { await handle?.close(); }
+  }
   report.completedAt = new Date().toISOString();
   if (process.platform === 'win32' && process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true') {
     await writeFile(join(output,'report.json'), JSON.stringify(report,null,2));

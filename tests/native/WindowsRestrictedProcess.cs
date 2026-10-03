@@ -1,6 +1,7 @@
 // CI test launcher only. No privileges, policies, accounts or app permissions are added.
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
@@ -14,6 +15,7 @@ namespace FolioNativeSmoke {
     public bool AdministratorsDenyOnly;
     public bool SameUser;
   }
+  public sealed class WriteProbe { public bool Writable; public int Error; public string Message; }
 
   public sealed class RestrictedProcess : IDisposable {
     [StructLayout(LayoutKind.Sequential)] struct SidAttributes { public IntPtr Sid; public uint Attributes; }
@@ -23,6 +25,8 @@ namespace FolioNativeSmoke {
       public IntPtr reservedPointer,input,output,error;
     }
     [StructLayout(LayoutKind.Sequential)] struct ProcessInfo { public IntPtr process,thread; public uint pid,tid; }
+    [StructLayout(LayoutKind.Sequential)] struct StartupInfoEx { public StartupInfo info; public IntPtr attributes; }
+    [StructLayout(LayoutKind.Sequential)] struct SecurityAttributes { public int length; public IntPtr descriptor; public int inherit; }
     [StructLayout(LayoutKind.Sequential)] struct JobBasicLimits {
       public long processTime,jobTime; public uint flags; public UIntPtr minWorkingSet,maxWorkingSet;
       public uint activeProcesses; public UIntPtr affinity; public uint priority,scheduling;
@@ -42,16 +46,25 @@ namespace FolioNativeSmoke {
     static extern IntPtr CreateJobObject(IntPtr attributes, string name);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool SetInformationJobObject(IntPtr job, int kind, ref JobLimits limits, uint size);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+    [DllImport("kernel32.dll", EntryPoint="CreateFileW", CharSet=CharSet.Unicode, SetLastError=true)]
+    static extern IntPtr CreateFile(string path, uint access, uint sharing, ref SecurityAttributes attributes, uint creation, uint flags, IntPtr template);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool WriteFile(IntPtr file, byte[] bytes, uint count, out uint written, IntPtr overlapped);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool InitializeProcThreadAttributeList(IntPtr list, int count, int flags, ref IntPtr size);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool UpdateProcThreadAttribute(IntPtr list, uint flags,
+      UIntPtr attribute, IntPtr value, UIntPtr size, IntPtr previous, IntPtr returnSize);
+    [DllImport("kernel32.dll")] static extern void DeleteProcThreadAttributeList(IntPtr list);
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool OpenProcessToken(IntPtr process, uint access, out IntPtr token);
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool GetTokenInformation(IntPtr token, int kind, IntPtr data, int size, out int needed);
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool SetTokenInformation(IntPtr token, int kind, IntPtr data, int size);
+    [DllImport("advapi32.dll", SetLastError=true)] static extern bool ImpersonateLoggedOnUser(IntPtr token);
+    [DllImport("advapi32.dll", SetLastError=true)] static extern bool RevertToSelf();
     [DllImport("advapi32.dll", SetLastError=true)] static extern bool CreateRestrictedToken(IntPtr token, uint flags,
       uint disabledCount, [In] SidAttributes[] disabled, uint deletedCount, IntPtr deleted,
       uint restrictedCount, IntPtr restricted, out IntPtr newToken);
     [DllImport("advapi32.dll", EntryPoint="CreateProcessAsUserW", CharSet=CharSet.Unicode, SetLastError=true)]
     static extern bool CreateProcessAsUser(IntPtr token, string app, StringBuilder command, IntPtr processAttributes,
       IntPtr threadAttributes, bool inheritHandles, uint flags, IntPtr environment, string directory,
-      ref StartupInfo startup, out ProcessInfo process);
+      ref StartupInfoEx startup, out ProcessInfo process);
 
     IntPtr current, restricted, process, job;
     string user;
@@ -133,17 +146,67 @@ namespace FolioNativeSmoke {
           throw new InvalidOperationException("Administrators SID was not reduced to deny-only.");
       } catch { Dispose(); throw; }
     }
-    public void Launch(string executable, string directory) {
+    public WriteProbe ProbeProfileWrite(string directory) {
+      // The caller supplies only its verified fresh CI profile directory. No existing file is opened or removed.
+      string path=Path.Combine(directory,"folio-access-probe-"+Guid.NewGuid().ToString("N")+".tmp");
+      Check(ImpersonateLoggedOnUser(restricted),"Impersonate same-user restricted token for profile probe");
+      try {
+        var security=new SecurityAttributes { length=Marshal.SizeOf(typeof(SecurityAttributes)), inherit=0 };
+        // WRITE | DELETE, CREATE_NEW, TEMPORARY | DELETE_ON_CLOSE.
+        IntPtr file=CreateFile(path,0x40010000,0,ref security,1,0x04000100,IntPtr.Zero);
+        if (file==new IntPtr(-1)) {
+          int error=Marshal.GetLastWin32Error();
+          return new WriteProbe { Writable=false, Error=error, Message=new Win32Exception(error).Message };
+        }
+        try {
+          uint written;
+          if (!WriteFile(file,new byte[] { 0x46 },1,out written,IntPtr.Zero)) {
+            int error=Marshal.GetLastWin32Error();
+            return new WriteProbe { Writable=false, Error=error, Message=new Win32Exception(error).Message };
+          }
+          if (written!=1) return new WriteProbe { Writable=false, Error=31, Message="Profile probe write was incomplete." };
+        } finally { Check(CloseHandle(file),"Close owned profile access probe"); }
+        return new WriteProbe { Writable=true, Error=0, Message="Restricted token can create/write/delete a new profile file." };
+      } finally { Check(RevertToSelf(),"Revert restricted profile probe impersonation"); }
+    }
+    public void Launch(string executable, string directory, string logPath) {
       if (process!=IntPtr.Zero) throw new InvalidOperationException("Only one owned child is allowed.");
       job=CreateJobObject(IntPtr.Zero,null);
       if (job==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error(),"CreateJobObject");
       var limits=new JobLimits { basic=new JobBasicLimits { flags=0x2000 } }; // KILL_ON_JOB_CLOSE
       Check(SetInformationJobObject(job,9,ref limits,(uint)Marshal.SizeOf(typeof(JobLimits))),"SetInformationJobObject kill-on-close");
-      var startup=new StartupInfo { cb=Marshal.SizeOf(typeof(StartupInfo)), flags=1, showWindow=0 };
       ProcessInfo child;
-      // Explicit app path; no inherited handles; own environment; suspended until actual token verified.
-      Check(CreateProcessAsUser(restricted,executable,new StringBuilder("\""+executable+"\""),IntPtr.Zero,
-        IntPtr.Zero,false,0x08000004,IntPtr.Zero,directory,ref startup,out child),"CreateProcessAsUser restricted child");
+      IntPtr log=IntPtr.Zero, input=IntPtr.Zero, attributes=IntPtr.Zero, handles=IntPtr.Zero;
+      bool attributesInitialized=false;
+      try {
+        var security=new SecurityAttributes { length=Marshal.SizeOf(typeof(SecurityAttributes)), inherit=1 };
+        log=CreateFile(logPath,0x40000000,3,ref security,1,0x80,IntPtr.Zero); // write, share read/write, CREATE_NEW
+        if (log==new IntPtr(-1)) throw new Win32Exception(Marshal.GetLastWin32Error(),"CreateFile new native log");
+        input=CreateFile("NUL",0x80000000,3,ref security,3,0,IntPtr.Zero);
+        if (input==new IntPtr(-1)) throw new Win32Exception(Marshal.GetLastWin32Error(),"CreateFile NUL input");
+        IntPtr size=IntPtr.Zero;
+        InitializeProcThreadAttributeList(IntPtr.Zero,1,0,ref size);
+        if (size==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error(),"InitializeProcThreadAttributeList size");
+        attributes=Marshal.AllocHGlobal(size);
+        Check(InitializeProcThreadAttributeList(attributes,1,0,ref size),"InitializeProcThreadAttributeList");
+        attributesInitialized=true;
+        handles=Marshal.AllocHGlobal(IntPtr.Size*2);
+        Marshal.WriteIntPtr(handles,0,log); Marshal.WriteIntPtr(handles,IntPtr.Size,input);
+        Check(UpdateProcThreadAttribute(attributes,0,new UIntPtr(0x20002),handles,new UIntPtr((uint)(IntPtr.Size*2)),
+          IntPtr.Zero,IntPtr.Zero),"UpdateProcThreadAttribute explicit standard handle list");
+        var startup=new StartupInfoEx { attributes=attributes, info=new StartupInfo {
+          cb=Marshal.SizeOf(typeof(StartupInfoEx)), flags=0x101, showWindow=0, input=input, output=log, error=log } };
+        // Only the two listed stdio handles are inherited; never a token, process or job handle.
+        // EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW | CREATE_SUSPENDED.
+        Check(CreateProcessAsUser(restricted,executable,new StringBuilder("\""+executable+"\""),IntPtr.Zero,
+          IntPtr.Zero,true,0x08080004,IntPtr.Zero,directory,ref startup,out child),"CreateProcessAsUser restricted child");
+      } finally {
+        if (attributesInitialized) DeleteProcThreadAttributeList(attributes);
+        if (attributes!=IntPtr.Zero) Marshal.FreeHGlobal(attributes);
+        if (handles!=IntPtr.Zero) Marshal.FreeHGlobal(handles);
+        if (log!=IntPtr.Zero && log!=new IntPtr(-1)) CloseHandle(log);
+        if (input!=IntPtr.Zero && input!=new IntPtr(-1)) CloseHandle(input);
+      }
       process=child.process; Pid=child.pid;
       try {
         // Closing the helper, including any exception, kills only this assigned child tree.
