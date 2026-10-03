@@ -21,6 +21,8 @@ namespace FolioNativeSmoke {
     public bool AdministratorsPresent;
     public bool UsersEnabled;
     public bool HasRestrictions;
+    public int RestrictionReturnLength;
+    public uint RestrictionRawValue;
     public int RestrictingSidCount;
   }
   public sealed class WriteProbe { public bool Writable; public int Error; public string Message; }
@@ -167,16 +169,39 @@ namespace FolioNativeSmoke {
       using (var restore=new AssignedPrivilegeScope("SeRestorePrivilege")) Check(operation(),description);
     }
     static IntPtr ReadInfo(IntPtr token, int kind) {
+      int returned; return ReadInfo(token,kind,out returned);
+    }
+    static IntPtr ReadInfo(IntPtr token, int kind, out int returned) {
       int size;
       GetTokenInformation(token, kind, IntPtr.Zero, 0, out size);
       if (size <= 0) throw new Win32Exception(Marshal.GetLastWin32Error(), "GetTokenInformation size " + kind);
       IntPtr data = Marshal.AllocHGlobal(size);
-      try { Check(GetTokenInformation(token, kind, data, size, out size), "GetTokenInformation " + kind); return data; }
+      try {
+        Check(GetTokenInformation(token, kind, data, size, out returned), "GetTokenInformation " + kind);
+        if (returned<=0 || returned>size) throw new InvalidOperationException("Invalid returned token buffer length for class "+kind);
+        return data;
+      }
       catch { Marshal.FreeHGlobal(data); throw; }
     }
     static int ReadNumber(IntPtr token, int kind) {
-      IntPtr data=ReadInfo(token,kind);
-      try { return Marshal.ReadInt32(data); } finally { Marshal.FreeHGlobal(data); }
+      int returned; IntPtr data=ReadInfo(token,kind,out returned);
+      try {
+        if (returned<4) throw new InvalidOperationException("Token scalar shorter than DWORD for class "+kind);
+        return Marshal.ReadInt32(data);
+      } finally { Marshal.FreeHGlobal(data); }
+    }
+    static uint ReadRestrictions(IntPtr token,out int returned) {
+      // The API documents DWORD, but current Windows has been observed returning one byte.
+      // Always provide an initialized DWORD, inspect ReturnLength, never read beyond returned data.
+      // https://learn.microsoft.com/en-us/answers/questions/6000453/gettokeninformation-tokenhasrestrictions-21-return
+      IntPtr data=Marshal.AllocHGlobal(4);
+      try {
+        Marshal.WriteInt32(data,0);
+        Check(GetTokenInformation(token,21,data,4,out returned),"GetTokenInformation TokenHasRestrictions");
+        if (returned==1) return Marshal.ReadByte(data);
+        if (returned==4) return unchecked((uint)Marshal.ReadInt32(data));
+        throw new InvalidOperationException("Unexpected TokenHasRestrictions return length "+returned);
+      } finally { Marshal.FreeHGlobal(data); }
     }
     static string ReadSid(IntPtr token, int kind) {
       IntPtr data=ReadInfo(token,kind);
@@ -184,9 +209,11 @@ namespace FolioNativeSmoke {
     }
     static TokenFacts Inspect(IntPtr token, string user) {
       string integrity=ReadSid(token,25);
+      int restrictionLength; uint restrictionValue=ReadRestrictions(token,out restrictionLength);
       var facts=new TokenFacts { Elevated=ReadNumber(token,20)!=0, ElevationType=ReadNumber(token,18),
         IntegrityRid=int.Parse(integrity.Substring(integrity.LastIndexOf('-')+1)), MatchesExpectedUser=ReadSid(token,1)==user,
-        HasRestrictions=ReadNumber(token,21)!=0, RestrictingSidCount=ReadNumber(token,11) };
+        HasRestrictions=restrictionValue!=0, RestrictionReturnLength=restrictionLength, RestrictionRawValue=restrictionValue,
+        RestrictingSidCount=ReadNumber(token,11) };
       IntPtr groups=ReadInfo(token,2);
       try {
         int count=Marshal.ReadInt32(groups), offset=IntPtr.Size==8 ? 8 : 4, stride=Marshal.SizeOf(typeof(SidAttributes));
