@@ -1,12 +1,18 @@
-param([ValidateSet('Preflight','Launch')][string]$Mode = 'Preflight')
+param([ValidateSet('Preflight','Launch','Cleanup')][string]$Mode = 'Preflight', [string]$AccountName, [string]$AccountSid)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if ($env:OS -ne 'Windows_NT' -or $env:GITHUB_ACTIONS -ne 'true' -or $env:CI -ne 'true') {
-  throw 'This privilege-reducing helper runs only in Windows GitHub Actions CI.'
+if ($env:OS -ne 'Windows_NT' -or $env:GITHUB_ACTIONS -ne 'true' -or $env:CI -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
+  throw 'Temporary-account native tests run only in disposable GitHub-hosted Windows CI.'
 }
-Add-Type -Path (Join-Path $PSScriptRoot 'WindowsRestrictedProcess.cs')
+Add-Type -Path (Join-Path $PSScriptRoot 'WindowsStandardUserProcess.cs')
+if ($Mode -eq 'Cleanup') {
+  if (-not [FolioNativeSmoke.StandardUserProcess]::RemoveExactAccount($AccountName,$AccountSid)) { throw 'Exact temporary account cleanup failed.' }
+  Write-Output 'Exact temporary account is absent.'
+  exit 0
+}
 $result = [ordered]@{ status = 'running'; mode = $Mode; parentPid = $PID; startedAt = [DateTime]::UtcNow.ToString('o') }
 $launcher = $null
+$scriptExit = 0
 function Save-Report {
   $json = $result | ConvertTo-Json -Depth 8
   if ($env:FOLIO_TOKEN_REPORT) {
@@ -31,11 +37,17 @@ function Get-ProfileAclFacts([string]$Path, [System.Security.Principal.SecurityI
   return $facts
 }
 try {
-  $result.parentToken = [FolioNativeSmoke.RestrictedProcess]::CurrentToken()
+  $result.parentToken = [FolioNativeSmoke.StandardUserProcess]::CurrentToken()
   Save-Report
-  $launcher = [FolioNativeSmoke.RestrictedProcess]::new()
+  $receipt = [System.Action[string,string]]{ param($createdName,$createdSid)
+    $result.account = @{ name=$createdName; sid=$createdSid; createdByHelper=$true }
+    Save-Report
+  }
+  $launcher = [FolioNativeSmoke.StandardUserProcess]::new($receipt)
   $result.parentToken = $launcher.Parent
-  $result.reducedToken = $launcher.Reduced
+  $result.standardToken = $launcher.Standard
+  $result.account = @{ name=$launcher.AccountName; sid=$launcher.AccountSid; createdByHelper=$true }
+  $result.privateDesktop = $launcher.PrivateDesktop
   $result.status = 'preflight-passed'
   Save-Report
   if ($Mode -eq 'Launch') {
@@ -56,12 +68,12 @@ try {
         @(Get-ChildItem -LiteralPath $logParent -Force).Count -ne 0) {
       throw 'Profile preparation requires the fresh empty non-reparse CI test directory.'
     }
-    $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+    $userSid = [System.Security.Principal.SecurityIdentifier]::new($launcher.AccountSid)
     $result.profileAccess = [ordered]@{ beforeAcl=(Get-ProfileAclFacts $logParent $userSid); changed=$false }
     $result.profileAccess.beforeProbe = $launcher.ProbeProfileWrite($logParent)
     Save-Report
     if (-not $result.profileAccess.beforeProbe.Writable) {
-      if ($result.profileAccess.beforeProbe.Error -ne 5) { throw 'Restricted profile probe failed for a reason other than access denied.' }
+      if ($result.profileAccess.beforeProbe.Error -ne 5) { throw 'Standard-user profile probe failed for a reason other than access denied.' }
       # Only the new owned test profile: retain all existing rules; never change an ancestor or a user profile.
       $acl = Get-Acl -LiteralPath $logParent
       $rule = [System.Security.AccessControl.FileSystemAccessRule]::new($userSid,
@@ -75,7 +87,8 @@ try {
     $result.profileAccess.afterAcl = Get-ProfileAclFacts $logParent $userSid
     $result.profileAccess.afterProbe = $launcher.ProbeProfileWrite($logParent)
     Save-Report
-    if (-not $result.profileAccess.afterProbe.Writable) { throw 'Restricted token still cannot write its own test profile.' }
+    if (-not $result.profileAccess.afterProbe.Writable) { throw 'Standard user still cannot write its own test profile.' }
+    if (-not $env:FOLIO_NATIVE_STOP_FILE) { throw 'Owned stop signal path is required for account cleanup.' }
     $launcher.Launch($exe,[System.IO.Path]::GetDirectoryName($exe),$nativeLog)
     $result.childPid = $launcher.Pid
     $result.childToken = $launcher.Child
@@ -85,7 +98,7 @@ try {
     # Preserve early evidence even when a native startup panic exits before CDP exists.
     for ($sample=0; $sample -lt 8 -and -not $launcher.Wait(0); $sample++) {
       try {
-        $rows = & (Join-Path $PSScriptRoot 'windows-runtime-diagnostics.ps1') -OwnedPid $PID | ConvertFrom-Json
+        $rows = & (Join-Path $PSScriptRoot 'windows-runtime-diagnostics.ps1') -OwnedPid $launcher.Pid | ConvertFrom-Json
         foreach ($row in $rows) {
           if ($row.name -eq 'msedgewebview2.exe') { $row | Add-Member -NotePropertyName ownedHandleCaptured -NotePropertyValue ($launcher.ObserveRuntime([uint32]$row.pid)) }
         }
@@ -95,21 +108,28 @@ try {
       Save-Report
       if ($launcher.Wait(500)) { break }
     }
-    # Keep the owned helper alive, so Node can terminate only its own PID tree.
-    if (-not $launcher.Wait(240000)) {
-      & taskkill.exe /PID $launcher.Pid /T /F | Out-String | Write-Output
-      throw 'Owned child exceeded helper lifetime.'
+    # Graceful parent signal leaves this helper alive to empty its job and remove its exact account.
+    $deadline = [DateTime]::UtcNow.AddSeconds(240)
+    while (-not $launcher.Wait(250) -and -not (Test-Path -LiteralPath $env:FOLIO_NATIVE_STOP_FILE)) {
+      if ([DateTime]::UtcNow -ge $deadline) { throw 'Owned child exceeded helper lifetime.' }
     }
-    $result.childExitCode = $launcher.ExitCode()
+    if ($launcher.Wait(0)) { $result.childExitCode = $launcher.ExitCode(); $scriptExit = [int]$result.childExitCode }
     # These are actual process-handle observations before closing our kill-on-close job.
     $result.runtimeExitsBeforeCleanup = @($launcher.RuntimeExits())
-    $result.status = 'exited'
+    $result.status = if ($launcher.Wait(0)) { 'exited' } else { 'stop-requested' }
     Save-Report
-    exit ([int]$result.childExitCode)
   }
 } catch {
   $result.status = 'failed'
   $result.error = $_.Exception.ToString()
+  $scriptExit = 1
   Save-Report
-  throw
-} finally { if ($null -ne $launcher) { $launcher.Dispose() } }
+} finally {
+  if ($null -ne $launcher) {
+    $launcher.Dispose()
+    $result.cleanup = $launcher.Cleanup
+    if ($result.cleanup.Errors.Count -gt 0) { $result.status='failed'; $scriptExit=1 }
+  }
+  Save-Report
+}
+exit $scriptExit

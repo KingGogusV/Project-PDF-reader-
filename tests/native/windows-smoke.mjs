@@ -31,6 +31,7 @@ let overallTimer;
 let processOutput = '';
 let nativeLogPath;
 let browserLogPath;
+let stopFilePath;
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 function inside(root, target) {
@@ -56,35 +57,40 @@ function describeError(error, depth = 0) {
     stack:error.stack, cause:describeError(error.cause,depth + 1) };
 }
 async function readLaunchReport() {
-  const deadline = Date.now() + 20_000;
+  const deadline = Date.now() + 45_000;
   while (Date.now() < deadline) {
     if (report.launchError) throw new Error(report.launchError);
     try {
       const token = JSON.parse(await readFile(tokenReportPath,'utf8'));
       report.tokenLaunch = token;
-      if (token.status === 'failed') throw new Error(`Restricted native launch failed: ${token.error}`);
+      if (token.status === 'failed') throw new Error(`Standard-user native launch failed: ${token.error}`);
       if (token.status === 'launched') {
         assert.equal(token.parentPid,ownedProcess.pid,'Token report must describe this owned launcher.');
         assert.ok(Number.isInteger(token.childPid) && token.childPid > 0);
         assert.equal(token.childToken.Elevated,false);
         assert.equal(token.childToken.IntegrityRid,8192);
         assert.equal(token.childToken.AdministratorsEnabled,false);
-        assert.equal(token.childToken.SameUser,true);
+        assert.equal(token.childToken.AdministratorsPresent,false);
+        assert.equal(token.childToken.MatchesExpectedUser,true);
+        assert.equal(token.childToken.UsersEnabled,true);
+        assert.equal(token.childToken.HasRestrictions,false);
+        assert.equal(token.childToken.RestrictingSidCount,0);
+        assert.equal(token.account.createdByHelper,true);
         report.pid = token.childPid;
         return;
       }
     } catch (error) {
       if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
     }
-    if (ownedProcess.exitCode !== null) throw new Error(`Restricted launcher exited (${ownedProcess.exitCode}). ${processOutput.slice(-6000)}`);
+    if (ownedProcess.exitCode !== null) throw new Error(`Standard-user launcher exited (${ownedProcess.exitCode}). ${processOutput.slice(-6000)}`);
     await delay(100);
   }
-  throw new Error('Restricted launcher did not report a verified child within 20 seconds.');
+  throw new Error('Standard-user launcher did not report a verified child within 45 seconds.');
 }
 function runtimeDiagnostics() {
   if (!ownedProcess?.pid) return;
   const result = spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',
-    join(repo,'tests/native/windows-runtime-diagnostics.ps1'),'-OwnedPid',String(ownedProcess.pid)],
+    join(repo,'tests/native/windows-runtime-diagnostics.ps1'),'-OwnedPid',String(report.pid ?? ownedProcess.pid)],
   { windowsHide:true, timeout:10_000, encoding:'utf8', maxBuffer:256_000 });
   if (result.status !== 0 || result.error) {
     report.runtimeDiagnosticError = { status:result.status, error:describeError(result.error), output:result.stderr?.slice(-4000) };
@@ -201,6 +207,7 @@ async function workflow() {
   assert.equal(process.platform, 'win32', 'This smoke test requires Windows.');
   assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Native launch is restricted to disposable GitHub Actions runners.');
   assert.equal(process.env.CI, 'true', 'CI=true is required.');
+  assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted','Disposable GitHub-hosted runner required.');
   assert.ok(process.env.RUNNER_TEMP && process.env.FOLIO_NATIVE_EXE, 'Set RUNNER_TEMP and FOLIO_NATIVE_EXE.');
   const runnerTemp = await realpath(process.env.RUNNER_TEMP);
   const executable = await realpath(process.env.FOLIO_NATIVE_EXE);
@@ -220,14 +227,16 @@ async function workflow() {
   report.retainedProfile = profile;
   nativeLogPath = join(profile,'native-process.log');
   browserLogPath = join(profile,'webview-debug.log');
+  stopFilePath = join(output,`${basename(profile)}.stop`);
   const port = await freePort();
-  report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned restricted test process environment' };
+  report.debugging = { host: '127.0.0.1', port, scope: 'Only the owned standard-user process environment' };
   await writeFile(tokenReportPath,JSON.stringify({ status:'starting' }));
   ownedProcess = spawn('pwsh.exe', ['-NoProfile','-NonInteractive','-File',launcherScript,'-Mode','Launch'], {
     cwd: dirname(executable), shell: false, windowsHide: true, stdio: ['ignore','pipe','pipe'],
     env: { ...process.env,
       FOLIO_TOKEN_REPORT: tokenReportPath,
       FOLIO_NATIVE_LOG_PATH: nativeLogPath,
+      FOLIO_NATIVE_STOP_FILE: stopFilePath,
       RUST_BACKTRACE: '1',
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-debugging-address=127.0.0.1 --enable-logging --v=1 --log-file="${browserLogPath}"`,
       WEBVIEW2_USER_DATA_FOLDER: profile,
@@ -238,7 +247,7 @@ async function workflow() {
   const capture = data => { processOutput = (processOutput + data.toString()).slice(-256_000); };
   ownedProcess.stdout.on('data', capture); ownedProcess.stderr.on('data', capture);
   await readLaunchReport();
-  checked('installed application runs as the same user with a verified non-elevated Medium token', { pid:report.pid });
+  checked('installed application runs as the created standard user with a verified unrestricted non-elevated Medium token', { pid:report.pid });
   browser = await connect(port);
   report.webviewVersion = browser.version();
   runtimeDiagnostics();
@@ -367,6 +376,7 @@ try {
   assert.equal(process.platform, 'win32', 'Windows is required.');
   assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Refusing to launch outside GitHub Actions.');
   assert.equal(process.env.CI, 'true', 'CI=true is required.');
+  assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted','Disposable GitHub-hosted runner required.');
   await mkdir(output, { recursive:true });
   await Promise.race([workflow(), new Promise((_, reject) => {
     overallTimer = setTimeout(() => reject(new Error(`Native smoke exceeded ${OVERALL_TIMEOUT}ms.`)), OVERALL_TIMEOUT);
@@ -385,11 +395,17 @@ try {
 } finally {
   clearTimeout(overallTimer);
   if (ownedProcess?.pid && ownedProcess.exitCode === null) runtimeDiagnostics();
-  // Never use an image-name kill: only terminate the process tree this test spawned.
+  // Ask the helper to empty its owned job and remove its exact temporary account.
   if (ownedProcess?.pid && ownedProcess.exitCode === null && ownedProcess.signalCode === null) {
-    const stopped = spawnSync('taskkill.exe', ['/PID',String(ownedProcess.pid),'/T','/F'], { windowsHide:true, timeout:10_000, encoding:'utf8' });
-    report.cleanup = { ownedPid:ownedProcess.pid, status:stopped.status, output:`${stopped.stdout || ''}${stopped.stderr || ''}`.slice(0,4000) };
-    if (stopped.error || stopped.status !== 0) { report.status = 'failed'; process.exitCode = 1; }
+    await writeFile(stopFilePath,'stop');
+    const deadline = Date.now()+30_000;
+    while (ownedProcess.exitCode === null && ownedProcess.signalCode === null && Date.now()<deadline) await delay(100);
+    report.cleanup = { launcherPid:ownedProcess.pid, graceful:ownedProcess.exitCode !== null, exitCode:ownedProcess.exitCode };
+    if (ownedProcess.exitCode === null && ownedProcess.signalCode === null) {
+      const stopped=spawnSync('taskkill.exe',['/PID',String(ownedProcess.pid),'/T','/F'],{ windowsHide:true,timeout:10_000,encoding:'utf8' });
+      report.cleanup.forcedStop = { status:stopped.status,output:`${stopped.stdout || ''}${stopped.stderr || ''}`.slice(0,4000) };
+      report.status='failed'; process.exitCode=1;
+    }
   }
   if (browser) { try { await browser.close({ reason:'Native CI smoke completed; owned app process stopped.' }); } catch {} }
   if (ownedProcess?.pid) {
@@ -397,6 +413,19 @@ try {
       const token = JSON.parse(await readFile(tokenReportPath,'utf8'));
       if (token.parentPid === ownedProcess.pid) report.tokenLaunch = token;
     } catch (error) { report.finalTokenReportError = describeError(error); }
+  }
+  if (report.tokenLaunch?.account?.createdByHelper) {
+    const cleanup = report.tokenLaunch.cleanup;
+    if (ownedProcess.exitCode !== 0 || report.tokenLaunch.status === 'failed') { report.status='failed'; process.exitCode=1; }
+    if (!cleanup?.AccountRemoved || !cleanup?.ProfileUnloaded || !cleanup?.ProfileDeleted || !cleanup?.OwnedJobEmpty ||
+        !cleanup?.PrivateDesktopClosed || cleanup?.Errors?.length) {
+      report.status='failed'; process.exitCode=1;
+      // Last-resort exact-account removal after a forced helper stop; never claims profile cleanup succeeded.
+      const account=report.tokenLaunch.account;
+      const result=spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',launcherScript,'-Mode','Cleanup',
+        '-AccountName',account.name,'-AccountSid',account.sid],{ windowsHide:true,timeout:15_000,encoding:'utf8' });
+      report.fallbackAccountCleanup={ status:result.status,output:`${result.stdout || ''}${result.stderr || ''}`.slice(0,4000) };
+    }
   }
   if (nativeLogPath) {
     report.nativeOutput = await retainLog(nativeLogPath,'native-process.log',256_000);
