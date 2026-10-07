@@ -4,7 +4,7 @@ Updated: **2026-10-07 UTC**. This is specific future work, not blanket authoriza
 
 ## Critical
 
-- Preserve development native Save As receipt/no-overwrite gates and the 150 MiB input / 256 MiB output bounds. Complete actual installed Windows dialog verification before claiming the new flow works in a packaged app; packaging alone is insufficient. Tool-specific native output, manual Open-dialog navigation, macOS runtime and termination/power-loss durability remain separate work. Existing published downloads do not include the new development feature.
+- Preserve the completed development native Save As receipt/no-overwrite gates and the 150 MiB input / 256 MiB output bounds. Actual installed Windows verification passed 17 checks and eight owned OS-dialog interactions on exact source `ce62ae1` / tested merge `98e199c`; retain that source/run/artifact evidence and rerun after affected changes. Tool-specific native output, manual Open-dialog navigation, macOS runtime and termination/power-loss durability remain separate work. Existing published downloads do not include the new development feature.
 
 - Preserve the now-passing Reader, native close, exact NSIS identity and published-release gates for future versions. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
 - Keep automatic Windows installer verification separate from explicit publication. PR/main test/documentation merges must not create releases; new previews require a reviewed version/tag and exact-source manual publication request. Retain the publication policy regression tests.

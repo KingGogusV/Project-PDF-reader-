@@ -7,6 +7,7 @@
 - Added reader Save As through a Rust-owned OS dialog, bounded binary chunks, same-folder temporary staging, disk readback/hash checks and a verified receipt. Existing destinations are never replaced. Cancellation/write failure retains edits; browser download acknowledgment stays unchanged.
 - Reserved picker/save/tab-close/application-close operations to prevent duplicate work and stale callbacks. Preserved the PDF controller, original-byte prefix validation, library schema and completed-checkpoint recovery.
 - Added native adapter tests, 12 simulated native UI cases, 19 Rust safety tests and actual installed-dialog/multi-chunk checks to Windows CI. Native build jobs now require formatting and clippy on pinned Rust 1.99.0. Added only reviewed native dependencies; existing package versions remain unchanged.
+- Final implementation `ce62ae1` passed all four fresh affected workflows: 84 unit tests, 88 workflows per browser engine, core/signing suites, Windows/macOS builds and Rust checks, 17 actual installed Windows checks with verified Save As/reopen, notice/binary/checksum/extraction gates and 20 published-upgrade checks. Independent retained-artifact verification passed; the follow-up PR remains open. Earlier native helper/CSP failures and local policy gaps remain documented.
 - Public installers, release tags/assets and hosted deployment are unchanged. Current results and runtime limitations are recorded in [verification](docs/verification.md).
 
 ### Publication fix delivered

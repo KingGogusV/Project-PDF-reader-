@@ -71,9 +71,11 @@ Downloads may require GitHub access. The earlier run 37088665153 built macOS but
 stopped on Windows before compilation; the final successful run supersedes that
 failure. Subsequent Windows installation and actual reader/export/recovery checks passed as recorded below; macOS runtime, signing and notarization remain unverified.
 
-The Windows environment has WebView2 154.0.4258.53 and an isolated Rust tool cache, but lacks MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. See [verification](../docs/verification.md).
+The current Windows environment has Rust 1.99.0, MSVC 14.51.36231, Windows SDK 10.0.26100.0 and WebView2 154.0.4258.62; local compilation, linking, formatting, Rust safety tests and clippy passed. The normal-user Save As script is blocked by the existing Windows PowerShell 5.1 execution policy; it was not changed or bypassed. See exact current CI/runtime results in [verification](../docs/verification.md).
 
-The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. The corrected gate and public preview publication passed.
+In the earlier 2026-10-03 check, the Windows environment had WebView2 154.0.4258.53 and an isolated Rust tool cache but lacked MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. Those results belong to the earlier published-preview implementation.
+
+The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. The earlier published-preview gate and publication passed. The new Save As development gate passed all 17 installed checks on source `ce62ae1` / tested merge `98e199c`; its publisher was skipped, and the existing public preview does not include that feature.
 
 Official sources checked 2026-10-03:
 
@@ -83,12 +85,15 @@ Official sources checked 2026-10-03:
 - [Tauri Apache 2.0 license](https://github.com/tauri-apps/tauri/blob/dev/LICENSE-APACHE-2.0)
 
 Tauri's Rust/CLI components offer MIT OR Apache-2.0 licensing. The Windows native
-notice collector has now been run and independently checked with the committed
+notice collector was run and independently checked for the earlier published-preview
 Cargo lockfile, Rust/Cargo 1.99.0 and cargo-about 0.9.2: **226 crates, 110 original
 license texts, 24 platform records and five MPL source archives**. Independent
 verification recomputed 533 output hashes and the unchanged lockfile hash. This
 establishes notice collection; it does not establish native compilation, runtime
-correctness or publication of the planned Windows preview.
+correctness or publication by itself. The current Save As lockfile inventory is
+**234 crates, 113 original license texts, 24 platform records, five MPL source
+archives and 554 notice files**. Current installed runtime, strict notice and
+artifact verification passed separately as recorded in [verification](../docs/verification.md).
 
 `node scripts/native-notices.mjs src-tauri/generated-notices` creates the reviewed
 notices in a fresh output directory. The Windows release configuration bundles
