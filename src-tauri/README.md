@@ -1,15 +1,24 @@
 # Experimental desktop wrapper
 
-The [Windows preview](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published and its actual reader/export/recovery/OS-close checks passed locally and in CI. [Installation help](../docs/windows-installation.md) contains the direct EXE and checksum. macOS packaging passed; macOS native runtime remains unverified. Older diagnostics below describe historical sources.
+The [Windows preview](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) is published and its actual reader/export/recovery/OS-close checks passed locally and in CI. [Installation help](../docs/windows-installation.md) contains the direct EXE and checksum. The development Save As changes below are not a new public release. macOS packaging passed; macOS native runtime remains unverified. Older diagnostics below describe historical sources.
 
 This Tauri 2 shell embeds the existing `dist/client/` web app and its local PDF.js worker.
-It adds no separate document engine. Its only command, `finish_close`, is limited
-to the local main window and completes the shared save/discard flow after a native
-close request. `capabilities/default.json` grants only `allow-finish-close`;
-no filesystem, shell or network plugin is enabled. Ordinary
-HTML file inputs remain the initial opening mechanism; native file associations,
-atomic native saves, OS share sheets and automatic updates are not implemented.
+It adds no separate document engine. Five local-main-window commands implement
+verified new-copy saving and the shared save/discard close handshake. Rust owns
+the Save As dialog and its destination; JavaScript receives no filesystem,
+shell, network or dialog plugin permissions. HTML file inputs use the WebView's
+OS opening chooser. Native file associations, OS share sheets and automatic
+updates are not implemented.
 Do not register it as a default PDF handler until those lifecycle paths are tested.
+
+Reader Save As transfers at most 1 MiB per binary chunk and 256 MiB per copy,
+flushes and verifies a same-folder temporary file, publishes without replacing
+any existing path, then verifies the final disk bytes before acknowledging the
+exported revision. Cancel/error leaves changes open. Explicit cleanup failures
+are reported; abrupt termination may leave an unpublished temporary file.
+Completed device checkpoints remain recoverable, but pending edits and universal
+power-loss durability are not promised. Browser and tool-specific downloads keep
+their existing handoffs.
 
 The app identifier `app.folio.localreader` is an internal development identifier,
 not evidence of a registered product name or domain. Final release identity and
@@ -32,7 +41,7 @@ preserve it and review any dependency-resolution change. Native CI build success
 document correctness, installer trust or release readiness.
 
 `.github/workflows/native-build.yml` defines Windows and macOS jobs using Node 24,
-pnpm 11.25.0 and stable Rust. The job generates `Cargo.lock` only when absent, then
+pnpm 11.25.0 and pinned Rust 1.99.0 with rustfmt/clippy. The job generates `Cargo.lock` only when absent, then
 runs `cargo metadata --locked` followed by
 `node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis -- --locked` (Windows), or the
 same build command with `--bundles app,dmg` (macOS).
@@ -62,9 +71,11 @@ Downloads may require GitHub access. The earlier run 37088665153 built macOS but
 stopped on Windows before compilation; the final successful run supersedes that
 failure. Subsequent Windows installation and actual reader/export/recovery checks passed as recorded below; macOS runtime, signing and notarization remain unverified.
 
-The Windows environment has WebView2 154.0.4258.53 and an isolated Rust tool cache, but lacks MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. See [verification](../docs/verification.md).
+The current Windows environment has Rust 1.99.0, MSVC 14.51.36231, Windows SDK 10.0.26100.0 and WebView2 154.0.4258.62; local compilation, linking, formatting, Rust safety tests and clippy passed. The normal-user Save As script is blocked by the existing Windows PowerShell 5.1 execution policy; it was not changed or bypassed. See exact current CI/runtime results in [verification](../docs/verification.md).
 
-The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. The corrected gate and public preview publication passed.
+In the earlier 2026-10-03 check, the Windows environment had WebView2 154.0.4258.53 and an isolated Rust tool cache but lacked MSVC/Windows SDK for local compilation. The CI-built installer was checksum-verified, installed in a temporary directory and tested in the normal Windows user session. Twelve checks passed, including form/annotation export/reopen and completed-checkpoint recovery after full process termination. Both owned jobs emptied and all 533 installed notice hashes matched. Those results belong to the earlier published-preview implementation.
+
+The current reusable test is `tests/native/windows-app-smoke.mjs`; local mode requires a temporary installation, expected EXE hash and non-elevated user. CI mode uses documented executable-scoped WebView2 debugger/profile policy only on disposable elevated runners. Policy/process cleanup and actual installed/build byte identity are release gates. The earlier published-preview gate and publication passed. The new Save As development gate passed all 17 installed checks on source `ce62ae1` / tested merge `98e199c`; its publisher was skipped, and the existing public preview does not include that feature.
 
 Official sources checked 2026-10-03:
 
@@ -74,12 +85,15 @@ Official sources checked 2026-10-03:
 - [Tauri Apache 2.0 license](https://github.com/tauri-apps/tauri/blob/dev/LICENSE-APACHE-2.0)
 
 Tauri's Rust/CLI components offer MIT OR Apache-2.0 licensing. The Windows native
-notice collector has now been run and independently checked with the committed
+notice collector was run and independently checked for the earlier published-preview
 Cargo lockfile, Rust/Cargo 1.99.0 and cargo-about 0.9.2: **226 crates, 110 original
 license texts, 24 platform records and five MPL source archives**. Independent
 verification recomputed 533 output hashes and the unchanged lockfile hash. This
 establishes notice collection; it does not establish native compilation, runtime
-correctness or publication of the planned Windows preview.
+correctness or publication by itself. The current Save As lockfile inventory is
+**234 crates, 113 original license texts, 24 platform records, five MPL source
+archives and 554 notice files**. Current installed runtime, strict notice and
+artifact verification passed separately as recorded in [verification](../docs/verification.md).
 
 `node scripts/native-notices.mjs src-tauri/generated-notices` creates the reviewed
 notices in a fresh output directory. The Windows release configuration bundles

@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { execFile, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { promisify } from 'node:util';
 import { chromium, expect } from '@playwright/test';
 import { PDFDocument, PDFName } from 'pdf-lib';
 import { verifyNativeReader } from './reader-workflow.mjs';
@@ -36,17 +37,60 @@ await mkdir(join(repo,'test-results'),{recursive:true});
 const output = local ? await mkdtemp(join(repo,'test-results/native-windows-local-')) : join(repo,'test-results/native-windows');
 if (!local) await mkdir(output); // A stale report is an error, never passing evidence.
 const profile = await mkdtemp(join(temp,'FolioNativeProfile-'));
+const copies = await mkdtemp(join(temp,'FolioNativeCopies-'));
 const fixtures = join(repo,'tests/fixtures/generated');
 const report = { startedAt:new Date().toISOString(), platform:process.platform, mode:local?'local-normal-user':'hosted-ci', sourceCommit:local?null:process.env.GITHUB_SHA,
-  status:'running', executable:{path:executable,sha256:executableSha256,machine:'x64'}, retainedProfile:profile,
+  status:'running', executable:{path:executable,sha256:executableSha256,machine:'x64'}, retainedProfile:profile, retainedCopies:copies, nativeDialogs:[],
   checks:[], launches:[], requests:[], blockedExternalRequests:[], unexpectedWriteRequests:[], nativeIpcRequests:[], pageErrors:[], consoleErrors:[],
   networkScope:'Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation.' };
 const checked=(name,evidence={})=>{report.checks.push({name,status:'passed',...evidence});console.log(`PASS ${name}`)};
-let helper, browser, page, stopFile, launchReport, timer, helperOutput='', ending=false, ownedPid;
-function requestWindowClose() {
+const execFileAsync=promisify(execFile);
+let helper, browser, page, stopFile, launchReport, timer, helperOutput='', ending=false, ownedPid, mainWindowHandle;
+function requestWindowClose(captureOnly=false) {
   const result=spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-close-request.ps1'),
-    '-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable],{windowsHide:true,encoding:'utf8',timeout:10000});
+    '-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable,...(captureOnly?['-CaptureOnly']:['-MainWindowHandle',String(mainWindowHandle)])],{windowsHide:true,encoding:'utf8',timeout:10000});
+  assert.ifError(result.error);
   assert.equal(result.status,0,result.stderr || 'OS close request failed');
+  if(captureOnly)mainWindowHandle=JSON.parse(result.stdout).mainWindowHandle;
+}
+async function nativeDialog(action,destination,expectedSaveDialogHandle) {
+  if(action==='confirm-existing')assert.ok(Number.isSafeInteger(expectedSaveDialogHandle)&&expectedSaveDialogHandle>0,'Confirmation must follow a known owned Save dialog.');
+  else assert.equal(expectedSaveDialogHandle,undefined);
+  const evidence=join(output,`save-dialog-${report.nativeDialogs.length}.json`);
+  // Windows PowerShell supplies the desktop UIAutomation assemblies. No global
+  // keyboard/mouse input, production mocks, or command-selected paths are used.
+  const shell=join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
+  // Keep Node free to continue Playwright's intercepted local IPC while the OS
+  // dialog helper waits. A synchronous child can prevent that dialog opening.
+  let result;
+  try {
+    const completed=await execFileAsync(shell,['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-save-dialog.ps1'),
+    '-Mode',local?'local':'ci','-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable,'-ExpectedSha256',executableSha256,
+    '-TestRoot',copies,'-ReportPath',evidence,'-Action',action,...(destination?['-Destination',destination]:[]),
+    ...(expectedSaveDialogHandle?['-ExpectedSaveDialogHandle',String(expectedSaveDialogHandle)]:[])],
+    {windowsHide:true,encoding:'utf8',timeout:25000,maxBuffer:256000});
+    result={...completed,status:0};
+  } catch(error) {
+    result={stdout:error.stdout||'',stderr:error.stderr||'',status:Number.isInteger(error.code)?error.code:null,
+      error:Number.isInteger(error.code)?undefined:error};
+  }
+  report.nativeDialogs.push({action,evidence,status:result.status,error:result.error?.message});
+  assert.ok(!report.consoleErrors.some(message=>/\b(?:https?:\/\/ipc\.localhost|ipc:\/\/localhost)\//i.test(message)
+    && /Content Security Policy/i.test(message)), 'Packaged application CSP blocked local Tauri IPC; see retained console diagnostics.');
+  assert.ifError(result.error);
+  assert.equal(result.status,0,result.stderr || 'Owned Save As dialog interaction failed');
+  const observed=JSON.parse(result.stdout);
+  assert.equal(observed.ownedPid,ownedPid);
+  assert.equal(observed.status,'passed');
+  return observed;
+}
+async function nativeSave(path,timeout=30000) {
+  await page.locator('#export').click();
+  await nativeDialog('save',path);
+  await expect(page.locator('#export')).toBeEnabled({timeout});
+  await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(0,{timeout});
+  await expect(page.locator('#dialog')).toBeHidden();
+  return await readFile(path);
 }
 async function stopOwned() {
   if (!helper) return;
@@ -105,6 +149,7 @@ async function startOwned() {
 async function workflow() {
   await startOwned();
   const flow=await verifyNativeReader({browser,output,fixtures,report,checked}); page=flow.page;
+  requestWindowClose(true); // Pin the Folio HWND before any modal Save As dialog.
   await page.getByRole('tab',{name:/form.pdf/}).click();
   await flow.active().locator('input[name="reader_name"]').fill('Pending native close check');
   await page.locator('#page-total').click();
@@ -117,16 +162,54 @@ async function workflow() {
   checked('OS window close asks about unsaved changes and cancellation keeps edits open');
   await flow.active().locator('input[name="reader_name"]').fill('Folio Windows native recovery verified');
   await page.locator('#page-total').click();
-  const event=page.waitForEvent('download');
-  await page.locator('#export').click(); const download=await event;
-  const saved=join(output,'form-export.pdf');await download.saveAs(saved);assert.equal(await download.failure(),null);
-  const bytes=await readFile(saved); const pdf=await PDFDocument.load(bytes);
+  await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
+  await page.locator('#export').click();
+  const chooser=await nativeDialog('inspect');
+  assert.equal(chooser.dialogs.filter(dialog=>dialog.Enabled).length,1);
+  await expect(page.locator('#export')).toBeDisabled();
+  await expect(page.locator('#close-active-document')).toBeDisabled();
+  // Dispatch duplicate user actions through the real frontend handlers while the
+  // OS dialog is pending; no native IPC result or document controller is mocked.
+  await page.evaluate(()=>{
+    document.querySelector('#export').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+    document.querySelector('#open').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  });
+  requestWindowClose();requestWindowClose();
+  const stillPending=await nativeDialog('inspect');
+  assert.equal(stillPending.dialogs.length,1);
+  assert.equal(stillPending.dialogs[0].Handle,chooser.dialogs[0].Handle);
+  assert.equal(helper.exitCode,null);
+  await expect(page.locator('#dialog')).toBeHidden();
+  await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
+  await nativeDialog('cancel');
+  await expect(page.locator('#export')).toBeEnabled();
+  await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
+  assert.deepEqual(await readdir(copies),[]);
+  checked('real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files');
+
+  const existing=join(copies,'existing.pdf');await writeFile(existing,flow.originalInput);
+  await page.locator('#export').click();const existingChooser=await nativeDialog('save',existing);
+  assert.equal(existingChooser.dialogs.length,1);
+  await nativeDialog('confirm-existing',undefined,existingChooser.dialogs[0].Handle);
+  await expect(page.locator('#export')).toBeEnabled();
+  await expect(page.locator('#toast')).toHaveText('Export failed. Your changes remain open. A file or folder already has that name. Choose a new name; Folio never overwrites an existing file.');
+  await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
+  assert.deepEqual(await readFile(existing),flow.originalInput);
+  assert.deepEqual(await readdir(copies),['existing.pdf']);
+  await expect(page.locator('#dialog')).toBeHidden();
+  checked('choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open');
+
+  const saved=join(copies,'form-export-\u65e5\u672c\u8a9e-\u00e9.pdf');
+  const bytes=await nativeSave(saved); const pdf=await PDFDocument.load(bytes);
+  await writeFile(join(output,'form-export.pdf'),bytes);
   assert.deepEqual(bytes.subarray(0,flow.originalInput.length),flow.originalInput);
   assert.equal(pdf.getForm().getTextField('reader_name').getText(),'Folio Windows native recovery verified');
-  await page.getByRole('button',{name:'I saved the copy',exact:true}).click(); await flow.openPdf(saved);
+  assert.deepEqual(await readFile(join(fixtures,'form.pdf')),flow.originalInput);
+  assert.ok((await readdir(copies)).every(name=>name.endsWith('.pdf')),'Completed native writes must remove temporary files.');
+  await flow.openPdf(saved);
   await expect(flow.active().locator('input[name="reader_name"]')).toHaveValue('Folio Windows native recovery verified');
-  checked('native PDF download preserves original bytes and reopens with edited form values');
-  await page.getByRole('button',{name:'Close form-export.pdf',exact:true}).click();
+  checked('real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms', { filename:basename(saved),sha256:sha256(bytes),byteLength:bytes.length });
+  await page.getByRole('button',{name:`Close ${basename(saved)}`,exact:true}).click();
   await page.getByRole('tab',{name:/text-outline.pdf/}).click();
   await page.locator('#page-number').fill('1');await page.locator('#page-number').press('Enter');
   await page.locator('#scale').selectOption('page-fit');await page.locator('#tool-text').click();
@@ -134,17 +217,42 @@ async function workflow() {
   await layer.click({position:{x:120,y:260}});
   await layer.locator('.freeTextEditor [contenteditable="true"]').last().fill('Native annotation preserved');
   await page.locator('#tool-select').click();
-  const annotatedEvent=page.waitForEvent('download');await page.locator('#export').click();
-  const annotated=await annotatedEvent;const annotatedPath=join(output,'annotated.pdf');await annotated.saveAs(annotatedPath);
-  assert.equal(await annotated.failure(),null);
-  const annotationBytes=await readFile(annotatedPath);const annotationPdf=await PDFDocument.load(annotationBytes);
+  const annotatedPath=join(copies,'annotated.pdf');
+  const annotationBytes=await nativeSave(annotatedPath);const annotationPdf=await PDFDocument.load(annotationBytes);
+  await writeFile(join(output,'annotated.pdf'),annotationBytes);
   const entries=annotationPdf.getPage(0).node.Annots().asArray().map(ref=>annotationPdf.context.lookup(ref));
   assert.ok(entries.some(entry=>entry.get(PDFName.of('Subtype'))?.toString()==='/FreeText' && entry.get(PDFName.of('Contents'))?.decodeText()==='Native annotation preserved'));
   assert.deepEqual(annotationBytes.subarray(0,(await readFile(join(fixtures,'text-outline.pdf'))).length),await readFile(join(fixtures,'text-outline.pdf')));
-  await page.getByRole('button',{name:'I saved the copy',exact:true}).click();await flow.openPdf(annotatedPath);
+  await flow.openPdf(annotatedPath);
   await expect(flow.active().locator('.textLayer').first()).toContainText('UniqueToken1');
   checked('native text annotation exports as a PDF annotation and the saved copy reopens');
   await page.getByRole('button',{name:'Close annotated.pdf',exact:true}).click();
+
+  // A valid PDF with a deliberately unused, uncompressed catalog stream crosses
+  // eight real IPC chunk boundaries without adding a huge rendered page/fixture.
+  const largeDocument=await PDFDocument.create();
+  largeDocument.addPage([612,792]).drawText('Folio synthetic multi-chunk save verification',{x:48,y:720,size:12});
+  const padding=largeDocument.context.register(largeDocument.context.stream(new Uint8Array(8*1024*1024).fill(65)));
+  largeDocument.catalog.set(PDFName.of('FolioSyntheticPadding'),padding);
+  const largeInput=Buffer.from(await largeDocument.save({useObjectStreams:false}));
+  assert.ok(largeInput.length>8*1024*1024&&largeInput.length<150*1024*1024);
+  const largeSource=join(copies,'multichunk-source.pdf');const largeCopy=join(copies,'multichunk-copy.pdf');
+  await writeFile(largeSource,largeInput);
+  await flow.openPdf(largeSource);
+  const largeSaved=await nativeSave(largeCopy);
+  assert.deepEqual(largeSaved,largeInput,'Multi-chunk native output must preserve every original byte.');
+  assert.equal(sha256(largeSaved),sha256(largeInput));
+  assert.deepEqual(await readFile(largeSource),largeInput,'Native Save As must not modify its input.');
+  const largeParsed=await PDFDocument.load(largeSaved);
+  assert.equal(largeParsed.getPageCount(),1);assert.deepEqual(largeParsed.getPage(0).getSize(),{width:612,height:792});
+  assert.ok((await readdir(copies)).every(name=>name.endsWith('.pdf')),'Multi-chunk save must remove temporary files.');
+  await page.getByRole('button',{name:'Close multichunk-source.pdf',exact:true}).click();
+  await flow.openPdf(largeCopy);
+  await expect(flow.active().locator('.textLayer').first()).toContainText('Folio synthetic multi-chunk save verification',{timeout:30000});
+  await page.getByRole('button',{name:'Close multichunk-copy.pdf',exact:true}).click();
+  checked('real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens',{
+    byteLength:largeSaved.length,sha256:sha256(largeSaved),minimumChunkCount:Math.ceil(largeSaved.length/(1024*1024)),pageCount:largeParsed.getPageCount(),
+  });
   await page.getByRole('tab',{name:/form.pdf/}).click();
   const recoveredValue='Recovered after actual native process termination';
   await flow.active().locator('input[name="reader_name"]').fill(recoveredValue);await page.locator('#page-total').click();
@@ -159,6 +267,7 @@ async function workflow() {
     await delay(100);
   }
   assert.ok(page);page.on('pageerror',e=>report.pageErrors.push(e.message));
+  requestWindowClose(true);
   await context.route('**/*',route=>{
     const url=new URL(route.request().url());
     if(['http:','https:'].includes(url.protocol)&&!['tauri.localhost','ipc.localhost'].includes(url.hostname)){report.blockedExternalRequests.push({url:url.origin+url.pathname});return route.abort('internetdisconnected')}

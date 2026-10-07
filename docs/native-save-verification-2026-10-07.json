@@ -1,0 +1,272 @@
+{
+  "date": "2026-10-07",
+  "status": "passed-development-verification",
+  "pullRequest": "https://github.com/KingGogusV/Project-PDF-reader-/pull/4",
+  "implementationHead": "ce62ae18eb0e8966767c03d6b043d0d420e1f8ba",
+  "testedMergeSource": "98e199ccbfdc79c916a1d9281f4317990f0e246a",
+  "baseMerge": "0d089eaa42a6a1a58357dc9ce51eccb03e9c99fb",
+  "commits": [
+    "e0699993542862ecde8a2337f6e5f043013a9fc6",
+    "048f53b6d60dabc26f0e2041b2e1fb0b40ead301",
+    "defdd7ab1cce02b7eade8373bf28c7cb499fa336",
+    "911bd15fbf8fd53e2eace60043216d1aa7abb07f",
+    "470e463772be52f61735d8896249de0e0a559d87",
+    "320229cd76353b96a9c9af0b669de0e5c4ecf956",
+    "c19ab08bdc9c72832913c24da4e49566ff84b80f",
+    "ce62ae18eb0e8966767c03d6b043d0d420e1f8ba"
+  ],
+  "workflows": {
+    "reader": {
+      "id": 37615993572,
+      "status": "passed",
+      "unit": 84,
+      "failed": 0,
+      "skipped": 0,
+      "browser": {
+        "linuxChromium": 88,
+        "macosWebKit": 88
+      },
+      "core": 7,
+      "signing": 9
+    },
+    "packages": {
+      "id": 37615993567,
+      "status": "passed",
+      "windowsStatus": "passed",
+      "macosStatus": "passed",
+      "windowsRust": 19,
+      "macosRust": 17,
+      "rustFormatting": "passed",
+      "clippyWarningsDenied": "passed",
+      "windowsNSIS": "passed",
+      "macosAppAndDmg": "passed"
+    },
+    "publishedUpgrade": {
+      "id": 37615993616,
+      "status": "passed",
+      "checks": 20,
+      "ownedLaunchCleanup": 4,
+      "artifactId": 11480490022,
+      "downloadedArtifactSha256": "25922e76e93f647059234f8726ceb151064e71a05b0355ecbacb4a791229a1dc",
+      "testedMergeParents": [
+        "0d089eaa42a6a1a58357dc9ce51eccb03e9c99fb",
+        "ce62ae18eb0e8966767c03d6b043d0d420e1f8ba"
+      ]
+    },
+    "installedWindows": {
+      "id": 37615993594,
+      "status": "passed",
+      "checks": 17,
+      "nativeDialogInteractions": 8,
+      "nativeCloseConfirmed": true,
+      "publisher": "skipped",
+      "artifactId": 11480781752,
+      "downloadedArtifactSha256": "53bedcc6f8a6f749c9a3bef3c7f2bcf14d14b054f8db08056963f7b3f096ac52",
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "unexpectedWriteRequests": 0,
+      "ownedLaunchCleanup": 2,
+      "releasePayloadArtifactId": 11480411734,
+      "releasePayloadArtifactSha256": "131f44b5092c0e83066f8883c890dd002d04ac7ef7dd1acdb1da4897f8b9cb82",
+      "binaryIdentity": {
+        "builtSha256": "3a7354f04556e4a6bd6a16e2b98b20fb183c20cb96403aab81327311c80f4197",
+        "installedSha256": "001c3e2fbba3ae527da42ea6fe2821a4715ee05d4a43120e6cab897bbedce915",
+        "expectedInstalledSha256": "001c3e2fbba3ae527da42ea6fe2821a4715ee05d4a43120e6cab897bbedce915",
+        "bundleMarkerOffset": 19079058,
+        "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+      },
+      "preparedArtifacts": [
+        {
+          "name": "Folio-0.1.1-Windows-x64-Setup.exe",
+          "bytes": 18018348,
+          "sha256": "12da78d38e5d88f8b59157c30f93bc9df2400d8967bd90131d6d632c1ea0e6e9"
+        },
+        {
+          "name": "Folio-0.1.1-Third-Party-Notices.zip",
+          "bytes": 5050016,
+          "sha256": "f15e120a3b1d70d110d3e6f3b790adab3407183963426b89d60352228cb25df0"
+        }
+      ],
+      "provenanceSha256": "1d97f21480486e642b8bde15f5b24f00b898ff703052062ce2354247d693d2a8",
+      "noticeCrates": 234,
+      "originalLicenseTexts": 113,
+      "platformFiles": 24,
+      "mplSourceArchives": 5,
+      "manifestReferencedHashesVerified": 551,
+      "noticeArchiveFiles": 554,
+      "cargoLockSha256": "65164ebfafa84bcf9d0921ea308edbc1d90fc1685c0a7e53b34e1a150855a3d9",
+      "checkNames": [
+        "same-account installed app starts with isolated loopback debugging",
+        "packaged application opens without a development server",
+        "real local form PDF renders nonblank pixels and native form widgets",
+        "declining storage leaves the document library empty",
+        "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "reloading the actual native WebView restores the edited form from the device library",
+        "a second real PDF searches all three pages and navigates results",
+        "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "OS window close asks about unsaved changes and cancellation keeps edits open",
+        "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+        "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+        "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+        "native text annotation exports as a PDF annotation and the saved copy reopens",
+        "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+        "same-account installed app starts with isolated loopback debugging",
+        "full native process termination and relaunch recover the last completed form checkpoint",
+        "explicit native discard confirmation closes the real application cleanly"
+      ],
+      "confirmation": {
+        "method": "owned-task-dialog-IDYES",
+        "exactPriorSaveOwnerLinked": true,
+        "explicitBackendExistingFileRefusal": true
+      },
+      "outputs": {
+        "unicodeForm": {
+          "bytes": 9641,
+          "sha256": "b37e1e247fb30ed21b5ba13bd60ec88bd960cb83437a14e3f03b10ece16aa9d8",
+          "originalPrefixAndUnrelatedFieldsPreserved": true,
+          "independentlyParsed": true,
+          "visiblyReopened": true
+        },
+        "annotation": {
+          "bytes": 5603,
+          "sha256": "c030104eaa2df4b18501b8194516b21db85465f909d4c55230944fcba8bbb774",
+          "originalPrefixPreserved": true,
+          "freeTextPreserved": true,
+          "independentlyParsed": true,
+          "visiblyReopened": true
+        },
+        "multiChunk": {
+          "bytes": 8390034,
+          "minimumChunkCount": 9,
+          "chunkEvidence": "Derived minimum from fixed 1 MiB production/backend bounds and actual output length; per-chunk telemetry is not retained.",
+          "largeBytesRetainedInRuntimeArchive": false,
+          "pages": 1,
+          "sha256": "b6204f5ed87cc90a5754d0699f49c9c00825f186bfdfb000bae84b53a4f43fb1",
+          "exactBytesAndHash": true,
+          "independentlyParsed": true,
+          "visiblyReopened": true
+        }
+      },
+      "screenshotReview": "Retained recovered-form and process-recovery screenshots show the native Save As control, readable restored form values and recovery state.",
+      "webview2": "153.0.4234.48",
+      "platform": "Disposable GitHub-hosted Windows Server 2025; runner account with executable-scoped temporary WebView2 test policy.",
+      "blockedExternalRequests": 0,
+      "startupPollingNote": "A retained lastConnectError='fetch failed' records initial bounded debugger polling before successful connection; final runtime status and both owned-launch validations passed."
+    }
+  },
+  "local": {
+    "node": "24.19.0",
+    "pnpm": "11.25.0",
+    "msvc": "14.51.36231",
+    "windowsSDK": "10.0.26100.0",
+    "webview2": "154.0.4258.62",
+    "unit": 84,
+    "browserEdge": 88,
+    "focusedNativeSimulation": 12,
+    "formatting": "passed",
+    "typeCheck": "passed",
+    "productionBuild": "passed",
+    "cargoCheck": "passed",
+    "clippyWarningsDenied": "passed",
+    "nativeNoticeCrates": 234,
+    "originalLicenseTexts": 113,
+    "installedNoticeFileHashes": 554,
+    "noticeBundledInstaller": {
+      "bytes": 18019693,
+      "sha256": "4f9001d2c584c683012a705c3aeb5c364733aac1617925e147560765fd839797"
+    },
+    "normalUserInstalledChecksPassed": 9,
+    "normalUserSaveAs": "blocked by existing Windows PowerShell 5.1 script policy; no policy change or bypass",
+    "coreSigningHarness": "Windows Vite requests stalled before assertions; supported Linux CI passed both suites",
+    "cleanup": {
+      "appAndUninstallerRemoved": true,
+      "registrationRemoved": true,
+      "ownedJobsEmpty": true,
+      "policiesRemoved": true,
+      "remainingFolioProcesses": 0,
+      "taskDirectoriesRetained": true,
+      "directoryRemovalRejection": "Automatic approval review: blocked by policy"
+    },
+    "nativeCspTests": 5,
+    "browserPolicyAndOutputUnchanged": true,
+    "nativePolicyOnlyLocalIpc": true,
+    "nativePolicyProductionBuild": "passed",
+    "ownedDialogFixture": "passed Unicode/direct/nested controls and ownership/class/state/ambiguity negatives",
+    "rustVersion": "1.99.0",
+    "rustTests": 19,
+    "diskFailureCoverage": "Real failed file writes, readback, flush and Windows deletion; disk-full short-write/StorageFull injected without filling the physical disk.",
+    "ownedTaskDialogProbe": {
+      "status": "passed",
+      "finalGuardedHelper": true,
+      "callbackAndResult": 6,
+      "rejectedCases": 10,
+      "foregroundPreserved": true,
+      "ownedWindowsDestroyed": true
+    },
+    "normalUserEvidence": {
+      "applicationStage": "Before the native CSP correction; partial installation/reader checks only.",
+      "retainedEvidence": "Runtime log and install/uninstall/binary-identity record",
+      "originalDetailedReport": "No longer present after a later standard E2E output cleanup; do not cite it as retained."
+    }
+  },
+  "bounds": {
+    "inputBytes": 157286400,
+    "outputBytes": 268435456,
+    "chunkBytes": 1048576,
+    "rustStreamedRoundtripBytes": 157286400
+  },
+  "preservation": {
+    "publicReleases": 2,
+    "publicAssets": 8,
+    "allReleaseMetadataUnchanged": true,
+    "preparedCommitAncestryPreserved": true,
+    "pdfEngineAndJavaScriptDependenciesUnchanged": true,
+    "protectedPathsUnchanged": true,
+    "realLibraryAndNormalInstallationUntouched": true,
+    "websiteDeploymentUnchanged": true,
+    "audit": "Current implementation HEAD and remote match; no protected-path diffs; unchanged public inventory; no Folio processes, registrations or per-executable test policies. User-library preservation relies on enforced isolated profiles rather than inspecting private content."
+  },
+  "limitations": [
+    "macOS native runtime is unverified; packaging is separate evidence.",
+    "Manual Open-dialog navigation, physical printing and tool-specific native output remain outside this pass.",
+    "Forced termination may leave an unpublished temporary file or lose pending edits without a completed checkpoint.",
+    "Final flush/readback is not a universal power-loss guarantee; interrupted publication may leave an unacknowledged completed copy.",
+    "An already-open OS dialog requires user dismissal; no programmatic dialog cancellation API is assumed.",
+    "Published downloads do not contain this development feature."
+  ],
+  "lastApplicationChange": "911bd15fbf8fd53e2eace60043216d1aa7abb07f",
+  "previousInstalledFailure": {
+    "id": 37612831665,
+    "status": "failed-runtime",
+    "checksPassed": 10,
+    "publisher": "skipped",
+    "failure": "Correct existing path reached overwrite prompt; ambiguous physical ID-zero buttons and empty immediate UIA snapshot safely refused.",
+    "failureArtifactId": 11479386975,
+    "failureArtifactSha256": "40d31a83be41f89e96ab3ac4b5ac3fe93b4ee5cbc6a64085b58d7033ce48f9ca",
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "ownedCleanup": "passed"
+  },
+  "documentationFollowUp": {
+    "onlyEngineeringRecords": true,
+    "ciEvidenceAppliesToImplementationHead": true,
+    "newDocumentationHeadIndependentlyTested": false,
+    "publicationRequested": false
+  },
+  "phase1": {
+    "pullRequest": 3,
+    "status": "merged",
+    "mergeCommit": "0d089eaa42a6a1a58357dc9ce51eccb03e9c99fb",
+    "preparedCommits": [
+      "de1b19bc7f7bfa53d65cde9a6b16209685a8e328",
+      "cdecc8ed9f02e5177c67da1a11fb295e2ca87479"
+    ],
+    "freshAffectedRuns": [
+      37594932642,
+      37594932574,
+      37594932558,
+      37594932633
+    ],
+    "publisher": "skipped"
+  }
+}

@@ -1,12 +1,30 @@
 # Research record
 
+## Native Save As design - 2026-10-07
+
+**FACT:** Tauri documents `TAURI_ENV_PLATFORM` for both [CLI hook commands](https://v2.tauri.app/reference/environment-variables/#tauri-cli-hook-commands) and the two local IPC sources `ipc:` / `http://ipc.localhost` in its [CSP guide](https://v2.tauri.app/security/csp/). The native configuration already allowed those sources, but the shared HTML metadata policy intersected it with `connect-src 'self'` and blocked actual Save As in installed run 37602092673. The native-only Vite transform aligns metadata/headers with the configured native policy; normal browser HTML/headers stay unchanged. Tests require exactly one reviewed metadata policy and refuse silent policy drift.
+
+**FACT:** The official [Tauri dialog guide](https://v2.tauri.app/plugin/dialog/) supports Rust-owned OS save dialogs. [Pinned dialog 2.7.0](https://docs.rs/tauri-plugin-dialog/2.7.0/tauri_plugin_dialog/struct.FileDialogBuilder.html) supports a parent window and cancellation callback, and its [manifest](https://docs.rs/crate/tauri-plugin-dialog/2.7.0/source/Cargo.toml) is compatible with existing Tauri 2.12.1. The installed Tauri/API 2.12.1 sources document raw binary request bodies and invoke headers, permitting bounded chunks instead of JSON byte arrays.
+
+**DESIGN DECISION:** Preserve existing OS-backed HTML PDF input and the shared controller's original-byte/output validation. Add narrowly allowlisted Rust Save As commands that retain the selected destination in Rust. Grant no JavaScript dialog or filesystem plugin permissions. Save only a new copy; reject existing files even after an OS overwrite prompt.
+
+**FACT:** Microsoft's [CBN_EDITCHANGE](https://learn.microsoft.com/en-us/windows/win32/controls/cbn-editchange) and [WM_COMMAND](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) document a ComboBox notification to its immediate parent, carrying the control ID, notification code and exact ComboBox HWND. [WM_SETTEXT](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-settext) documents displayed text changes without promising synchronization of a shell dialog's filename model. The pinned Windows dialog backend leaves the Save dialog's default overwrite prompt enabled.
+
+**INFERENCE:** Installed run 37610271900 showed exact visible filename readback followed by a successful receipt for the default filename, so visible text alone did not update that shell dialog's selected filename. The test-only modern fallback needs the narrowly owned ComboBox change notification; its actual correctness requires a new installed run. Do not relax the existing-file assertion or infer an immediate refusal from a missing overwrite prompt.
+
+**FACT:** Microsoft's [TDM_CLICK_BUTTON](https://learn.microsoft.com/en-us/windows/win32/controls/tdm-click-button) accepts a semantic button ID on the Task Dialog root; the handler result is ignored, and a callback can prevent closure. [TaskDialogIndirect](https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-taskdialogindirect) documents common Yes/No button results and an explicit parent window. An independent offscreen owned TaskDialogIndirect probe reproduced the observed two physical Button controls with ID zero: sending semantic IDYES 6 to its root produced callback/result 6 and destroyed the prompt, with foreground state preserved.
+
+**DESIGN DECISION:** The test-only existing-file confirmation fallback must link the prompt to the exact prior synthetic Save dialog HWND, require that owner to be visible and disabled, and revalidate the sole enabled owned root and observed control structure. Never select an ID-zero child by name/order. Bound semantic message delivery and require prompt disappearance; all application refusal, original-byte and dirty-state assertions remain mandatory. Actual installed evidence remains separate from the owned probe.
+
+**FACT:** [`NamedTempFile::persist_noclobber`](https://docs.rs/tempfile/3.27.0/tempfile/struct.NamedTempFile.html#method.persist_noclobber) preserves an existing destination. Its [Windows implementation](https://docs.rs/crate/tempfile/3.27.0/source/src/file/imp/windows.rs) uses a move without replacement. Explicit write/disk checks and flushing still matter; this API does not promise universal atomicity or power-loss durability. Abrupt termination may retain an unpublished temporary file. Actual implementation/test evidence is recorded in verification rather than inferred from documentation.
+
 ## Explicit release publication - 2026-10-07
 
 **FACT:** GitHub documents typed `workflow_dispatch` inputs, with boolean values preserved in the `inputs` context and represented as strings in `github.event.inputs`. Branch/path filters control automatic runs. References: [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [manual workflow runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 
 **DESIGN DECISION:** Preserve automatic installer verification while requiring an explicit manual main publication request with a full matching source SHA. Independently enforce the event payload in the publisher before network access; check immutable tag conflicts before waiting for Reader checks/artifacts. Keep all existing source, native-runtime, notice and digest gates.
 
-**UNRESOLVED:** A future new-version publication still needs coherent version/tag/allowlist updates and all release gates. This automation-only change does not publish or replace the current preview. This Work session blocks GitHub mutation approval and direct outbound Git access; remote CI and merging PR #3 remain pending. See [verification](docs/verification.md).
+**UNRESOLVED:** A future new-version publication still needs coherent version/tag/allowlist updates and all release gates. This automation-only change does not publish or replace the current preview. The earlier access-blocked session was resolved by a subsequent session; PR #3 merged after fresh CI. See [verification](docs/verification.md).
 
 ## Windows installer upgrade - 2026-10-07
 

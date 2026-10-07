@@ -45,6 +45,10 @@ The static client builds to `dist/client`; the account worker is built separatel
 
 `src/platform/browser.ts` owns file selection, downloads, print handoff and bounded recent metadata. Downloads report initiation, not disk completion. Print reserves a window during user activation and offers a local PDF to the browser's native viewer or download route. Physical printers and platform share sheets remain separate verification gates. Browser selection/clipboard and native text editing retain platform conventions.
 
+`src/platform/native-save.ts` sends an immutable validated reader snapshot to four narrowly scoped save commands; `finish_close` is the fifth native command. Rust alone chooses the destination through an owned OS dialog; IPC accepts no destination path. Chunks are binary and at most 1 MiB, with exact offsets, total length and SHA-256. Save output is capped at 256 MiB; the unchanged reader input cap is 150 MiB. A same-folder temporary file is flushed and read back before no-clobber publication, then the final file is read back before returning its filename, size and hash. Every existing destination is refused, including a file created during the transfer. Neither dialog nor filesystem plugin permissions are exposed to JavaScript.
+
+The shell reserves opening before awaiting the picker and coalesces competing open/save/close requests. Rust reserves save selection, write work and final close separately, invalidates stale work on page reload/exit, and refuses close during a pending save. Normal cancellation/error cleanup failures are surfaced. Abrupt termination can leave an unpublished `.folio-save-*.tmp` file and lose edits without a completed device checkpoint; no universal crash or power-loss durability is claimed.
+
 ## Document Controller and Lifecycle
 
 `src/core/document-controller.ts` owns retained original bytes, loading/document proxies, viewer/link/find/editor managers, restrictions, dirty/revision state and serialized output.
@@ -75,7 +79,7 @@ Annotation undo/redo delegates to PDF.js. Browser field/text editing keeps its n
 
 All serialization goes through one controller queue. It takes an immutable storage snapshot, serializes supported changes, requires the exact original byte prefix, reopens output, checks page count/relevant geometry and verifies changed form values and annotation objects. Failure retains live edits and yields no successful output.
 
-`exportBytes` tracks the exported snapshot; user acknowledgment marks only that version saved. Later edits remain dirty. `createCheckpoint` returns validated bytes/revision without acknowledging a save, and refuses unfinished editor/stroke states. Read-only output preserves original bytes. Prefix/object checks are complemented by fixture, browser and independent-reader tests; they do not establish universal visual fidelity.
+`exportBytes` tracks the exported snapshot; browser user acknowledgment or a matching native disk receipt marks only that version saved. Later edits remain dirty. `createCheckpoint` returns validated bytes/revision without acknowledging a save, and refuses unfinished editor/stroke states. Read-only output preserves original bytes. Prefix/object checks are complemented by fixture, browser and independent-reader tests; they do not establish universal visual fidelity.
 
 There is no native atomic overwrite path. Neither downloads nor device checkpoints replace an external original file.
 
@@ -135,13 +139,13 @@ The account worker adds CSP and response headers; development/preview and native
 
 ## Native Integration
 
-`src-tauri/` embeds the same client with Windows WebView2/macOS WKWebView. Configured targets are NSIS, app and DMG; the only custom command is `finish_close`, permission-scoped to the local main window. No filesystem/shell/network plugins are enabled. Native menus, file associations, atomic saves, signing/notarization, updates and share sheets are absent.
+`src-tauri/` embeds the same client with Windows WebView2/macOS WKWebView. Configured targets are NSIS, app and DMG. Five custom commands are scoped to the local main window: four bounded Save As operations and `finish_close`. Rust uses the native dialog library; no JavaScript filesystem/shell/network/dialog plugin permissions are granted. Native menus, associations, signing/notarization, updates and share sheets remain absent.
 
-An isolated Rust tool cache exists, while missing MSVC/Windows SDK block local compilation. Normal-user execution of the checksum-verified CI installer passed; local SDKs are not runtime prerequisites. Remote CI successfully built Windows NSIS and macOS app/DMG packages using the retained Cargo lockfile; upgraded macOS WebKit browser CI also passed. Native custom-origin workers, downloads/popups, account flow and offline behavior require their own tests even after compilation. See `src-tauri/README.md`.
+Local Rust/MSVC/SDK compilation and NSIS installer creation now pass; earlier missing-prerequisite results are historical. Remote CI also builds Windows NSIS and macOS app/DMG using the retained Cargo lockfile. Actual native workers, output, account flow and offline behavior need runtime checks after packaging. Normal-user Windows results and elevated disposable-runner results remain separate; local compiler SDKs are not runtime prerequisites. See `src-tauri/README.md` and the current verification record.
 
 ### Native Close Safety
 
-An actual Windows close request bypassed browser `beforeunload` and exited with dirty forms. Rust now prevents main-window `CloseRequested` and dispatches a fixed local event. `src/platform/native-close.ts` coalesces requests; the shared UI activates each document and uses the existing export/keep/discard workflow. Cancel, active dialogs, ongoing open/export work and recovery failures leave the app open. Only after every tab safely closes may the local main window invoke `finish_close`, which destroys that same window without another close request. AppManifest generates the command ACL; the capability grants only `allow-finish-close`. No document bytes cross this command.
+An actual Windows close request bypassed browser `beforeunload` and exited with dirty forms. Rust prevents main-window `CloseRequested` and dispatches a fixed local event. `src/platform/native-close.ts` coalesces requests; the shared UI activates each document and uses the existing export/keep/discard workflow. Cancel, active dialogs, ongoing open/export work and recovery failures leave the app open. Only after every tab safely closes may the local main window invoke `finish_close`, which reserves backend close state and destroys that same window without another close request. AppManifest generates the five-command ACL. No document bytes cross the close command.
 
 `@tauri-apps/api` 2.12.1 is pinned, with original dual MIT/Apache license texts copied into the build. Browser execution remains guarded by `isTauri()`. Unit tests cover request races/failures; browser tests explicitly simulate IPC to verify shared UI, while the native release gate sends real OS close messages and requires both cancel-preservation and confirmed clean exit. Native verification passed all 14 cases locally and in CI. Forced termination still relies on completed opt-in checkpoints.
 
