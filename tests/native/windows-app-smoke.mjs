@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { execFile, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { promisify } from 'node:util';
 import { chromium, expect } from '@playwright/test';
 import { PDFDocument, PDFName } from 'pdf-lib';
 import { verifyNativeReader } from './reader-workflow.mjs';
@@ -43,6 +44,7 @@ const report = { startedAt:new Date().toISOString(), platform:process.platform, 
   checks:[], launches:[], requests:[], blockedExternalRequests:[], unexpectedWriteRequests:[], nativeIpcRequests:[], pageErrors:[], consoleErrors:[],
   networkScope:'Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation.' };
 const checked=(name,evidence={})=>{report.checks.push({name,status:'passed',...evidence});console.log(`PASS ${name}`)};
+const execFileAsync=promisify(execFile);
 let helper, browser, page, stopFile, launchReport, timer, helperOutput='', ending=false, ownedPid, mainWindowHandle;
 function requestWindowClose(captureOnly=false) {
   const result=spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-close-request.ps1'),
@@ -51,16 +53,27 @@ function requestWindowClose(captureOnly=false) {
   assert.equal(result.status,0,result.stderr || 'OS close request failed');
   if(captureOnly)mainWindowHandle=JSON.parse(result.stdout).mainWindowHandle;
 }
-function nativeDialog(action,destination) {
+async function nativeDialog(action,destination) {
   const evidence=join(output,`save-dialog-${report.nativeDialogs.length}.json`);
   // Windows PowerShell supplies the desktop UIAutomation assemblies. No global
   // keyboard/mouse input, production mocks, or command-selected paths are used.
   const shell=join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
-  const result=spawnSync(shell,['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-save-dialog.ps1'),
+  // Keep Node free to continue Playwright's intercepted local IPC while the OS
+  // dialog helper waits. A synchronous child can prevent that dialog opening.
+  let result;
+  try {
+    const completed=await execFileAsync(shell,['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-save-dialog.ps1'),
     '-Mode',local?'local':'ci','-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable,'-ExpectedSha256',executableSha256,
     '-TestRoot',copies,'-ReportPath',evidence,'-Action',action,...(destination?['-Destination',destination]:[])],
     {windowsHide:true,encoding:'utf8',timeout:25000,maxBuffer:256000});
+    result={...completed,status:0};
+  } catch(error) {
+    result={stdout:error.stdout||'',stderr:error.stderr||'',status:Number.isInteger(error.code)?error.code:null,
+      error:Number.isInteger(error.code)?undefined:error};
+  }
   report.nativeDialogs.push({action,evidence,status:result.status,error:result.error?.message});
+  assert.ok(!report.consoleErrors.some(message=>/\b(?:https?:\/\/ipc\.localhost|ipc:\/\/localhost)\//i.test(message)
+    && /Content Security Policy/i.test(message)), 'Packaged application CSP blocked local Tauri IPC; see retained console diagnostics.');
   assert.ifError(result.error);
   assert.equal(result.status,0,result.stderr || 'Owned Save As dialog interaction failed');
   const observed=JSON.parse(result.stdout);
@@ -70,7 +83,7 @@ function nativeDialog(action,destination) {
 }
 async function nativeSave(path,timeout=30000) {
   await page.locator('#export').click();
-  nativeDialog('save',path);
+  await nativeDialog('save',path);
   await expect(page.locator('#export')).toBeEnabled({timeout});
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(0,{timeout});
   await expect(page.locator('#dialog')).toBeHidden();
@@ -148,7 +161,7 @@ async function workflow() {
   await page.locator('#page-total').click();
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
   await page.locator('#export').click();
-  const chooser=nativeDialog('inspect');
+  const chooser=await nativeDialog('inspect');
   assert.equal(chooser.dialogs.filter(dialog=>dialog.Enabled).length,1);
   await expect(page.locator('#export')).toBeDisabled();
   await expect(page.locator('#close-active-document')).toBeDisabled();
@@ -159,20 +172,20 @@ async function workflow() {
     document.querySelector('#open').dispatchEvent(new MouseEvent('click',{bubbles:true}));
   });
   requestWindowClose();requestWindowClose();
-  const stillPending=nativeDialog('inspect');
+  const stillPending=await nativeDialog('inspect');
   assert.equal(stillPending.dialogs.length,1);
   assert.equal(stillPending.dialogs[0].Handle,chooser.dialogs[0].Handle);
   assert.equal(helper.exitCode,null);
   await expect(page.locator('#dialog')).toBeHidden();
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
-  nativeDialog('cancel');
+  await nativeDialog('cancel');
   await expect(page.locator('#export')).toBeEnabled();
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
   assert.deepEqual(await readdir(copies),[]);
   checked('real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files');
 
   const existing=join(copies,'existing.pdf');await writeFile(existing,flow.originalInput);
-  await page.locator('#export').click();nativeDialog('save',existing);nativeDialog('confirm-existing');
+  await page.locator('#export').click();await nativeDialog('save',existing);await nativeDialog('confirm-existing');
   await expect(page.locator('#export')).toBeEnabled();
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
   assert.deepEqual(await readFile(existing),flow.originalInput);

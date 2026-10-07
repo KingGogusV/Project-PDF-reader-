@@ -2,6 +2,8 @@
 
 ## Native Save As design - 2026-10-07
 
+**FACT:** Tauri documents `TAURI_ENV_PLATFORM` for both [CLI hook commands](https://v2.tauri.app/reference/environment-variables/#tauri-cli-hook-commands) and the two local IPC sources `ipc:` / `http://ipc.localhost` in its [CSP guide](https://v2.tauri.app/security/csp/). The native configuration already allowed those sources, but the shared HTML metadata policy intersected it with `connect-src 'self'` and blocked actual Save As in installed run 37602092673. The native-only Vite transform aligns metadata/headers with the configured native policy; normal browser HTML/headers stay unchanged. Tests require exactly one reviewed metadata policy and refuse silent policy drift.
+
 **FACT:** The official [Tauri dialog guide](https://v2.tauri.app/plugin/dialog/) supports Rust-owned OS save dialogs. [Pinned dialog 2.7.0](https://docs.rs/tauri-plugin-dialog/2.7.0/tauri_plugin_dialog/struct.FileDialogBuilder.html) supports a parent window and cancellation callback, and its [manifest](https://docs.rs/crate/tauri-plugin-dialog/2.7.0/source/Cargo.toml) is compatible with existing Tauri 2.12.1. The installed Tauri/API 2.12.1 sources document raw binary request bodies and invoke headers, permitting bounded chunks instead of JSON byte arrays.
 
 **DESIGN DECISION:** Preserve existing OS-backed HTML PDF input and the shared controller's original-byte/output validation. Add narrowly allowlisted Rust Save As commands that retain the selected destination in Rust. Grant no JavaScript dialog or filesystem plugin permissions. Save only a new copy; reject existing files even after an OS overwrite prompt.
