@@ -4,6 +4,8 @@ Updated: **2026-10-07 UTC**. This records implemented development architecture, 
 
 ## Published Installer Upgrade Contract
 
+Windows installer verification and release publication are separate responsibilities. Automatic PR/main events can build and exercise the installer with read-only repository permissions. Only an explicit `workflow_dispatch` on this repository's `main`, with `publish=true` and full `expected_source_sha` matching the run, can enter the write-permission publication job. The publisher independently reads and validates the event payload, checks immutable tag identity early, and retains all installed-app, exact-source Reader, artifact and checksum gates. A verification run never creates or modifies a public release.
+
 `tests/native/windows-upgrade.mjs` tests the existing hash-pinned installers in a fresh temporary installation and synthetic guest WebView2 profile. It parses completed checkpoints, restarts 0.1.0 to confirm durable storage, upgrades the same installation, compares all IndexedDB stores/preferences, then checks visible edits, exact-byte exports and another restart. Exact requested tabs and visible export confirmation are readiness requirements; previously rendered pages and emitted downloads alone are insufficient.
 
 The existing owned-job harness validates profile, runtime, debugger port and cleanup. The installer guard refuses occupied/reparse targets, existing Folio installations/processes, wrong digests and unrelated registration. Local restricted sessions fail before installation if CIM inspection or HKCU writes are unavailable. CI mode is limited to this repository's disposable runners and retains its elevation boundary. No application privilege, runtime dependency or storage migration was added.

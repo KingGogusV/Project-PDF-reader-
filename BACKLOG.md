@@ -1,10 +1,11 @@
 # Backlog
 
-Updated: **2026-10-03 UTC**. This is specific future work, not blanket authorization for unlimited expansion. Implemented recovery, account registration, OCR, safe page operations, certificate signing and the native wrapper are described in PROJECT/ARCHITECTURE; they are not listed as wholly unimplemented here. Exact current verification remains in [verification](docs/verification.md).
+Updated: **2026-10-07 UTC**. This is specific future work, not blanket authorization for unlimited expansion. Implemented recovery, account registration, OCR, safe page operations, certificate signing and the native wrapper are described in PROJECT/ARCHITECTURE; they are not listed as wholly unimplemented here. Exact current verification remains in [verification](docs/verification.md).
 
 ## Critical
 
 - Preserve the now-passing Reader, native close, exact NSIS identity and published-release gates for future versions. Preserve their source/run/artifact provenance and rerun affected gates after consequential changes.
+- Keep automatic Windows installer verification separate from explicit publication. PR/main test/documentation merges must not create releases; new previews require a reviewed version/tag and exact-source manual publication request. Retain the publication policy regression tests.
 - Complete actual managed sign-in, registration and sign-out. Live anonymous responses, spoofed-header refusal and redirect to the identity provider passed; those checks do not establish a complete account session. Never expose the account worker behind a dispatcher that trusts client headers.
 - The live D1 accounts table is confirmed. Verify real registration/capacity/outage behavior without disrupting existing accounts and document operational backup/recovery. Local SQLite/mock identity checks do not establish deployed account sessions or concurrent load.
 - Preserve save/recovery regression gates: immutable input, pending editor/stroke handling, asynchronous snapshot races, explicit export acknowledgment, ResetForm restrictions, duplicate widgets/radios, per-tab position, quota failures and revision conflicts.

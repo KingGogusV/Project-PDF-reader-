@@ -2,6 +2,12 @@
 
 ## 2026-10-07
 
+### Explicit Windows release publication
+
+- Separated automatic installer verification from publication. Pull requests and matching main pushes retain their read-only installed-app/artifact checks; publication now requires an explicit main-branch manual dispatch with a full matching source SHA. Default manual runs verify only.
+- Added an independent publisher policy and seven regression tests covering accidental triggers, malformed inputs, wrong branches/repositories, stale source confirmation and immutable-tag conflicts before network activity or writes.
+- Added previously missing application/build-input paths to automatic installed-reader verification. Retained exact-source Reader checks, notices, binary/artifact/checksum validation and immutable assets. Application behavior and public release identities are unchanged.
+
 ### Windows upgrade preservation
 
 - Added pinned published-installer downloads, guarded installation, a synthetic recovery test and read-only GitHub verification workflow. Twenty upgrade/reopen/export/restart checks passed on disposable Windows Server 2025 CI.

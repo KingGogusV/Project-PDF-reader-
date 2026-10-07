@@ -1,5 +1,13 @@
 # Research record
 
+## Explicit release publication - 2026-10-07
+
+**FACT:** GitHub documents typed `workflow_dispatch` inputs, with boolean values preserved in the `inputs` context and represented as strings in `github.event.inputs`. Branch/path filters control automatic runs. References: [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [manual workflow runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
+
+**DESIGN DECISION:** Preserve automatic installer verification while requiring an explicit manual main publication request with a full matching source SHA. Independently enforce the event payload in the publisher before network access; check immutable tag conflicts before waiting for Reader checks/artifacts. Keep all existing source, native-runtime, notice and digest gates.
+
+**UNRESOLVED:** A future new-version publication still needs coherent version/tag/allowlist updates and all release gates. This automation-only change does not publish or replace the current preview. This Work session blocks GitHub mutation approval and direct outbound Git access; remote CI and merging PR #3 remain pending. See [verification](docs/verification.md).
+
 ## Windows installer upgrade - 2026-10-07
 
 **FACT:** Anonymous downloads of the existing 0.1.0 and 0.1.1 installers matched recorded digests. [Run 37583640160](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640160) passed 20 upgrade/recovery checks with those exact executables. The evidence ZIP digest, before/after stores and actual exported PDFs were independently rechecked. Environment: elevated Windows Server 2025 CI, WebView2 153.0.4234.48, isolated guest profile.

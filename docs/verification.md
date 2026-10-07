@@ -2,6 +2,14 @@
 
 Updated 2026-10-07 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
+## Release publication safeguards - 2026-10-07
+
+Local verification passed 70 unit/fixture cases (zero failures/skips), including seven publication-policy cases, plus all eight hostile-release-extraction tests, TypeScript checks and publisher syntax checks. The workflow parsed as YAML with unique keys; a static check covered eight publication-condition cases, ten push-path cases and read/write permission separation. This checks the condition's simple equality/conjunction subset, not a full GitHub Actions emulator. CLI regressions use a network trap: push/PR/default/stale dispatch requests fail before any API call; an explicit request with a conflicting immutable tag stops at the first read-only tag check. The first Windows CLI test attempt exposed an ESM path issue in the new test's preload argument; using a file URL corrected the harness, then all tests passed.
+
+Automatic installer verification is retained; ordinary documentation-only main pushes do not match its paths. Manual dispatch defaults to verification only. Publication requires an explicit main request with `publish=true` and an exact full `expected_source_sha`; the publisher independently validates the event payload. Existing Reader/native/binary/notice/artifact/checksum gates remain mandatory. Remote CI and PR merge are pending at this record's implementation milestone; subsequent results will be recorded separately. No new release or website deployment is required for this automation/test-only change.
+
+Delivery is blocked in this session: the GitHub tree write returned `MCP tool call requires approval, but approval policy is never`; direct portable-Git access could not connect to `github.com:443`. No remote branch was updated and PR #3 remains open. The local fix is based on PR #3's unchanged head `5ac4a1c1ed7dcbe0432de27f4248df30fa1e0736`. Push the prepared local fix to that PR branch, then require successful affected CI before merging. Do not merge the old PR head until the publication fix is included. Local results do not establish new remote CI success.
+
 ## Published Windows upgrade preservation - 2026-10-07
 
 [Run 37583640160](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640160) passed **20 checks** for PR head `0e56b6b11b912a9f044f568c32b67515d3a3984f`, tested merge `19080312d057514438327a4cfb8e26051cbff3a0`. Actual published installer/executable hashes matched provenance. Three synthetic guest PDFs retained originals, two unexported form/annotation checkpoints, complete records and durable preferences. All three visibly reopened and exported exact stored bytes; another full restart retained them. Owned jobs, exact CI policy values and uninstall registration/executable cleanup passed.

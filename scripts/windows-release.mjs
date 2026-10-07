@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { verifyNsisBinaryIdentity } from './native-binary-identity.mjs';
+import { assertPublicationRequest } from './windows-release-policy.mjs';
 
 const repository = 'KingGogusV/Project-PDF-reader-';
 const tag = 'v0.1.1-preview.1';
@@ -97,12 +98,17 @@ async function verifyTag(allowMissing) {
 
 async function publish() {
   requireCI();
-  if (!token || process.env.GITHUB_REF !== 'refs/heads/main' || process.env.GITHUB_EVENT_NAME === 'pull_request') throw new Error('Publication is restricted to main with a scoped token.');
+  const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8'));
+  assertPublicationRequest(process.env, event);
+  if (!token) throw new Error('Publication requires a scoped token.');
+  // Refuse an existing tag at another source before waiting for checks or
+  // downloading artifacts. The later checks still protect publication races.
+  await verifyTag(true);
   const readerRun = await requireReaderChecks();
   const runId = Number(process.env.GITHUB_RUN_ID);
   if (!Number.isSafeInteger(runId) || runId <= 0) throw new Error('Invalid workflow run.');
   const run = await (await api(`/actions/runs/${runId}`)).json();
-  if (run.head_sha !== revision || run.head_branch !== 'main' || run.repository?.full_name !== repository) throw new Error('Workflow source provenance mismatch.');
+  if (run.head_sha !== revision || run.head_branch !== 'main' || run.event !== 'workflow_dispatch' || run.repository?.full_name !== repository) throw new Error('Workflow source provenance mismatch.');
   const list = await (await api(`/actions/runs/${runId}/artifacts?per_page=100`)).json();
   const artifact = list.artifacts?.find(a => a.name === `folio-windows-release-${runId}` && !a.expired);
   if (!artifact || artifact.workflow_run?.head_sha !== revision || !/^sha256:[a-f0-9]{64}$/.test(artifact.digest || '') || artifact.size_in_bytes > 300 * 1024 * 1024) throw new Error('Missing source-matched artifact digest or oversized archive.');

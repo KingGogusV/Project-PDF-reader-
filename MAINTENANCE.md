@@ -136,6 +136,12 @@ The inspected Windows environment has an isolated Rust tool cache but lacks MSVC
 
 ## Windows Download Release Pipeline
 
+Automatic pull-request and matching main-push runs **verify only**: they build the installer, exercise the installed application, prepare checksummed files and retain artifacts. Ordinary documentation-only main pushes do not match the Windows workflow's paths. Test/harness changes can merge without attempting to publish an unchanged application or reuse an immutable release tag. Application/build-input paths also trigger installed-reader verification.
+
+To deliberately publish a future preview, first update the application version, release tag, names, notes and extractor allowlist coherently and merge the reviewed change. In GitHub Actions, open **Windows download release**, choose **Run workflow** on `main`, select `publish`, and provide the full reviewed commit in `expected_source_sha`. Leave `publish` unchecked for verification-only manual runs. The workflow and publisher independently require an explicit publication dispatch on this repository's main branch with an exact matching SHA. A moved branch requires reviewing the new source; never substitute a short SHA or bypass that check.
+
+Publication still requires successful Reader **push** checks on that exact main revision; do not use `[skip ci]` for a source intended for publication. Installer verification and artifact/source/digest/notice checks remain mandatory. The current already-published tag cannot be republished from a different commit: the publisher refuses that conflict before waiting for Reader checks or downloading artifacts. Future releases need new immutable version/tag identities; this change does not create a new release.
+
 The published unsigned x64 prerelease is [`v0.1.1-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1). Native reader/close, strict packaging identity and publication gates passed. Reproduce the build with:
 
 ```sh
@@ -239,4 +245,4 @@ The download helper verifies fixed published installer digests; the test also ve
 
 `.github/workflows/windows-upgrade.yml` runs the same check with `--ci` only on this repository's disposable GitHub-hosted Windows runner. CI uses the existing per-executable WebView2 overrides and owned-job cleanup. Never spoof CI environment variables locally. Reports and synthetic outputs live in `test-results/native-windows-upgrade-*`; Playwright can clear `test-results`, so copy important evidence before running a separate browser suite. The owned uninstaller uses `/UPDATE` to avoid deleting application data; synthetic profiles remain for inspection. Installer-location hints may remain, so use a disposable session for installation tests.
 
-This is a test-only path. Do not rebuild/publish a new release or replace existing tags/assets for an unchanged application. Review native-workflow changes through a PR; the existing main-branch Windows release workflow also matches `tests/native/**`.
+This is a test-only path. Do not publish a new release or replace existing tags/assets for an unchanged application. Review native-workflow changes through a PR; matching `tests/native/**` main pushes verify the installer but cannot publish. The explicit publication policy has regression coverage in `tests/unit/windows-release-policy.test.mjs`.
