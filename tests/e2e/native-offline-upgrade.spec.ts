@@ -69,18 +69,23 @@ for (const delayedInstallation of [false, true]) {
       fixture.upgrade();
       // A fresh page in the same persisted context still gets the old shell,
       // proving that changing server assets alone does not repair this upgrade.
-      await page.close();
       const stale = await context.newPage();
       await stale.goto(fixture.origin);
+      // Incognito WebKit can drop CacheStorage response backing and alter
+      // unregister/install settlement when its last same-origin client closes. Keep a live
+      // client across fresh-page replacements so this test isolates retirement,
+      // rather than changing the stored baseline before startup even runs.
+      // Real persistent-profile process restarts have a separate Windows gate.
+      await page.close();
       await expect(stale.locator('#legacy-shell')).toBeVisible();
       expect(await stale.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+      expect(await snapshotUserStorage(stale)).toEqual(before);
       if (delayedInstallation) {
         fixture.delayNextInstallation();
         await stale.evaluate(async () => { await (await navigator.serviceWorker.getRegistration('/'))!.update(); });
         await expect.poll(() => fixture.installationGateRequests).toBe(1);
         expect(await stale.evaluate(async () => (await navigator.serviceWorker.getRegistration('/'))?.installing?.state)).toBe('installing');
       }
-      await stale.close();
       const native = await context.newPage();
       native.on('pageerror', error => errors.push(error.message));
       native.on('request', request => nativeRequests.push(new URL(request.url()).pathname));
@@ -123,7 +128,166 @@ for (const delayedInstallation of [false, true]) {
         currentNativeInterface: true, noNativeWorkerRegistration: true, exactUserStoragePreserved: true,
         foreignWorkerPreserved: true, staticShellCachesRetired: true, noReload: true,
       }), contentType: 'application/json' });
+      await stale.close();
       await native.close();
     } finally { await fixture.stop(); }
   });
 }
+
+test('a detached owned installation settles before retirement or reaches the safe startup deadline', async ({ page, context, baseURL, browserName }, testInfo) => {
+  if (!baseURL) throw new Error('The production preview URL is required.');
+  const fixture = await nativeUpgradeOrigin(baseURL);
+  const nativeRequests: string[] = [];
+  const errors: string[] = [];
+  try {
+    await page.goto(fixture.origin);
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      const foreign = await caches.open('synthetic-user-cache');
+      await foreign.put('/synthetic-user-record', new Response('synthetic record retained'));
+    });
+    await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+    expect(await page.evaluate(async () => (await (await caches.open('synthetic-user-cache')).keys()).length)).toBe(1);
+    fixture.upgrade();
+    // This separate control deliberately reproduces the zero-client interval.
+    // WebKit loses the foreign response BEFORE native cleanup; do not claim that
+    // this control preserves a baseline that its ephemeral context already lost.
+    await page.close();
+    const stale = await context.newPage();
+    await stale.goto(fixture.origin);
+    await expect(stale.locator('#legacy-shell')).toBeVisible();
+    const beforeNativeForeignCount = await stale.evaluate(async () => (await (await caches.open('synthetic-user-cache')).keys()).length);
+    expect(beforeNativeForeignCount).toBe(browserName === 'webkit' ? 0 : 1);
+    fixture.delayNextInstallation();
+    await stale.evaluate(async () => { await (await navigator.serviceWorker.getRegistration('/'))!.update(); });
+    await expect.poll(() => fixture.installationGateRequests).toBe(1);
+    expect(await stale.evaluate(async () => (await navigator.serviceWorker.getRegistration('/'))?.installing?.state)).toBe('installing');
+    await stale.close();
+    const native = await context.newPage();
+    native.on('request', request => nativeRequests.push(new URL(request.url()).pathname));
+    native.on('pageerror', error => errors.push(error.message));
+    await native.addInitScript(() => {
+      const scope = window as Window & { isTauri?: boolean;
+        nativeDetachedObservation?: () => { states: string[]; unregisterStarted: number; unregisterFinished: number;
+          listenerCount: number; deletedCaches: string[]; closeCalls: string[] };
+        __TAURI_INTERNALS__?: { invoke(command: string): Promise<void> } };
+      scope.isTauri = true;
+      const workers = new Set<ServiceWorker>();
+      const tracked = new WeakSet<EventTarget>();
+      const listeners = new Map<EventTarget, Set<EventListenerOrEventListenerObject | null>>();
+      const deletedCaches: string[] = [];
+      const closeCalls: string[] = [];
+      let unregisterStarted = 0;
+      let unregisterFinished = 0;
+      scope.__TAURI_INTERNALS__ = { async invoke(command) {
+        if (command !== 'finish_close') throw new Error('Unexpected synthetic native command');
+        closeCalls.push(command);
+        if (closeCalls.length === 1) throw new Error('Synthetic close refusal');
+      } };
+      const observeListeners = (target: EventTarget, observedType: string) => {
+        if (tracked.has(target)) return;
+        tracked.add(target);
+        const present = new Set<EventListenerOrEventListenerObject | null>();
+        listeners.set(target, present);
+        const add = target.addEventListener;
+        const remove = target.removeEventListener;
+        target.addEventListener = function (...args: Parameters<typeof add>) {
+          if (args[0] === observedType) present.add(args[1]);
+          add.apply(this, args);
+        };
+        target.removeEventListener = function (...args: Parameters<typeof remove>) {
+          if (args[0] === observedType) present.delete(args[1]);
+          remove.apply(this, args);
+        };
+      };
+      const getRegistrations = navigator.serviceWorker.getRegistrations.bind(navigator.serviceWorker);
+      navigator.serviceWorker.getRegistrations = async () => {
+        const registrations = await getRegistrations();
+        for (const registration of registrations) {
+          if (registration.scope !== new URL('/', location.href).href || registration.installing?.scriptURL !== new URL('/sw.js', location.href).href) continue;
+          workers.add(registration.installing);
+          observeListeners(registration.installing, 'statechange');
+          observeListeners(registration, 'updatefound');
+          const unregister = registration.unregister.bind(registration);
+          registration.unregister = async () => {
+            unregisterStarted++;
+            const result = await unregister();
+            unregisterFinished++;
+            return result;
+          };
+        }
+        return registrations;
+      };
+      const removeCache = caches.delete.bind(caches);
+      caches.delete = name => { deletedCaches.push(name); return removeCache(name); };
+      scope.nativeDetachedObservation = () => ({
+        states: [...workers].map(worker => worker.state), unregisterStarted, unregisterFinished,
+        listenerCount: [...listeners.values()].reduce((count, current) => count + current.size, 0),
+        deletedCaches: [...deletedCaches], closeCalls: [...closeCalls],
+      });
+    });
+    const started = Date.now();
+    await native.goto(`${fixture.origin}/index.html?folio-native=1`);
+    const observation = () => native.evaluate(() => (window as Window & {
+      nativeDetachedObservation: () => { states: string[]; unregisterStarted: number; unregisterFinished: number;
+        listenerCount: number; deletedCaches: string[]; closeCalls: string[] };
+    }).nativeDetachedObservation());
+    await expect.poll(async () => (await observation()).unregisterStarted).toBe(1);
+    expect(fixture.installationHeld).toBe(true);
+    expect((await observation()).states).toEqual(['installing']);
+    if (browserName === 'webkit') await expect.poll(async () => (await observation()).unregisterFinished).toBe(1);
+    else expect((await observation()).unregisterFinished).toBe(0);
+    expect((await observation()).deletedCaches).toEqual([]);
+    expect(nativeRequests.filter(path => /\/main-[^/]+\.js$/.test(path))).toEqual([]);
+    await expect(native.locator('#export')).toHaveCount(0);
+    fixture.releaseInstallation();
+    await expect.poll(() => fixture.installationCompletionRequests).toBe(1);
+    if (browserName === 'webkit') {
+      // A detached WebKit job can finish its writes without ever advancing the
+      // captured worker state. The original deadline must fail closed, not
+      // pretend settlement or continue later when the browser remains stale.
+      expect((await observation()).states).toEqual(['installing']);
+      await expect(native.getByRole('main', { name: 'Folio could not start' })).toBeVisible();
+      expect(Date.now() - started).toBeGreaterThanOrEqual(9_500);
+      expect(await native.evaluate(async () => (await caches.keys()).filter(name => name.startsWith('folio-app-')).sort())).toEqual([
+        'folio-app-legacy', 'folio-app-legacy-pending',
+      ]);
+      const closeTwice = () => native.evaluate(() => {
+        window.dispatchEvent(new Event('folio-native-close-request'));
+        window.dispatchEvent(new Event('folio-native-close-request'));
+      });
+      await closeTwice();
+      await expect(native.getByRole('alert')).toHaveText('Folio remains open because it could not finish closing. Try the window close button again.');
+      expect((await observation()).closeCalls).toEqual(['finish_close']);
+      await closeTwice();
+      await expect.poll(async () => (await observation()).closeCalls).toEqual(['finish_close', 'finish_close']);
+      expect((await observation()).states).toEqual(['installing']);
+      expect((await observation()).deletedCaches).toEqual([]);
+      expect(nativeRequests.filter(path => /\/main-[^/]+\.js$/.test(path))).toEqual([]);
+      await expect(native.locator('#export')).toHaveCount(0);
+    } else {
+      await expect(native.locator('#export .save-label')).toHaveText('Save As');
+      expect((await observation()).states.every(state => state !== 'installing')).toBe(true);
+      expect((await observation()).deletedCaches.sort()).toEqual(['folio-app-legacy', 'folio-app-legacy-pending']);
+      expect(await native.evaluate(async () => (await caches.keys()).filter(name => name.startsWith('folio-app-')))).toEqual([]);
+      // The fixture's complete request follows its actual final cache write.
+      // A second inspection after completion/reader initialization must still
+      // find no recreation by the previously captured installation.
+      expect(fixture.installationCompletionRequests).toBe(1);
+      expect(await native.evaluate(async () => (await caches.keys()).filter(name => name.startsWith('folio-app-')))).toEqual([]);
+    }
+    expect((await observation()).listenerCount).toBe(0);
+    expect(await native.evaluate(async () => (await (await caches.open('synthetic-user-cache')).keys()).length)).toBe(beforeNativeForeignCount);
+    expect(native.url()).toBe(`${fixture.origin}/index.html?folio-native=1`);
+    expect(nativeRequests.filter(path => path === '/index.html')).toHaveLength(1);
+    expect(errors).toEqual([]);
+    await testInfo.attach('detached-install-retirement', { body: JSON.stringify({
+      browserName, realOwnedWorkerCaptured: true, gateHeldBeforeRetirement: true,
+      outcome: browserName === 'webkit' ? 'deadline-before-reader-and-deletion' : 'settled-before-retirement',
+      beforeNativeForeignCount, final: await observation(), installationCompletionRequests: fixture.installationCompletionRequests,
+      elapsedMs: Date.now() - started, noReload: true,
+    }), contentType: 'application/json' });
+    await native.close();
+  } finally { await fixture.stop(); }
+});

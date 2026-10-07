@@ -14,6 +14,7 @@ export async function nativeUpgradeOrigin(upstreamURL: string) {
   let delayedUpdate = false;
   let gateOpen = false;
   let installationGateRequests = 0;
+  let installationCompletionRequests = 0;
   const gates = new Set<ServerResponse>();
   const pending = new Set<ClientRequest>();
   const server = createServer((incoming, outgoing) => {
@@ -27,7 +28,9 @@ export async function nativeUpgradeOrigin(upstreamURL: string) {
         .replace('/*__FOLIO_ASSET_MANIFEST__*/ []', JSON.stringify(['/index.html', '/legacy-shell.js']))
         .replace('/*__FOLIO_OPTIONAL_MANIFEST__*/ []', '[]');
       if (delayedUpdate) worker = worker.replace('const cache = await caches.open(CACHE_NAME);',
-        "await fetch('/__installation-gate__');\n    const cache = await caches.open(CACHE_NAME);");
+        "await fetch('/__installation-gate__');\n    const cache = await caches.open(CACHE_NAME);")
+        .replace('await cache.addAll(Array.from(assetUrls));',
+          "await cache.addAll(Array.from(assetUrls));\n    await fetch('/__installation-complete__');");
       respond('text/javascript', worker);
       return;
     }
@@ -38,6 +41,11 @@ export async function nativeUpgradeOrigin(upstreamURL: string) {
         gates.add(outgoing);
         outgoing.on('close', () => gates.delete(outgoing));
       }
+      return;
+    }
+    if (requested.pathname === '/__installation-complete__') {
+      installationCompletionRequests++;
+      respond('text/plain', 'complete');
       return;
     }
     if (requested.pathname === '/foreign/sw.js') {
@@ -91,6 +99,7 @@ export async function nativeUpgradeOrigin(upstreamURL: string) {
     upgrade() { upgraded = true; },
     delayNextInstallation() { delayedUpdate = true; },
     get installationGateRequests() { return installationGateRequests; },
+    get installationCompletionRequests() { return installationCompletionRequests; },
     get installationHeld() { return !gateOpen && gates.size > 0; },
     releaseInstallation,
     async stop() {

@@ -1,4 +1,9 @@
-interface OfflineWorker { scriptURL: string }
+interface OfflineWorker {
+  scriptURL: string;
+  state: string;
+  addEventListener(type: 'statechange', listener: () => void): void;
+  removeEventListener(type: 'statechange', listener: () => void): void;
+}
 
 interface OfflineRegistration {
   scope: string;
@@ -6,6 +11,8 @@ interface OfflineRegistration {
   waiting?: OfflineWorker | null;
   installing?: OfflineWorker | null;
   unregister(): Promise<boolean>;
+  addEventListener(type: 'updatefound', listener: () => void): void;
+  removeEventListener(type: 'updatefound', listener: () => void): void;
 }
 
 export interface NativeOfflineServices {
@@ -31,9 +38,31 @@ export async function retireNativeOfflineAssets(locationHref: string, services?:
     return registration.scope === scope && workers.length > 0 && workers.every((worker) => worker.scriptURL === script);
   };
   let active = true;
+  const disposers = new Set<() => void>();
   let timer: ReturnType<typeof setTimeout>;
   const checkActive = () => {
     if (!active) throw new Error('App shell cleanup has stopped.');
+  };
+  const installationSettled = (worker: OfflineWorker) =>
+    ['installed', 'activating', 'activated', 'redundant'].includes(worker.state);
+  const waitForInstallation = async (worker: OfflineWorker) => {
+    checkActive();
+    if (installationSettled(worker)) return;
+    await new Promise<void>((resolve, reject) => {
+      const dispose = () => {
+        worker.removeEventListener('statechange', inspect);
+        disposers.delete(cancel);
+      };
+      const cancel = () => { dispose(); reject(new Error('App shell cleanup has stopped.')); };
+      const inspect = () => {
+        if (installationSettled(worker)) { dispose(); resolve(); }
+      };
+      disposers.add(cancel);
+      worker.addEventListener('statechange', inspect);
+      // The worker can settle between the first read and listener registration.
+      inspect();
+    });
+    checkActive();
   };
   const deadline = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
@@ -49,7 +78,29 @@ export async function retireNativeOfflineAssets(locationHref: string, services?:
     if (available.serviceWorker) {
       for (const registration of await available.serviceWorker.getRegistrations()) {
         checkActive();
-        if (ownedRegistration(registration)) await registration.unregister();
+        if (!ownedRegistration(registration)) continue;
+        const installing = new Set<OfflineWorker>();
+        const capture = () => {
+          const worker = registration.installing;
+          if (active && worker?.scriptURL === script) installing.add(worker);
+        };
+        capture();
+        const stopTracking = () => {
+          registration.removeEventListener('updatefound', capture);
+          disposers.delete(stopTracking);
+        };
+        disposers.add(stopTracking);
+        registration.addEventListener('updatefound', capture);
+        try {
+          capture();
+          await registration.unregister();
+          checkActive();
+          capture();
+        } finally { stopTracking(); }
+        // An unregister acknowledgement can precede a detached install event's
+        // cache writes. Retain its exact worker and wait within the same deadline.
+        // A browser that never reports settlement fails closed before deletion.
+        for (const worker of installing) await waitForInstallation(worker);
       }
       checkActive();
       const remaining = await available.serviceWorker.getRegistrations();
@@ -74,5 +125,6 @@ export async function retireNativeOfflineAssets(locationHref: string, services?:
     // so a late completion cannot continue cleanup after startup has failed.
     active = false;
     clearTimeout(timer!);
+    for (const dispose of disposers) dispose();
   }
 }
