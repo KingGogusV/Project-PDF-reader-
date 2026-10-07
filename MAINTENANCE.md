@@ -1,6 +1,6 @@
 # Maintenance
 
-Updated: **2026-10-03 UTC**. The connected GitHub repository is the authoritative source. The existing workspace/hosting manifest belongs to this project; do not create a second application or replace established resources merely to deploy.
+Updated: **2026-10-07 UTC**. The connected GitHub repository is the authoritative source. The existing workspace/hosting manifest belongs to this project; do not create a second application or replace established resources merely to deploy.
 
 ## Startup Procedure
 
@@ -222,4 +222,21 @@ The current verified immutable release is `v0.1.1-preview.1`, with `Folio-0.1.1-
 
 ### Accessibility verification and recovery notes
 
-The current browser update is deployment v4. `docs/accessibility-verification-2026-10-03.json` records its exact source/build identity and both browser scan summaries. Run the repository browser suite against a production build; keep host preview failures separate from app failures. Safari’s default macOS key convention uses Option-Tab for links; the full Tab navigation setting is documented in Help. Pointer-triggered dialog focus must be checked as well as keyboard activation. Windows runtime verification waits for a nonempty CIM process-image path within its existing startup bound before collecting version/profile/port evidence; a timeout is a failure, never an excuse to waive the native release gate.
+The current browser update is deployment v4. `docs/accessibility-verification-2026-10-03.json` records its exact source/build identity and both browser scan summaries. Run the repository browser suite against a production build; keep host preview failures separate from app failures. Safari's default macOS key convention uses Option-Tab for links; the full Tab navigation setting is documented in Help. Pointer-triggered dialog focus must be checked as well as keyboard activation. Windows runtime verification waits for a nonempty CIM process-image path within its existing startup bound before collecting version/profile/port evidence; a timeout is a failure, never an excuse to waive the native release gate.
+
+### Published Windows upgrade check
+
+Run this only in a clean Windows test session with no existing Folio installation or running Folio process. Local mode requires a normal, non-elevated user, readable Windows CIM process metadata and writable HKCU registration. It refuses an occupied target, reparse points and unrelated installed apps. Do not use a user's real profile to seed the test.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm fixtures
+node tests/native/download-upgrade-installers.mjs
+node tests/native/windows-upgrade.mjs .cache/public-windows-preview-0.1.0/Folio-0.1.0-Windows-x64-Setup.exe .cache/public-windows-preview-0.1.1/Folio-0.1.1-Windows-x64-Setup.exe
+```
+
+The download helper verifies fixed published installer digests; the test also verifies installed executable digests. It creates a temporary installation and synthetic WebView profile, seeds form/text-annotation recovery plus an unchanged mixed-page PDF, terminates the owned process job, verifies the durable 0.1.0 state after restarting, upgrades using the actual 0.1.1 installer, then checks stored bytes/metadata, visible reopening, exact-byte exports and another restart. Any recent-file metadata lost before the upgrade is reported separately. No mock application assets or user PDFs are used.
+
+`.github/workflows/windows-upgrade.yml` runs the same check with `--ci` only on this repository's disposable GitHub-hosted Windows runner. CI uses the existing per-executable WebView2 overrides and owned-job cleanup. Never spoof CI environment variables locally. Reports and synthetic outputs live in `test-results/native-windows-upgrade-*`; Playwright can clear `test-results`, so copy important evidence before running a separate browser suite. The owned uninstaller uses `/UPDATE` to avoid deleting application data; synthetic profiles remain for inspection. Installer-location hints may remain, so use a disposable session for installation tests.
+
+This is a test-only path. Do not rebuild/publish a new release or replace existing tags/assets for an unchanged application. Review native-workflow changes through a PR; the existing main-branch Windows release workflow also matches `tests/native/**`.

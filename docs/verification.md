@@ -1,6 +1,18 @@
 # Verification record
 
-Updated 2026-10-03 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
+Updated 2026-10-07 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
+
+## Published Windows upgrade preservation - 2026-10-07
+
+[Run 37583640160](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640160) passed **20 checks** for PR head `0e56b6b11b912a9f044f568c32b67515d3a3984f`, tested merge `19080312d057514438327a4cfb8e26051cbff3a0`. Actual published installer/executable hashes matched provenance. Three synthetic guest PDFs retained originals, two unexported form/annotation checkpoints, complete records and durable preferences. All three visibly reopened and exported exact stored bytes; another full restart retained them. Owned jobs, exact CI policy values and uninstall registration/executable cleanup passed.
+
+Environment: elevated disposable Windows Server 2025 10.0.26100, Node 24.21.0, WebView2 153.0.4234.48, isolated overridden profile. Total workflow **35.408 seconds**, including installations, four launches and cleanup; not a device-speed benchmark. Downloaded artifact `11465332072` matched ZIP SHA-256 `28d4646b23e74af35dd7d41666e4d10eb77748f7a326057670ea51c496f1e29a`. A second pass compared downloaded stores and parsed exports, including page sizes/rotations and persisted edits. Native annotation and 320-pixel browser screenshots were inspected.
+
+Local Windows 10.0.22621.0/Edge 154.0.4258.62: type checking, 63 unit tests with zero skips, production client/worker builds and 13 accessibility/responsive cases passed. The owned preview was stopped explicitly after automatic teardown stalled; the suite exited 0. Cached dependencies were invoked directly because pnpm attempted a noninteractive purge. Native CIM inspection returned Access denied; the preflight refuses installation under that restriction. The earlier owned partial installation was uninstalled; zero Folio processes remained.
+
+One earlier run lost its newest recent-file entry during abrupt pre-upgrade termination; PDF stores survived. The passing check compares confirmed durable 0.1.0 state. Real default Windows 11 profiles, physical printing/mobile, macOS native runtime and assistive technology remain separate gaps. [Structured evidence](windows-upgrade-verification-2026-10-07.json) retains boundaries and failures. Public deployment/releases are unchanged.
+
+The same PR head also passed [Reader CI 37583640162](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640162): 63 unit cases with zero skips per platform, 79 Linux Chromium and 79 macOS WebKit browser cases, seven core cases and nine signing cases. [Native packaging 37583640157](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640157) passed Windows/macOS builds. [Windows preview gate 37583640154](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640154) passed its installed-reader job; publication was skipped because this is a PR. Later documentation-only commits do not change tested application or harness inputs.
 
 ## Accessibility pass and published delivery, 2026-10-03
 

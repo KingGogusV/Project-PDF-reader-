@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-07
+
+### Windows upgrade preservation
+
+- Added pinned published-installer downloads, guarded installation, a synthetic recovery test and read-only GitHub verification workflow. Twenty upgrade/reopen/export/restart checks passed on disposable Windows Server 2025 CI.
+- Corrected test document/export readiness races and separated durable upgrade state from pre-upgrade recent-file flush loss. Retained failures and independently checked downloaded PDF evidence.
+- Local type checking, 63 unit tests with zero skips, production client/account-worker builds and 13 Edge accessibility/responsive cases passed. Inspected native annotation and 320-pixel screenshots.
+- Updated engineering records. Application code, dependencies, hosted deployment and published assets are unchanged. Local native inspection remains restricted; normal-user Windows 11 upgrades remain unverified.
+- PR-source CI also passed 79 browser cases each on Linux Chromium/macOS WebKit, seven core cases, nine signing cases, both native package builds and the installed Windows preview gate. PR publication was skipped.
+
 ## 2026-10-03
 
 ### Accessibility pass

@@ -1,6 +1,16 @@
 # Architecture
 
-Updated: **2026-10-03 UTC**. This records implemented development architecture, not deployment or cross-platform certification. [Verification](docs/verification.md) controls completed test/build/CI claims.
+Updated: **2026-10-07 UTC**. This records implemented development architecture, not deployment or cross-platform certification. [Verification](docs/verification.md) controls completed test/build/CI claims.
+
+## Published Installer Upgrade Contract
+
+`tests/native/windows-upgrade.mjs` tests the existing hash-pinned installers in a fresh temporary installation and synthetic guest WebView2 profile. It parses completed checkpoints, restarts 0.1.0 to confirm durable storage, upgrades the same installation, compares all IndexedDB stores/preferences, then checks visible edits, exact-byte exports and another restart. Exact requested tabs and visible export confirmation are readiness requirements; previously rendered pages and emitted downloads alone are insufficient.
+
+The existing owned-job harness validates profile, runtime, debugger port and cleanup. The installer guard refuses occupied/reparse targets, existing Folio installations/processes, wrong digests and unrelated registration. Local restricted sessions fail before installation if CIM inspection or HKCU writes are unavailable. CI mode is limited to this repository's disposable runners and retains its elevation boundary. No application privilege, runtime dependency or storage migration was added.
+
+One failed run lost its newest recent-file localStorage entry before upgrading while PDF stores survived. Restarting 0.1.0 establishes the durable baseline; it does not promise unflushed preference or pending-edit recovery. See [evidence](docs/windows-upgrade-verification-2026-10-07.json).
+
+## System Overview
 
 ```mermaid
 flowchart TD
