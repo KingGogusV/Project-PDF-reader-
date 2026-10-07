@@ -720,10 +720,13 @@
       "requestedAt": "2026-10-07T22:42:26.390Z"
     },
     "rerun": {
-      "status": "in_progress",
+      "status": "passed",
       "attempt": 2,
       "unchangedSource": true,
-      "publicationPerformed": false
+      "publicationPerformed": false,
+      "jobId": 113053945191,
+      "nativeChecks": 17,
+      "candidateUpgradeChecks": 20
     }
   }
 }
