@@ -31,7 +31,16 @@ foreach ($path in @($exe,$root.TrimEnd('\'))) {
 }
 $process=Get-Process -Id $OwnedPid
 if ($process.Path -ne $exe -or $process.ProcessName -ne 'folio-desktop' -or $process.SessionId -ne (Get-Process -Id $PID).SessionId) { throw 'Owned process identity/session mismatch.' }
-if ($ExpectedSha256 -notmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant() -ne $ExpectedSha256) { throw 'Owned executable hash mismatch.' }
+if ($ExpectedSha256 -notmatch '^[a-f0-9]{64}$') { throw 'Owned executable hash mismatch.' }
+# A Windows PowerShell child can inherit a different module search path. Keep
+# the executable identity check independent of cmdlet/module availability.
+$digestAlgorithm=[Security.Cryptography.SHA256]::Create()
+try {
+  $executableStream=[IO.File]::OpenRead($exe)
+  try { $actualExeSha256=[BitConverter]::ToString($digestAlgorithm.ComputeHash($executableStream)).Replace('-','').ToLowerInvariant() }
+  finally { $executableStream.Dispose() }
+} finally { $digestAlgorithm.Dispose() }
+if ($actualExeSha256 -ne $ExpectedSha256) { throw 'Owned executable hash mismatch.' }
 $reportRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../test-results')).TrimEnd('\')+'\'
 if (-not [IO.Path]::GetFullPath($ReportPath).StartsWith($reportRoot,[StringComparison]::OrdinalIgnoreCase) -or (Test-Path -LiteralPath $ReportPath)) { throw 'Report must be a new file under repository test-results.' }
 if ($Action -eq 'save') {
