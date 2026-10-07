@@ -4,12 +4,13 @@ import { execFileSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { verifyNsisBinaryIdentity } from './native-binary-identity.mjs';
-import { assertPublicationRequest } from './windows-release-policy.mjs';
+import { assertPublicationRequest, assertNativeReleaseReport, assertCandidateUpgradeReport } from './windows-release-policy.mjs';
 
 const repository = 'KingGogusV/Project-PDF-reader-';
-const tag = 'v0.1.1-preview.1';
-const exeName = 'Folio-0.1.1-Windows-x64-Setup.exe';
-const noticesName = 'Folio-0.1.1-Third-Party-Notices.zip';
+const version = '0.1.2';
+const tag = 'v0.1.2-preview.1';
+const exeName = 'Folio-0.1.2-Windows-x64-Setup.exe';
+const noticesName = 'Folio-0.1.2-Third-Party-Notices.zip';
 const output = resolve('.cache/windows-release');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const revision = process.env.GITHUB_SHA;
@@ -50,12 +51,9 @@ async function prepare() {
   const cli = JSON.parse(await readFile('node_modules/@tauri-apps/cli/package.json', 'utf8'));
   const binaryIdentity = verifyNsisBinaryIdentity(builtExecutable, await readFile(process.env.FOLIO_NATIVE_EXE), cli.version);
   console.log(JSON.stringify({ binaryIdentity }));
-  if (report.status !== 'passed' || report.mode !== 'hosted-ci' || report.sourceCommit !== revision ||
-      report.executable?.sha256 !== binaryIdentity.installedSha256 ||
-      report.launches?.length !== 2 || !report.nativeCloseConfirmed || !report.launches.every(launch => ['stopped','closed'].includes(launch.status) &&
-        launch.cleanup?.ownedJobEmpty && launch.cleanup?.policyRemoved && launch.webview?.profileVerified && launch.webview?.portVerified) ||
-      report.checks?.length < 14 || !report.checks.every(check => check.status === 'passed'))
-    throw new Error('Installed native verification, source/binary identity, or process/policy cleanup did not pass.');
+  assertNativeReleaseReport(report, { revision, installedSha256: binaryIdentity.installedSha256 });
+  const candidateUpgrade = JSON.parse(await readFile('test-results/native-windows-candidate-upgrade/report.json', 'utf8'));
+  assertCandidateUpgradeReport(candidateUpgrade, { revision, installerSha256: sha256(bytes), binaryIdentity });
   const manifest = JSON.parse(await readFile('src-tauri/generated-notices/manifest.json', 'utf8'));
   await mkdir(output, { recursive: true });
   if ((await readdir(output)).length) throw new Error('Release output is not empty; refuse stale artifacts.');
@@ -63,8 +61,8 @@ async function prepare() {
   // The source directory is fixed, generated and checked by the native notice gate.
   const zipScript = "$ErrorActionPreference='Stop'; Compress-Archive -LiteralPath 'src-tauri/generated-notices' -DestinationPath '.cache/windows-release/" + noticesName + "'";
   execFileSync('pwsh', ['-NoProfile', '-Command', zipScript], { stdio: 'inherit' });
-  const provenance = { repository, sourceCommit: revision, tag, version: '0.1.1', architecture: 'Windows x64',
-    runId: Number(process.env.GITHUB_RUN_ID), signed: false, nativeSmoke: report, binaryIdentity, noticeManifest: manifest,
+  const provenance = { repository, sourceCommit: revision, tag, version, architecture: 'Windows x64',
+    runId: Number(process.env.GITHUB_RUN_ID), signed: false, nativeSmoke: report, candidateUpgrade, binaryIdentity, noticeManifest: manifest,
     artifacts: await Promise.all([exeName, noticesName].map(async name => { const data = await readFile(join(output, name)); return { name, bytes: data.length, sha256: sha256(data) }; })) };
   await writeFile(join(output, 'release-provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
   const sums = [...provenance.artifacts, { name: 'release-provenance.json', sha256: sha256(await readFile(join(output, 'release-provenance.json'))) }];
@@ -119,13 +117,18 @@ async function publish() {
   await writeFile(archive, zip);
   execFileSync('python3', ['scripts/unpack-release.py', archive, output], { stdio: 'inherit' });
   const provenance = JSON.parse(await readFile(join(output, 'release-provenance.json'), 'utf8'));
-  if (provenance.sourceCommit !== revision || provenance.repository !== repository || provenance.runId !== runId || provenance.nativeSmoke?.status !== 'passed') throw new Error('Release provenance does not match the verified build.');
+  if (provenance.sourceCommit !== revision || provenance.repository !== repository || provenance.runId !== runId ||
+      provenance.tag !== tag || provenance.version !== version || provenance.architecture !== 'Windows x64' || provenance.signed !== false)
+    throw new Error('Release provenance does not match the verified build.');
+  assertNativeReleaseReport(provenance.nativeSmoke, { revision, installedSha256: provenance.binaryIdentity?.installedSha256 });
   if (!Array.isArray(provenance.artifacts) || provenance.artifacts.length !== 2 || new Set(provenance.artifacts.map(item => item.name)).size !== 2) throw new Error('Release inventory must contain exactly the installer and notices.');
   for (const item of provenance.artifacts) {
     if (![exeName, noticesName].includes(item.name)) throw new Error('Unexpected release file.');
     const bytes = await readFile(join(output, item.name));
     if (bytes.length !== item.bytes || sha256(bytes) !== item.sha256) throw new Error('Extracted asset checksum mismatch.');
   }
+  assertCandidateUpgradeReport(provenance.candidateUpgrade, { revision,
+    installerSha256: sha256(await readFile(join(output, exeName))), binaryIdentity: provenance.binaryIdentity });
   const expectedSums = [...provenance.artifacts, { name: 'release-provenance.json', sha256: sha256(await readFile(join(output, 'release-provenance.json'))) }].map(item => `${item.sha256}  ${item.name}`).join('\n') + '\n';
   if (await readFile(join(output, 'SHA256SUMS.txt'), 'utf8') !== expectedSums) throw new Error('Published checksum list differs from validated artifacts.');
   await verifyTag(true);
@@ -145,8 +148,8 @@ async function publish() {
     if (matches.length > 1) throw new Error('Multiple releases use this tag; refusing ambiguous publication.');
     release = matches[0] || null;
   }
-  const body = (await readFile('docs/releases/windows-preview-2.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
-  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.1', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
+  const body = (await readFile('docs/releases/windows-preview-3.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
+  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.2', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
   if (release.target_commitish !== revision || !release.prerelease) throw new Error('Existing release belongs to different source or channel; refusing replacement.');
   const names = [exeName, noticesName, 'SHA256SUMS.txt', 'release-provenance.json'];
   for (const name of names) {

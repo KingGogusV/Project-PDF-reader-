@@ -95,7 +95,7 @@ try {
     if (-not $env:FOLIO_NATIVE_PROFILE) { throw 'Owned native profile required.' }
     $logParent = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $env:FOLIO_NATIVE_PROFILE).Path)
     if (-not $logParent.StartsWith($temp,[StringComparison]::OrdinalIgnoreCase)) { throw 'Native profile must be beneath RUNNER_TEMP.' }
-    $profileItem = Get-Item -LiteralPath $logParent
+    $profileItem = Get-Item -Force -LiteralPath $logParent
     if (($profileItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or
         -not $profileItem.Name.StartsWith('folio-native-profile-',[StringComparison]::Ordinal) -or
         @(Get-ChildItem -LiteralPath $logParent -Force).Count -ne 0) {

@@ -1,18 +1,16 @@
 # Folio
 
-An original, local-first PDF workspace for reading, review, forms and everyday document tools.
-
-Original repository purpose: "Project to create free pdf reader that does not suck."
-
-**Open Folio:** [folio-local-pdf.gogoi-ronnie.chatgpt.site](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
-
 ## Download for Windows
 
 **[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe)**
 
-Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **unsigned development preview**. No ChatGPT account, subscription or developer tools are required for reading or device storage. If your Windows policy blocks unsigned apps, use the website above.
+Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **unsigned development preview**. No ChatGPT account, subscription or developer tools are required for reading or device storage. If your Windows policy blocks unsigned apps, use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
 [Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) · [Installation help](docs/windows-installation.md)
+
+An original, local-first PDF workspace for reading, review, forms and everyday document tools. Original repository purpose: "Project to create free pdf reader that does not suck."
+
+**Use Folio in your browser:** [folio-local-pdf.gogoi-ronnie.chatgpt.site](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
 **Status:** public web application and verified Windows preview. The release passed installation, native reader/export/recovery/close tests and exact-source CI. macOS packages build, but macOS native runtime remains unverified. See [verification](docs/verification.md).
 
