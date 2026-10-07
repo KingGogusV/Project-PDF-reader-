@@ -150,6 +150,18 @@ async function startOwned() {
 async function workflow() {
   await startOwned();
   const flow=await verifyNativeReader({browser,output,fixtures,report,checked}); page=flow.page;
+  await page.locator('#account').click();
+  await expect(page.locator('#dialog-title')).toHaveText('Your account');
+  const website=page.getByLabel('Folio website',{exact:true});
+  const websiteUrl='https://folio-local-pdf.gogoi-ronnie.chatgpt.site';
+  await expect(website).toHaveValue(websiteUrl);
+  assert.equal(await website.evaluate(input=>input.readOnly),true);
+  await website.focus();
+  assert.deepEqual(await website.evaluate(input=>[input.selectionStart,input.selectionEnd]),[0,websiteUrl.length]);
+  await expect(page.getByRole('link',{name:'Open Folio website (new tab)',exact:true})).toHaveCount(0);
+  report.accountWebsite={url:websiteUrl,readOnly:true,selectionVerified:true,nativeCopyOnly:true};
+  await page.getByRole('button',{name:'Done',exact:true}).click();
+  await expect(page.locator('#dialog-title')).not.toBeVisible();
   requestWindowClose(true); // Pin the Folio HWND before any modal Save As dialog.
   await page.getByRole('tab',{name:/form.pdf/}).click();
   await flow.active().locator('input[name="reader_name"]').fill('Pending native close check');

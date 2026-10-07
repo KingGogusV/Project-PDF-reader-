@@ -381,7 +381,8 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
     const websiteUrl = document.createElement('input');
     websiteUrl.id = 'account-website-url';
     websiteUrl.className = 'dialog-input';
-    websiteUrl.type = 'url';
+    websiteUrl.type = 'text';
+    websiteUrl.inputMode = 'url';
     websiteUrl.readOnly = true;
     websiteUrl.value = 'https://folio-local-pdf.gogoi-ronnie.chatgpt.site';
     websiteUrl.addEventListener('focus', () => websiteUrl.select());

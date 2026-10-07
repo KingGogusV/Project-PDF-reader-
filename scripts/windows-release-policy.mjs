@@ -34,12 +34,12 @@ const candidateUpgradeChecks = [
   'three 0.1.1 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF',
   'published 0.1.1 starts in the same genuine default profile',
   'completed 0.1.1 checkpoints survive an actual process restart before the installer upgrade',
-  'candidate 0.1.2 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',
-  'candidate 0.1.2 starts in the same genuine default profile',
+  'candidate 0.1.3 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',
+  'candidate 0.1.3 starts in the same genuine default profile',
   'upgrade preserves every stored byte, record, revision, usage counter, schema version and preference',
   ...['mixed-pages.pdf', 'form.pdf', 'text-outline.pdf'].map(name => `upgraded ${name} visibly reopens and saves its exact preserved PDF bytes through native Save As`),
-  'candidate 0.1.2 starts in the same genuine default profile',
-  'second full 0.1.2 process restart retains originals and latest PDF bytes',
+  'candidate 0.1.3 starts in the same genuine default profile',
+  'second full 0.1.3 process restart retains originals and latest PDF bytes',
 ];
 const binaryIdentityFields = ['builtSha256', 'installedSha256', 'expectedInstalledSha256', 'bundleMarkerOffset', 'transformation'];
 
@@ -57,7 +57,7 @@ export function assertCandidateUpgradeReport(report, { revision, installerSha256
       !Array.isArray(report.versions) || report.versions.length !== 2 ||
       !Object.entries(previousPreview).every(([key, value]) => report.versions[0]?.[key] === value)) fail();
   const candidate = report.candidate;
-  const candidateFields = { version: '0.1.2', source: revision, sourceCommit: revision, installerSha256,
+  const candidateFields = { version: '0.1.3', source: revision, sourceCommit: revision, installerSha256,
     builtExecutableSha256: binaryIdentity.builtSha256, executableSha256: binaryIdentity.installedSha256 };
   if (!Object.entries(candidateFields).every(([key, value]) => candidate?.[key] === value && report.versions[1]?.[key] === value) ||
       !binaryIdentityFields.every(key => candidate.binaryIdentity?.[key] === binaryIdentity[key])) fail();
@@ -102,7 +102,7 @@ export function assertCandidateUpgradeReport(report, { revision, installerSha256
   })) fail();
   if (typeof report.target !== 'string' || !report.target || !Array.isArray(report.installations) || report.installations.length !== 3 ||
       !['install', 'upgrade', 'uninstall'].every((action, index) => { const item = report.installations[index]; return item?.action === action &&
-        item.version === (index === 0 ? '0.1.1' : '0.1.2') && item.mode === 'ci' && item.exitCode === 0 && item.target === report.target &&
+        item.version === (index === 0 ? '0.1.1' : '0.1.3') && item.mode === 'ci' && item.exitCode === 0 && item.target === report.target &&
         item.shortcuts?.verified === true && item.shortcuts.startMenuVerified === true &&
         Number.isSafeInteger(item.shortcuts.capturedCount) && item.shortcuts.capturedCount > 0 &&
         item.shortcuts.capturedCount === report.installations[0]?.shortcuts?.capturedCount; })) fail();
@@ -127,6 +127,9 @@ export function assertNativeReleaseReport(report, { revision, installedSha256 })
       report?.status !== 'passed' || report.mode !== 'hosted-ci' || report.sourceCommit !== revision ||
       report.executable?.machine !== 'x64' || report.executable.sha256 !== installedSha256 ||
       report.nativeCloseConfirmed !== true) fail();
+  if (report.accountWebsite?.url !== 'https://folio-local-pdf.gogoi-ronnie.chatgpt.site' ||
+      report.accountWebsite.readOnly !== true || report.accountWebsite.selectionVerified !== true ||
+      report.accountWebsite.nativeCopyOnly !== true) fail();
   if (!Array.isArray(report.checks) || report.checks.length !== requiredNativeChecks.length ||
       !requiredNativeChecks.every((name, index) => report.checks[index]?.name === name && report.checks[index].status === 'passed')) fail();
   if (!Array.isArray(report.nativeDialogs) || report.nativeDialogs.length !== requiredDialogActions.length ||

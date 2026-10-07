@@ -12,16 +12,16 @@ function inputs() {
   builtBytes.write('__TAURI_BUNDLE_TYPE_VAR_UNK',128);
   const installerBytes = Buffer.alloc(128); installerBytes.write('MZ');
   return {sourceCommit:source,checkoutCommit:source,
-    packageJson:{version:'0.1.2',devDependencies:{'@tauri-apps/cli':'2.12.1'}},
-    cargoManifest:'[package]\nname = "folio-desktop"\nversion = "0.1.2"\n[lib]\n',
-    tauriConfig:{version:'0.1.2',productName:'Folio',identifier:'app.folio.localreader',app:{windows:[{label:'main',url:'index.html?folio-native=1'}]}},
+    packageJson:{version:'0.1.3',devDependencies:{'@tauri-apps/cli':'2.12.1'}},
+    cargoManifest:'[package]\nname = "folio-desktop"\nversion = "0.1.3"\n[lib]\n',
+    tauriConfig:{version:'0.1.3',productName:'Folio',identifier:'app.folio.localreader',app:{windows:[{label:'main',url:'index.html?folio-native=1'}]}},
     installers:['candidate.exe'],builtBytes,installerBytes};
 }
 test('candidate identity binds source, installer and every executable byte with the pinned NSIS marker rule', () => {
   const value = inputs(); const builtBefore = Buffer.from(value.builtBytes);
   const result = candidateUpgradeIdentity(value);
   const expected = Buffer.from(value.builtBytes); expected.write('__TAURI_BUNDLE_TYPE_VAR_NSS',128);
-  assert.equal(result.sourceCommit,source); assert.equal(result.version,'0.1.2');
+  assert.equal(result.sourceCommit,source); assert.equal(result.version,'0.1.3');
   assert.equal(result.installerSha256,sha256(value.installerBytes));
   assert.equal(result.builtExecutableSha256,sha256(value.builtBytes));
   assert.equal(result.executableSha256,sha256(expected));
@@ -34,7 +34,7 @@ test('candidate rejects ambient or mismatched source revisions and ambiguous ins
   for (const installers of [[],['one.exe','two.exe']]) assert.throws(() => candidateUpgradeIdentity({...inputs(),installers}));
 });
 test('candidate refuses identity, version or CLI drift across the upgrade boundary', () => {
-  const mutations = [value => {value.packageJson.version='0.1.1';},value => {value.cargoManifest=value.cargoManifest.replace('0.1.2','0.1.1');},
+  const mutations = [value => {value.packageJson.version='0.1.1';},value => {value.cargoManifest=value.cargoManifest.replace('0.1.3','0.1.1');},
     value => {value.tauriConfig.version='0.1.1';},value => {value.tauriConfig.identifier='other.reader';},
     value => {value.tauriConfig.productName='Other';},value => {value.tauriConfig.mainBinaryName='other';},
     value => {value.packageJson.devDependencies['@tauri-apps/cli']='2.13.0';},

@@ -2,10 +2,11 @@
 
 ## 2026-10-07
 
-### Account website address — pending a new installer build
+### Windows preview 0.1.3 preparation — account website address
 
 - Added a labelled, selectable Folio website URL to the account menu, including the desktop guest-reader fallback. Browser users also get an external link that opens a separate tab. Desktop users can copy the address into their browser.
 - Explained that desktop and browser libraries remain separate and opening the website does not transfer PDFs. Account authentication and document handling are unchanged.
+- Prepared a new immutable 0.1.3 installer. The installed-app check now requires the exact account URL, read-only presentation and full-address selection before publication; the existing 0.1.2 download remains intact. Fresh CI, publication and normal-user installation verification are pending.
 - Type checking, production build, the existing local guest/account workflow and a production-browser check of the visible/selectable URL passed. The hosted homepage returned HTTP 200. This source change is not included in the immutable published 0.1.2 installer and has not been deployed to the hosted website.
 
 ### Windows preview 0.1.2 delivered
