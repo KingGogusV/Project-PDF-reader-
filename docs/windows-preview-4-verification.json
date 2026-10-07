@@ -1,0 +1,732 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "verifiedAt": "2026-10-07T22:41:13.260Z",
+  "repository": "KingGogusV/Project-PDF-reader-",
+  "tag": "v0.1.3-preview.1",
+  "version": "0.1.3",
+  "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+  "runId": 37695954883,
+  "release": "https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.3-preview.1",
+  "anonymousDownloadsVerified": true,
+  "publicBytesEqualPrepared": true,
+  "checksumsVerified": true,
+  "tagSourceVerified": true,
+  "assets": [
+    {
+      "id": 620008440,
+      "name": "Folio-0.1.3-Windows-x64-Setup.exe",
+      "bytes": 18007126,
+      "sha256": "baa810c5c7af4f89bb478ca8401add77410f66250de9b17240f106044964fa1d",
+      "updatedAt": "2026-10-07T22:40:18Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.3-preview.1/Folio-0.1.3-Windows-x64-Setup.exe",
+      "status": 200
+    },
+    {
+      "id": 620008490,
+      "name": "Folio-0.1.3-Third-Party-Notices.zip",
+      "bytes": 5050018,
+      "sha256": "53813d9cf97661a8fe742b2adb94a0163bdbcf7b39c27695cb2a6f51379bc669",
+      "updatedAt": "2026-10-07T22:40:19Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.3-preview.1/Folio-0.1.3-Third-Party-Notices.zip",
+      "status": 200
+    },
+    {
+      "id": 620008532,
+      "name": "SHA256SUMS.txt",
+      "bytes": 292,
+      "sha256": "9ee14a90313c86b054d72947f7f9b94fd4840cc9e31975a2712cd5d5589d11b2",
+      "updatedAt": "2026-10-07T22:40:19Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.3-preview.1/SHA256SUMS.txt",
+      "status": 200
+    },
+    {
+      "id": 620008546,
+      "name": "release-provenance.json",
+      "bytes": 283912,
+      "sha256": "8dc682c71917f690c905db93748743ecce0868b6d4c5f77447f9530462095e20",
+      "updatedAt": "2026-10-07T22:40:20Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.3-preview.1/release-provenance.json",
+      "status": 200
+    }
+  ],
+  "sourceCi": {
+    "publisher": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695954883",
+    "reader": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925225",
+    "event": "workflow_dispatch",
+    "branch": "main"
+  },
+  "native": {
+    "status": "passed",
+    "checks": 17,
+    "dialogInteractions": 8,
+    "nativeCloseConfirmed": true
+  },
+  "candidateUpgrade": {
+    "status": "passed",
+    "checks": 20,
+    "dialogInteractions": 3,
+    "profileMode": "default"
+  },
+  "notices": {
+    "status": "passed",
+    "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "runId": 37695954883,
+    "checks": 17,
+    "nativeDialogInteractions": 8,
+    "nativeCloseConfirmed": true,
+    "cleanup": [
+      {
+        "status": "stopped",
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      {
+        "status": "closed",
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      }
+    ],
+    "binaryIdentity": {
+      "builtSha256": "fdfc9faa1e4edbafd1e8eb1de8c064aad0439aded6bbc19c4d3511462ffc04b6",
+      "installedSha256": "29ee9cb13e2b54f1f5e3ce53ddc58878e521b9811b353c82e028acb2a4804b49",
+      "expectedInstalledSha256": "29ee9cb13e2b54f1f5e3ce53ddc58878e521b9811b353c82e028acb2a4804b49",
+      "bundleMarkerOffset": 19088210,
+      "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+    },
+    "artifacts": [
+      {
+        "name": "Folio-0.1.3-Windows-x64-Setup.exe",
+        "bytes": 18007126,
+        "sha256": "baa810c5c7af4f89bb478ca8401add77410f66250de9b17240f106044964fa1d"
+      },
+      {
+        "name": "Folio-0.1.3-Third-Party-Notices.zip",
+        "bytes": 5050018,
+        "sha256": "53813d9cf97661a8fe742b2adb94a0163bdbcf7b39c27695cb2a6f51379bc669"
+      }
+    ],
+    "provenanceSha256": "8dc682c71917f690c905db93748743ecce0868b6d4c5f77447f9530462095e20",
+    "noticeCrates": 234,
+    "originalLicenseTexts": 113,
+    "platformFiles": 24,
+    "manifestReferencedHashesVerified": 551,
+    "noticeArchiveFiles": 554,
+    "mplSourceArchivesVerified": 5,
+    "cargoLockSha256": "16772bb9cec97023ed8400d1e876a1619f7b73167a6be72be71068cb330aa46c",
+    "checkNames": [
+      "same-account installed app starts with isolated loopback debugging",
+      "packaged application opens without a development server",
+      "real local form PDF renders nonblank pixels and native form widgets",
+      "declining storage leaves the document library empty",
+      "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+      "reloading the actual native WebView restores the edited form from the device library",
+      "a second real PDF searches all three pages and navigates results",
+      "fixtures stay unchanged; observed document workflows make no upload or external requests",
+      "OS window close asks about unsaved changes and cancellation keeps edits open",
+      "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+      "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+      "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+      "native text annotation exports as a PDF annotation and the saved copy reopens",
+      "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+      "same-account installed app starts with isolated loopback debugging",
+      "full native process termination and relaunch recover the last completed form checkpoint",
+      "explicit native discard confirmation closes the real application cleanly"
+    ]
+  },
+  "previousReleasePreserved": true,
+  "previousMetadataPreserved": true,
+  "previousAssetsVerified": 12,
+  "historical": [
+    {
+      "id": 402499007,
+      "tag": "v0.1.0-preview.1",
+      "sourceCommit": "61adbfd1c9d582e1203606052c2443270f689366",
+      "publishedAt": "2026-10-03T12:14:35Z",
+      "immutableMetadataVerified": true,
+      "tagSourceVerified": true,
+      "anonymousDownloadsVerified": true,
+      "assets": [
+        {
+          "id": 607760833,
+          "name": "Folio-0.1.0-Third-Party-Notices.zip",
+          "bytes": 5015296,
+          "sha256": "13bbe7dbc8397392062a301140c89b2f8a6e54c409028b1b6293ae80cf1941c0",
+          "updatedAt": "2026-10-03T12:14:33Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Third-Party-Notices.zip",
+          "status": 200
+        },
+        {
+          "id": 607760791,
+          "name": "Folio-0.1.0-Windows-x64-Setup.exe",
+          "bytes": 17844743,
+          "sha256": "ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac",
+          "updatedAt": "2026-10-03T12:14:32Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe",
+          "status": 200
+        },
+        {
+          "id": 607760857,
+          "name": "release-provenance.json",
+          "bytes": 210793,
+          "sha256": "8b44d173dfe1e87a523414a753dbbc94bce9913cd086df16e0f451160bb7770b",
+          "updatedAt": "2026-10-03T12:14:34Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/release-provenance.json",
+          "status": 200
+        },
+        {
+          "id": 607760849,
+          "name": "SHA256SUMS.txt",
+          "bytes": 292,
+          "sha256": "8eb9d0970acef6d913a2189d858ff0d72651de23990e10db968859174e6b6524",
+          "updatedAt": "2026-10-03T12:14:33Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/SHA256SUMS.txt",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": 402629549,
+      "tag": "v0.1.1-preview.1",
+      "sourceCommit": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+      "publishedAt": "2026-10-03T18:04:01Z",
+      "immutableMetadataVerified": true,
+      "tagSourceVerified": true,
+      "anonymousDownloadsVerified": true,
+      "assets": [
+        {
+          "id": 608274487,
+          "name": "Folio-0.1.1-Third-Party-Notices.zip",
+          "bytes": 5015301,
+          "sha256": "eaa4a0b58c2e424ae65d1e29f9d8d7747b4c6b502747410bd3b98bf5a5b36a3a",
+          "updatedAt": "2026-10-03T18:03:59Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Third-Party-Notices.zip",
+          "status": 200
+        },
+        {
+          "id": 608274462,
+          "name": "Folio-0.1.1-Windows-x64-Setup.exe",
+          "bytes": 17854309,
+          "sha256": "32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2",
+          "updatedAt": "2026-10-03T18:03:58Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe",
+          "status": 200
+        },
+        {
+          "id": 608274512,
+          "name": "release-provenance.json",
+          "bytes": 212084,
+          "sha256": "9ef547cf89c52c30040d7caee6761fb46bf4605d725cef17f9a0badc4d71dec9",
+          "updatedAt": "2026-10-03T18:04:00Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/release-provenance.json",
+          "status": 200
+        },
+        {
+          "id": 608274504,
+          "name": "SHA256SUMS.txt",
+          "bytes": 292,
+          "sha256": "ce41e9a383688daee988667a8b111ba11c1c50b4e7cbd3ee61aa163b6ea5d3d1",
+          "updatedAt": "2026-10-03T18:03:59Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/SHA256SUMS.txt",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": 406172849,
+      "tag": "v0.1.2-preview.1",
+      "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+      "publishedAt": "2026-10-07T21:19:30Z",
+      "immutableMetadataVerified": true,
+      "tagSourceVerified": true,
+      "anonymousDownloadsVerified": true,
+      "assets": [
+        {
+          "id": 619842972,
+          "name": "Folio-0.1.2-Windows-x64-Setup.exe",
+          "bytes": 18016393,
+          "sha256": "1ed999a56b9c4fa5b4c95d25af743ed4903cc366345ce097244a4602eee2d799",
+          "updatedAt": "2026-10-07T21:19:27Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe",
+          "status": 200
+        },
+        {
+          "id": 619842995,
+          "name": "Folio-0.1.2-Third-Party-Notices.zip",
+          "bytes": 5050020,
+          "sha256": "fe8e8e3711d932896a4cd34f0482fa56e9a5eecb4b0f98085adc24a2e9a02006",
+          "updatedAt": "2026-10-07T21:19:28Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Third-Party-Notices.zip",
+          "status": 200
+        },
+        {
+          "id": 619843023,
+          "name": "SHA256SUMS.txt",
+          "bytes": 292,
+          "sha256": "c09ad7ad13d56987a1a102ac3b1aff2c2920a1339cbcb63f6a1d8e7d2ebbebe7",
+          "updatedAt": "2026-10-07T21:19:28Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/SHA256SUMS.txt",
+          "status": 200
+        },
+        {
+          "id": 619843039,
+          "name": "release-provenance.json",
+          "bytes": 293374,
+          "sha256": "de536b2ac3dd889a63463ecd5b27bffee5eb7f14622a795aac9482bfec4c8b5c",
+          "updatedAt": "2026-10-07T21:19:29Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/release-provenance.json",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "promotionPerformed": false,
+  "signed": false,
+  "architecture": "Windows x64",
+  "binaryIdentity": {
+    "builtSha256": "fdfc9faa1e4edbafd1e8eb1de8c064aad0439aded6bbc19c4d3511462ffc04b6",
+    "installedSha256": "29ee9cb13e2b54f1f5e3ce53ddc58878e521b9811b353c82e028acb2a4804b49",
+    "expectedInstalledSha256": "29ee9cb13e2b54f1f5e3ce53ddc58878e521b9811b353c82e028acb2a4804b49",
+    "bundleMarkerOffset": 19088210,
+    "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+  },
+  "sourceRelationship": {
+    "pullRequest": 7,
+    "headCommit": "928681dd744116cf051b1bab93baa8774f93634c",
+    "testedMerge": "5f3583893bc92dc600e7f1dddf37cba1b52a38d2",
+    "releasedMainMerge": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "tree": "f7ba9a71962eccbec96436d135803d8721f37b6e",
+    "testedPrTreeEqualsReleasedMainTree": true
+  },
+  "reader": {
+    "runId": 37695925225,
+    "url": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925225",
+    "event": "push",
+    "engines": [
+      {
+        "name": "Linux Chromium",
+        "jobId": 113047506186,
+        "units": 116,
+        "passedWorkflows": 102,
+        "failures": 0,
+        "skips": 0,
+        "retries": 0
+      },
+      {
+        "name": "macOS WebKit",
+        "jobId": 113047506061,
+        "units": 116,
+        "passedWorkflows": 102,
+        "failures": 0,
+        "skips": 0,
+        "retries": 0
+      }
+    ],
+    "corePassed": 7,
+    "signingPassed": 9
+  },
+  "packageVerification": {
+    "runId": 37695925259,
+    "url": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925259",
+    "event": "push",
+    "jobs": [
+      {
+        "name": "macOS development application",
+        "jobId": 113047505617,
+        "tests": 17,
+        "failed": 0,
+        "ignored": 0,
+        "formatting": "passed",
+        "clippy": "locked all-targets -D warnings passed",
+        "build": "passed"
+      },
+      {
+        "name": "Windows development installer",
+        "jobId": 113047505807,
+        "tests": 19,
+        "failed": 0,
+        "ignored": 0,
+        "formatting": "passed",
+        "clippy": "locked all-targets -D warnings passed",
+        "build": "passed"
+      }
+    ]
+  },
+  "installedWindowsCi": {
+    "status": "passed",
+    "mode": "hosted-ci",
+    "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "accountWebsite": {
+      "url": "https://folio-local-pdf.gogoi-ronnie.chatgpt.site",
+      "readOnly": true,
+      "selectionVerified": true,
+      "nativeCopyOnly": true
+    },
+    "webviewVersion": "153.0.4234.48",
+    "checks": [
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "OS window close asks about unsaved changes and cancellation keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+        "status": "passed"
+      },
+      {
+        "name": "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+        "status": "passed"
+      },
+      {
+        "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+        "status": "passed"
+      },
+      {
+        "name": "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+        "status": "passed"
+      },
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "full native process termination and relaunch recover the last completed form checkpoint",
+        "status": "passed"
+      },
+      {
+        "name": "explicit native discard confirmation closes the real application cleanly",
+        "status": "passed"
+      }
+    ],
+    "nativeDialogs": [
+      {
+        "action": "inspect",
+        "status": 0
+      },
+      {
+        "action": "inspect",
+        "status": 0
+      },
+      {
+        "action": "cancel",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "confirm-existing",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      }
+    ],
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "isolated",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "closed",
+        "mode": "ci",
+        "profileMode": "isolated",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      }
+    ],
+    "nativeCloseConfirmed": true,
+    "errors": {
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "blockedExternalRequests": 0,
+      "unexpectedWriteRequests": 0
+    }
+  },
+  "candidateUpgradeCi": {
+    "status": "passed",
+    "mode": "disposable-hosted-ci-candidate",
+    "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "webviewVersion": "153.0.4234.48",
+    "checks": [
+      {
+        "name": "published 0.1.1 installer installs to an empty temporary directory and creates owned Start-menu shortcuts",
+        "status": "passed"
+      },
+      {
+        "name": "published 0.1.1 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "three 0.1.1 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF",
+        "status": "passed"
+      },
+      {
+        "name": "published 0.1.1 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "completed 0.1.1 checkpoints survive an actual process restart before the installer upgrade",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.3 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.3 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "upgrade preserves every stored byte, record, revision, usage counter, schema version and preference",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded mixed-pages.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded form.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded text-outline.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.3 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "second full 0.1.3 process restart retains originals and latest PDF bytes",
+        "status": "passed"
+      }
+    ],
+    "nativeDialogs": [
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      }
+    ],
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      }
+    ],
+    "errors": {
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "blockedExternalRequests": 0,
+      "unexpectedWriteRequests": 0
+    },
+    "profileMode": "default",
+    "boundary": "Published 0.1.1 to exact candidate 0.1.3 with synthetic PDFs and genuine default profile on a disposable CI account; no real user library.",
+    "frontendDelivery": [
+      {
+        "launchIndex": 2,
+        "firstNavigation": true,
+        "origin": "http://tauri.localhost",
+        "pathname": "/index.html",
+        "nativeQuery": "1",
+        "saveAsLabel": "Save As",
+        "registeredFolioWorkers": 0,
+        "remainingFolioAppCaches": 0
+      },
+      {
+        "launchIndex": 3,
+        "firstNavigation": true,
+        "origin": "http://tauri.localhost",
+        "pathname": "/index.html",
+        "nativeQuery": "1",
+        "saveAsLabel": "Save As",
+        "registeredFolioWorkers": 0,
+        "remainingFolioAppCaches": 0
+      }
+    ],
+    "installerCleanupVerified": true,
+    "shortcutsCleanupVerified": true
+  },
+  "normalUserVerification": {
+    "status": "passed",
+    "record": "windows-preview-4-normal-user-verification.json",
+    "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "runId": 37695954883,
+    "checks": 17,
+    "nativeDialogs": 8,
+    "accountWebsite": {
+      "url": "https://folio-local-pdf.gogoi-ronnie.chatgpt.site",
+      "readOnly": true,
+      "selectionVerified": true,
+      "nativeCopyOnly": true
+    },
+    "profileMode": "isolated",
+    "elevated": false,
+    "installedNoticeFilesVerified": 554,
+    "guardedUninstall": "passed",
+    "executionPoliciesUnchanged": true
+  },
+  "previousEvidence": "windows-preview-3-verification.json",
+  "limits": [
+    "Unsigned preview; no trusted signing identity.",
+    "Fresh normal-user installation and synthetic isolated profile; no real existing-library upgrade certified.",
+    "Default-profile upgrade checked from 0.1.1, not every published version.",
+    "No global PDF performance or total-memory benchmark."
+  ],
+  "automaticMainWindowsValidation": {
+    "runId": 37695925507,
+    "event": "push",
+    "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+    "firstAttempt": {
+      "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+      "runId": 37695925507,
+      "attempt": 1,
+      "status": "failed",
+      "jobId": 113047506520,
+      "stage": "actual installed application",
+      "passedChecks": 9,
+      "error": "Windows UI Automation FindAll threw Unrecognized error while inspecting an owned Save As dialog at windows-save-dialog.ps1:85.",
+      "failedAttemptRetained": true,
+      "publicationRun": 37695954883,
+      "publicationRunStatus": "success",
+      "publicationRunChecks": 17,
+      "retry": "Unchanged exact source; failed automatic CI job only, no publication or relaxed assertion.",
+      "requestedAt": "2026-10-07T22:42:26.390Z"
+    },
+    "rerun": {
+      "status": "passed",
+      "attempt": 2,
+      "unchangedSource": true,
+      "publicationPerformed": false,
+      "jobId": 113053945191,
+      "nativeChecks": 17,
+      "candidateUpgradeChecks": 20
+    }
+  }
+}

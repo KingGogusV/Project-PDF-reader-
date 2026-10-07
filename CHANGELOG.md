@@ -2,7 +2,13 @@
 
 ## 2026-10-07
 
-### Windows preview 0.1.3 preparation — account website address
+### Windows preview 0.1.3 delivered
+
+- Published [v0.1.3-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.3-preview.1) from source `cc11bfdf477e78fc15c41f42e43273b71b77ce49` with a selectable website address under the Account icon. Browser users also get a new-tab link; desktop users can copy the URL into their browser.
+- Exact-source cross-platform Reader/package CI and the installed 17-check native/eight-dialog/20-check synthetic candidate upgrade gates passed. Anonymous public bytes matched the prepared payload and all twelve older assets remained intact.
+- The final public installer passed the account address and all 17 checks/eight dialogs in a non-elevated normal-user session, with 554 notice files verified and guarded cleanup complete. See [delivery](docs/windows-preview-4-verification.json) and [normal-user evidence](docs/windows-preview-4-normal-user-verification.json). The unsigned preview and recorded coverage limits remain explicit.
+
+### Windows preview 0.1.3 preparation — earlier source record
 
 - Added a labelled, selectable Folio website URL to the account menu, including the desktop guest-reader fallback. Browser users also get an external link that opens a separate tab. Desktop users can copy the address into their browser.
 - Explained that desktop and browser libraries remain separate and opening the website does not transfer PDFs. Account authentication and document handling are unchanged.
