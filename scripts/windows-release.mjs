@@ -7,10 +7,10 @@ import { verifyNsisBinaryIdentity } from './native-binary-identity.mjs';
 import { assertPublicationRequest, assertNativeReleaseReport, assertCandidateUpgradeReport } from './windows-release-policy.mjs';
 
 const repository = 'KingGogusV/Project-PDF-reader-';
-const version = '0.1.2';
-const tag = 'v0.1.2-preview.1';
-const exeName = 'Folio-0.1.2-Windows-x64-Setup.exe';
-const noticesName = 'Folio-0.1.2-Third-Party-Notices.zip';
+const version = '0.1.3';
+const tag = 'v0.1.3-preview.1';
+const exeName = 'Folio-0.1.3-Windows-x64-Setup.exe';
+const noticesName = 'Folio-0.1.3-Third-Party-Notices.zip';
 const output = resolve('.cache/windows-release');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const revision = process.env.GITHUB_SHA;
@@ -148,8 +148,8 @@ async function publish() {
     if (matches.length > 1) throw new Error('Multiple releases use this tag; refusing ambiguous publication.');
     release = matches[0] || null;
   }
-  const body = (await readFile('docs/releases/windows-preview-3.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
-  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.2', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
+  const body = (await readFile('docs/releases/windows-preview-4.md', 'utf8')) + `\n\nSource: ${revision}\n\nReader checks: ${readerRun}\n\nInstaller verification: https://github.com/${repository}/actions/runs/${runId}\n`;
+  if (!release) release = await (await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: revision, name: 'Folio for Windows - development preview 0.1.3', body, draft: true, prerelease: true, make_latest: 'false' }) })).json();
   if (release.target_commitish !== revision || !release.prerelease) throw new Error('Existing release belongs to different source or channel; refusing replacement.');
   const names = [exeName, noticesName, 'SHA256SUMS.txt', 'release-provenance.json'];
   for (const name of names) {

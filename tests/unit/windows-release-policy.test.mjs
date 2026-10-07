@@ -35,6 +35,7 @@ function nativeReport() {
   const report = {
     status: 'passed', mode: 'hosted-ci', sourceCommit: sha,
     executable: { machine: 'x64', sha256: 'b'.repeat(64) }, nativeCloseConfirmed: true,
+    accountWebsite: { url: 'https://folio-local-pdf.gogoi-ronnie.chatgpt.site', readOnly: true, selectionVerified: true, nativeCopyOnly: true },
     checks: names.map(name => ({ name, status: 'passed' })),
     nativeDialogs: ['inspect', 'inspect', 'cancel', 'save', 'confirm-existing', 'save', 'save', 'save']
       .map((action, index) => ({ action, status: 0, evidence: `D:\\task-owned\\save-dialog-${index}.json` })),
@@ -65,7 +66,7 @@ function candidateReport() {
   const baseline = { version: '0.1.1', tag: 'v0.1.1-preview.1', source: '8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f',
     installerSha256: '32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2',
     executableSha256: '63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c' };
-  const candidate = { version: '0.1.2', source: sha, sourceCommit: sha, installerSha256: candidateContext.installerSha256,
+  const candidate = { version: '0.1.3', source: sha, sourceCommit: sha, installerSha256: candidateContext.installerSha256,
     builtExecutableSha256: candidateContext.binaryIdentity.builtSha256, executableSha256: candidateContext.binaryIdentity.installedSha256,
     binaryIdentity: { ...candidateContext.binaryIdentity } };
   const target = 'D:\\task-owned\\FolioUpgrade-fixture';
@@ -78,12 +79,12 @@ function candidateReport() {
     'three 0.1.1 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF',
     'published 0.1.1 starts in the same genuine default profile',
     'completed 0.1.1 checkpoints survive an actual process restart before the installer upgrade',
-    'candidate 0.1.2 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',
-    'candidate 0.1.2 starts in the same genuine default profile',
+    'candidate 0.1.3 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',
+    'candidate 0.1.3 starts in the same genuine default profile',
     'upgrade preserves every stored byte, record, revision, usage counter, schema version and preference',
     ...['mixed-pages.pdf', 'form.pdf', 'text-outline.pdf'].map(name => `upgraded ${name} visibly reopens and saves its exact preserved PDF bytes through native Save As`),
-    'candidate 0.1.2 starts in the same genuine default profile',
-    'second full 0.1.2 process restart retains originals and latest PDF bytes',
+    'candidate 0.1.3 starts in the same genuine default profile',
+    'second full 0.1.3 process restart retains originals and latest PDF bytes',
   ];
   const report = {
     schemaVersion: 1, status: 'passed', mode: 'disposable-hosted-ci-candidate', profileMode: 'default', sourceCommit: sha,
@@ -101,7 +102,7 @@ function candidateReport() {
       userDataFolderOverride: false, inheritedOverridesCleared: true, defaultProfileFresh: index === 0,
       cleanup: { ownedJobEmpty: true, policyRemoved: true }, webview: { profileMode: 'default', profileVerified: true, portVerified: true,
         actualProfile: 'C:\\Users\\CI\\AppData\\Local\\app.folio.localreader\\EBWebView' } })),
-    installations: ['install', 'upgrade', 'uninstall'].map((action, index) => ({ action, version: index ? '0.1.2' : '0.1.1',
+    installations: ['install', 'upgrade', 'uninstall'].map((action, index) => ({ action, version: index ? '0.1.3' : '0.1.1',
       mode: 'ci', exitCode: 0, target, shortcuts: { verified: true, startMenuVerified: true, capturedCount: 1,
         ...(index < 2 ? { links: structuredClone(links) } : { unchangedBeforeRemoval: true, removedCount: 1 }) } })),
   };
@@ -122,7 +123,7 @@ const rejectCandidateChanges = changes => {
   }
 };
 
-test('candidate upgrade must bind pinned 0.1.1 and exact-source 0.1.2 installer/binary proof', () => {
+test('candidate upgrade must bind pinned 0.1.1 and exact-source 0.1.3 installer/binary proof', () => {
   assert.doesNotThrow(() => assertCandidateUpgradeReport(candidateReport(), candidateContext));
   assert.throws(() => assertCandidateUpgradeReport(nativeReport(), candidateContext), /Source-matched candidate upgrade/);
   rejectCandidateChanges([
@@ -213,6 +214,9 @@ test('historical, duplicate, reordered, skipped and failed installed checks cann
     report => { report.checks[13].status = 'failed'; },
     report => { delete report.checks[0]; },
     report => { delete report.checks; },
+    report => { delete report.accountWebsite; },
+    report => { report.accountWebsite.url = 'https://example.invalid'; },
+    report => { report.accountWebsite.selectionVerified = false; },
   ]);
 });
 
@@ -299,7 +303,7 @@ test('verification-only dispatches and malformed opt-in values cannot publish', 
 });
 
 test('publication rejects wrong branches, repositories and non-CI contexts', () => {
-  for (const patch of [{ GITHUB_REF: 'refs/heads/test/windows-upgrade-preservation' }, { GITHUB_REF: 'refs/tags/v0.1.2-preview.1' },
+  for (const patch of [{ GITHUB_REF: 'refs/heads/test/windows-upgrade-preservation' }, { GITHUB_REF: 'refs/tags/v0.1.3-preview.1' },
     { GITHUB_REPOSITORY: 'another/repository' }, { GITHUB_ACTIONS: 'false' }, { CI: '' }]) {
     assert.throws(() => assertPublicationRequest({ ...env, ...patch }, event), /explicit workflow_dispatch/);
   }
@@ -348,7 +352,7 @@ test('explicit publication refuses a conflicting immutable tag before other API 
     const mock = join(directory, 'tag-conflict.mjs');
     await writeFile(payload, JSON.stringify(event));
     await writeFile(mock, `globalThis.fetch = async (url, options) => {
-      if (url !== 'https://api.github.com/repos/KingGogusV/Project-PDF-reader-/git/ref/tags/v0.1.2-preview.1' ||
+      if (url !== 'https://api.github.com/repos/KingGogusV/Project-PDF-reader-/git/ref/tags/v0.1.3-preview.1' ||
           (options.method && options.method !== 'GET')) throw new Error('UNEXPECTED_API_CALL');
       return new Response(JSON.stringify({ object: { type: 'commit', sha: '${'b'.repeat(40)}' } }));
     };\n`);

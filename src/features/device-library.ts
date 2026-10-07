@@ -1,4 +1,5 @@
 import type { ReaderController, ReaderState } from '../core/document-controller';
+import { isTauri } from '@tauri-apps/api/core';
 import { getAccount, signInPath, signOutPath, type AccountState } from '../platform/account';
 import { downloadPdf } from '../platform/browser';
 import { createLocalLibrary, LocalLibraryError, type LocalDocumentMetadata, type LocalLibrary } from '../platform/local-library';
@@ -373,6 +374,29 @@ export function createDeviceLibrary(hooks: DeviceLibraryHooks) {
       if (account) { body.append(paragraph(`${account.registered} of ${account.limit} global account places are registered.`)); actions.push({ label: 'Sign in with ChatGPT', value: 'signin', primary: true }); }
       else body.append(paragraph('Use the hosted website for account access. You can continue reading and storing guest documents locally here.'));
     }
+    const websiteLabel = document.createElement('label');
+    websiteLabel.className = 'dialog-label';
+    websiteLabel.htmlFor = 'account-website-url';
+    websiteLabel.textContent = 'Folio website';
+    const websiteUrl = document.createElement('input');
+    websiteUrl.id = 'account-website-url';
+    websiteUrl.className = 'dialog-input';
+    websiteUrl.type = 'text';
+    websiteUrl.inputMode = 'url';
+    websiteUrl.readOnly = true;
+    websiteUrl.value = 'https://folio-local-pdf.gogoi-ronnie.chatgpt.site';
+    websiteUrl.addEventListener('focus', () => websiteUrl.select());
+    body.append(websiteLabel, websiteUrl);
+    if (!isTauri()) {
+      const websiteLink = document.createElement('a');
+      websiteLink.className = 'button';
+      websiteLink.href = websiteUrl.value;
+      websiteLink.target = '_blank';
+      websiteLink.rel = 'noopener noreferrer';
+      websiteLink.textContent = 'Open Folio website (new tab)';
+      body.append(websiteLink);
+    }
+    body.append(paragraph('Use the website for hosted account access. Your desktop and browser PDF libraries stay separate; opening the website does not transfer your PDFs.'));
     body.append(paragraph('Local account separation is not device encryption. Protect your browser profile and keep exported backups.'));
     const result = await hooks.dialog('Your account', body, actions, origin);
     try {

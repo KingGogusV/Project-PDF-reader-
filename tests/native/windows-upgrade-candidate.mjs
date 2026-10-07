@@ -7,11 +7,11 @@ const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 export function candidateUpgradeIdentity({ sourceCommit, checkoutCommit, packageJson, cargoManifest, tauriConfig, installers, builtBytes, installerBytes }) {
   assert.match(sourceCommit || '', /^[a-f0-9]{40}$/, 'Candidate requires an exact CI source revision.');
   assert.equal(checkoutCommit, sourceCommit, 'Candidate build source must match the checked-out CI revision.');
-  assert.equal(packageJson.version, '0.1.2');
+  assert.equal(packageJson.version, '0.1.3');
   const cargoPackage = cargoManifest.split(/\r?\n\[/)[0];
   assert.match(cargoPackage, /^name\s*=\s*"folio-desktop"\s*$/m);
-  assert.match(cargoPackage, /^version\s*=\s*"0\.1\.2"\s*$/m);
-  assert.equal(tauriConfig.version, '0.1.2');
+  assert.match(cargoPackage, /^version\s*=\s*"0\.1\.3"\s*$/m);
+  assert.equal(tauriConfig.version, '0.1.3');
   assert.equal(tauriConfig.productName, 'Folio');
   assert.equal(tauriConfig.identifier, 'app.folio.localreader');
   assert.equal(tauriConfig.mainBinaryName || 'folio-desktop', 'folio-desktop');
@@ -35,7 +35,7 @@ export function candidateUpgradeIdentity({ sourceCommit, checkoutCommit, package
   assert.ok(offset >= 0, 'Built candidate has no unpatched Tauri bundle marker.');
   Buffer.from('__TAURI_BUNDLE_TYPE_VAR_NSS').copy(expected, offset);
   const binaryIdentity = verifyNsisBinaryIdentity(builtBytes, expected, '2.12.1');
-  return { version:'0.1.2', source:sourceCommit, sourceCommit, installer:installers[0],
+  return { version:'0.1.3', source:sourceCommit, sourceCommit, installer:installers[0],
     installerSha256:sha256(installerBytes), builtExecutableSha256:sha256(builtBytes),
     executableSha256:binaryIdentity.installedSha256, binaryIdentity };
 }

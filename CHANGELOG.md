@@ -2,6 +2,13 @@
 
 ## 2026-10-07
 
+### Windows preview 0.1.3 preparation — account website address
+
+- Added a labelled, selectable Folio website URL to the account menu, including the desktop guest-reader fallback. Browser users also get an external link that opens a separate tab. Desktop users can copy the address into their browser.
+- Explained that desktop and browser libraries remain separate and opening the website does not transfer PDFs. Account authentication and document handling are unchanged.
+- Prepared a new immutable 0.1.3 installer. The installed-app check now requires the exact account URL, read-only presentation and full-address selection before publication; the existing 0.1.2 download remains intact. Fresh CI, publication and normal-user installation verification are pending.
+- Type checking, production build, the existing local guest/account workflow and a production-browser check of the visible/selectable URL passed. The hosted homepage returned HTTP 200. This source change is not included in the immutable published 0.1.2 installer and has not been deployed to the hosted website.
+
 ### Windows preview 0.1.2 delivered
 
 - Published immutable unsigned x64 preview [`v0.1.2-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.2-preview.1) from merged PR #5 source `ad8b2c169d707ff9616bf115b9c977c88c09cef9`. The [Windows EXE](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe) is 18,016,393 bytes, SHA-256 `1ed999a56b9c4fa5b4c95d25af743ed4903cc366345ce097244a4602eee2d799`.

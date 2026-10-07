@@ -236,6 +236,16 @@ test('local development without the hosted account API remains an honest guest r
   await page.locator('#account').click();
   await expect(page.locator('#dialog-body')).toContainText('Use the hosted website for account access');
   await expect(page.getByRole('button', { name: 'Sign in with ChatGPT', exact: true })).toHaveCount(0);
+  const website = page.getByLabel('Folio website', { exact: true });
+  const websiteUrl = 'https://folio-local-pdf.gogoi-ronnie.chatgpt.site';
+  await expect(website).toHaveValue(websiteUrl);
+  expect(await website.evaluate((input: HTMLInputElement) => input.readOnly)).toBe(true);
+  await website.focus();
+  expect(await website.evaluate((input: HTMLInputElement) => [input.selectionStart, input.selectionEnd])).toEqual([0, websiteUrl.length]);
+  const websiteLink = page.getByRole('link', { name: 'Open Folio website (new tab)', exact: true });
+  await expect(websiteLink).toHaveAttribute('href', websiteUrl);
+  await expect(websiteLink).toHaveAttribute('target', '_blank');
+  await expect(websiteLink).toHaveAttribute('rel', 'noopener noreferrer');
   await page.getByRole('button', { name: 'Done', exact: true }).click();
   await open(page); await consent(page);
   expect((await records(page))[0].owner).toBe('guest');

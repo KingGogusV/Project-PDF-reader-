@@ -71,7 +71,7 @@ const report = { schemaVersion:1, startedAt:new Date().toISOString(), status:'ru
   versions, target, retainedProfile:profile, checks:[], launches:[], installations:[], pageErrors:[],
   consoleErrors:[], requests:[], blockedExternalRequests:[], unexpectedWriteRequests:[], nativeIpcRequests:[],
   boundary:candidateMode
-    ? 'Published x64 0.1.1 -> source-bound built 0.1.2 candidate installer; synthetic guest library in the genuine default app.folio.localreader profile of an elevated disposable CI account. No real user library is inspected; synthetic profile retained. This is not normal-user production data or every Windows version.'
+    ? 'Published x64 0.1.1 -> source-bound built 0.1.3 candidate installer; synthetic guest library in the genuine default app.folio.localreader profile of an elevated disposable CI account. No real user library is inspected; synthetic profile retained. This is not normal-user production data or every Windows version.'
     : 'Published x64 0.1.0 -> 0.1.1 installer, synthetic guest library, completed checkpoints, isolated overridden WebView2 profile; not an end-user default profile or every Windows version.' };
 const checked = (name, evidence = {}) => { report.checks.push({ name, status:'passed', ...evidence }); console.log(`PASS ${name}`); };
 let helper, browser, page, stopFile, launchReport, installedVersion, ownedPid, helperOutput = '';
@@ -325,7 +325,7 @@ async function workflow() {
   if (candidateMode) {
     const identity = verifyNsisBinaryIdentity(builtCandidate,await readFile(executable),'2.12.1');
     assert.deepEqual(identity,versions[1].binaryIdentity);
-    checked('candidate 0.1.2 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',identity);
+    checked('candidate 0.1.3 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target',identity);
   } else checked('normal 0.1.1 installer upgrade replaces the exact owned published executable');
   await startOwned(versions[1]); await upgradedPage();
   const after = await snapshot(); await writeFile(join(output,'after.json'),JSON.stringify(after));
