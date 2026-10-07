@@ -2,7 +2,22 @@
 
 Updated 2026-10-07 UTC. This is a development implementation, not a production-readiness or universal-platform certification.
 
-## Windows 0.1.2 final delivery record — public and normal-user verification
+## Windows 0.1.3 delivery — account website address
+
+Published [v0.1.3-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.3-preview.1) from PR #7 main merge `cc11bfdf477e78fc15c41f42e43273b71b77ce49`. Its tree matches the fully passed PR test tree. The [Reader checks](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925225) passed 116 unit/fixture checks and 102 workflows per engine, seven core and nine signature cases. [Package checks](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925259) passed formatting, warnings-denied clippy and 19 Windows/17 macOS Rust tests. These results belong to this exact released source.
+
+The [publication run](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695954883) passed all 17 installed native checks, eight Windows dialog actions, the exact selectable account URL and 20 source-bound 0.1.1-to-0.1.3 candidate upgrade checks using synthetic data in the disposable CI default profile. An independent anonymous download verified all four public files against the prepared payload, every notice reference and all twelve unchanged assets of the three older releases.
+
+The public installer also passed 17 checks, eight dialogs and the account URL check in a normal, non-elevated Windows session using a fresh owned temporary installation and isolated synthetic profile. All 554 installed notice files matched, both owned jobs emptied, guarded uninstall completed and execution policies remained unchanged. This does not certify a real existing-profile upgrade or every Windows configuration. The app remains unsigned.
+
+See the [delivery record](windows-preview-4-verification.json) and [normal-user record](windows-preview-4-normal-user-verification.json). The hosted website has not been redeployed. Earlier release and failure evidence follows with its original source qualification.
+
+<!-- windows013-automatic-attempts -->
+A separate automatic main Windows run [37695925507, attempt 1](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925507/attempts/1) failed after nine native checks when Windows UI Automation `FindAll` threw an unrecognized error while inspecting an owned Save As dialog. Its successful candidate-upgrade and partial native results are not relabelled as a full pass. The failed job was rerun on the unchanged exact source; attempt 2 is still pending. The separate explicit publication run and independently downloaded normal-user test above passed all 17 native checks and eight dialogs.
+
+<!-- /windows013-automatic-attempts -->
+
+## Earlier Windows 0.1.2 final delivery record — public and normal-user verification
 
 Final delivered application source is `ad8b2c169d707ff9616bf115b9c977c88c09cef9`; its exact relationship to implementation, PR merge and workflow checkouts remains the PR #5 main merge, whose tree `3383d35496ed58ae79e7efb7a53faa8a5b5ef2ee` exactly matches successful PR merge `8878008e36ad57e0097eb055cf49c70d7487f0c8` (head `d13a4c6cf9270d814c90717494ac38a098f36901`). That head changes the fixture and its changelog record; application/build inputs remain unchanged from implementation `6a0c29e20644734e8eb63963aa7c968cad84037c`. Any later documentation-only commit is a separate identity and is not a newly tested or published application revision. The current installing-worker settlement implementation is `6a0c29e20644734e8eb63963aa7c968cad84037c`, with prepared PR test merge `ac15f31509cc391426b2a699eca59c4b379bfb3d`. Local source checks passed **116 unit/fixture tests**, zero failures/cancellations/skips, and **28 focused production workflows each in Edge and Windows WebKit**, zero failures/skips. Edge took 37.3 seconds and WebKit 59.7 seconds. These checks cover real persisted-worker stale-shell reproduction, held worker retirement, complete synthetic library/preferences/foreign-worker/non-app-cache preservation, native save/close lifecycle, browser offline support, safe early failure close retry and an actual built-main late fault preserving dirty form data and the usable unsaved-close dialog. Fresh final main-source remote CI passed, as recorded below. Suite durations are not device-performance benchmarks.
 

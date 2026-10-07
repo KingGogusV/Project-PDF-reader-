@@ -2,25 +2,27 @@
 
 ## Download for Windows
 
-**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe)**
+**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.3-preview.1/Folio-0.1.3-Windows-x64-Setup.exe)**
 
-Open the installer, launch **Folio** from Start, then choose **Open PDF**. Windows 10/11 x64 Intel/AMD; **unsigned development preview 0.1.2**. Reading and device storage need no ChatGPT account, subscription, terminal, PowerShell or developer tools. Initial Microsoft WebView2 Runtime setup or updating can need internet. If your Windows policy blocks unsigned apps, use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
+Open the installer, launch **Folio** from Start, then choose **Open PDF**. Windows 10/11 x64 Intel/AMD; **unsigned development preview 0.1.3**. Reading and device storage need no ChatGPT account, subscription, terminal, PowerShell or developer tools. Initial Microsoft WebView2 Runtime setup or updating can need internet. If your Windows policy blocks unsigned apps, use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
-[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.2-preview.1) · [Installation help](docs/windows-installation.md)
+[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.3-preview.1) · [Installation help](docs/windows-installation.md)
 
 An original, local-first PDF workspace for reading, review, forms and everyday document tools. Original repository purpose: "Project to create free pdf reader that does not suck."
 
 **Use Folio in your browser:** [folio-local-pdf.gogoi-ronnie.chatgpt.site](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
-**Status:** public web application and a published unsigned Windows 0.1.2 preview from source `ad8b2c169d707ff9616bf115b9c977c88c09cef9`. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686461277), [publication CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686535246) and the [delivery record](docs/windows-preview-3-verification.json) verify the exact release. All 17 installed reader/Save As/recovery/close checks passed in Windows CI and again in a normal-user local session with an isolated synthetic profile. A separate 20-check candidate upgrade passed in disposable Windows CI. macOS packages build; macOS native runtime remains unverified.
+**Status:** public web application and a published unsigned Windows 0.1.3 preview from source `cc11bfdf477e78fc15c41f42e43273b71b77ce49`. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695925225), [publication CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37695954883) and the [delivery record](docs/windows-preview-4-verification.json) verify the exact release. All 17 installed reader/Save As/recovery/close checks passed in Windows CI and again in a normal-user local session with an isolated synthetic profile. A separate 20-check candidate upgrade passed in disposable Windows CI. macOS packages build; macOS native runtime remains unverified.
 
 Use **Save As** or **Ctrl+S** to save supported form or annotation edits to a new PDF filename. Folio checks the completed disk copy before clearing its unsaved marker. Cancellation or a failed write keeps the document open with its changes; existing files remain protected even after a Windows replacement confirmation. Saving from the close prompt returns to the document so you can check the copy before closing again. Native saving uses bounded chunks and verified disk receipts; no speed or total-memory benchmark is claimed.
 
 Desktop updates bypass the older Folio offline interface and load the reader from the installed files. Startup retires only Folio's old offline app shell; stored PDFs, completed recovery copies and preferences stay in their separate stores. The desktop reader uses packaged offline assets, and website offline caching keeps its existing behavior. If startup fails, Folio shows restart or runtime-update help without erasing those stored documents.
 
+Choose the **Account** icon to see the Folio website address: [https://folio-local-pdf.gogoi-ronnie.chatgpt.site](https://folio-local-pdf.gogoi-ronnie.chatgpt.site). The address selects in full when focused, so you can copy it into your browser. Desktop and browser PDF libraries remain separate.
+
 Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain on your device.
 
-The 20-check 0.1.1-to-0.1.2 candidate upgrade preserved synthetic library/recovery PDFs in the genuine default app profile of an elevated disposable CI account, checked installer-created Start-menu shortcuts, and showed the current reader on the first navigation of both upgraded launches. The 17-check normal-user local run used a separate isolated profile; neither test certifies upgrades of a real user's library. Earlier 0.1.0-to-0.1.1 evidence used an overridden profile and remains [recorded separately](docs/windows-upgrade-verification-2026-10-07.json).
+The 20-check 0.1.1-to-0.1.3 candidate upgrade preserved synthetic library/recovery PDFs in the genuine default app profile of an elevated disposable CI account, checked installer-created Start-menu shortcuts, and showed the current reader on the first navigation of both upgraded launches. The 17-check normal-user local run used a separate isolated profile; neither test certifies upgrades of a real user's library. Earlier 0.1.0-to-0.1.1 evidence used an overridden profile and remains [recorded separately](docs/windows-upgrade-verification-2026-10-07.json).
 
 Keep Microsoft Edge WebView2 Evergreen current. The installer requests **125.0.0.0 or newer**, following the bundled legacy PDF.js dependency target; the recorded actual installed-app tests use WebView2 153/154. No installed Folio test at 125 is claimed. Runtime requirements, checksums, unsigned-app limitations and earlier releases are in [installation help](docs/windows-installation.md).
 

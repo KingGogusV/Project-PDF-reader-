@@ -1,0 +1,1142 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "startedAt": "2026-10-07T22:42:17.525Z",
+  "completedAt": "2026-10-07T22:42:55.437Z",
+  "repository": "KingGogusV/Project-PDF-reader-",
+  "version": "0.1.3",
+  "tag": "v0.1.3-preview.1",
+  "sourceCommit": "cc11bfdf477e78fc15c41f42e43273b71b77ce49",
+  "runId": 37695954883,
+  "sourceBinding": "Outer source/run identity comes from independently audited public installer provenance and exact installed executable bytes. The actual local runtime report keeps sourceCommit null.",
+  "release": "https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.3-preview.1",
+  "publicPayload": {
+    "anonymousDownloadsVerified": true,
+    "publicBytesEqualPrepared": true,
+    "checksumsVerified": true,
+    "tagSourceVerified": true,
+    "artifacts": [
+      {
+        "id": 620008440,
+        "name": "Folio-0.1.3-Windows-x64-Setup.exe",
+        "bytes": 18007126,
+        "sha256": "baa810c5c7af4f89bb478ca8401add77410f66250de9b17240f106044964fa1d"
+      },
+      {
+        "id": 620008490,
+        "name": "Folio-0.1.3-Third-Party-Notices.zip",
+        "bytes": 5050018,
+        "sha256": "53813d9cf97661a8fe742b2adb94a0163bdbcf7b39c27695cb2a6f51379bc669"
+      },
+      {
+        "id": 620008532,
+        "name": "SHA256SUMS.txt",
+        "bytes": 292,
+        "sha256": "9ee14a90313c86b054d72947f7f9b94fd4840cc9e31975a2712cd5d5589d11b2"
+      },
+      {
+        "id": 620008546,
+        "name": "release-provenance.json",
+        "bytes": 283912,
+        "sha256": "8dc682c71917f690c905db93748743ecce0868b6d4c5f77447f9530462095e20"
+      }
+    ]
+  },
+  "executable": {
+    "architecture": "x64",
+    "signed": false,
+    "installerSha256": "baa810c5c7af4f89bb478ca8401add77410f66250de9b17240f106044964fa1d",
+    "installedSha256": "29ee9cb13e2b54f1f5e3ce53ddc58878e521b9811b353c82e028acb2a4804b49"
+  },
+  "environment": {
+    "os": {
+      "caption": "Microsoft Windows 11 Pro",
+      "version": "10.0.22621",
+      "build": "22621",
+      "architecture": "64-bit",
+      "capturedAt": "2026-10-07T22:14:14.0874776Z"
+    },
+    "webviewVersion": "154.0.4258.62",
+    "powerShellEdition": "Core",
+    "powerShellVersion": "7.6.5",
+    "elevated": false,
+    "desktopUiaAvailable": true
+  },
+  "runtime": {
+    "mode": "local-normal-user",
+    "sourceCommit": null,
+    "status": "passed",
+    "runtimeEvidenceContractVerified": true,
+    "nativeCloseConfirmed": true,
+    "accountWebsite": {
+      "url": "https://folio-local-pdf.gogoi-ronnie.chatgpt.site",
+      "readOnly": true,
+      "selectionVerified": true,
+      "nativeCopyOnly": true
+    },
+    "checks": [
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "OS window close asks about unsaved changes and cancellation keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+        "status": "passed"
+      },
+      {
+        "name": "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+        "status": "passed"
+      },
+      {
+        "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+        "status": "passed"
+      },
+      {
+        "name": "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+        "status": "passed"
+      },
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "full native process termination and relaunch recover the last completed form checkpoint",
+        "status": "passed"
+      },
+      {
+        "name": "explicit native discard confirmation closes the real application cleanly",
+        "status": "passed"
+      }
+    ],
+    "dialogs": [
+      {
+        "index": 0,
+        "action": "inspect",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 1,
+        "action": "inspect",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "action": "cancel",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "action": "save",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 4,
+        "action": "confirm-existing",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          },
+          {
+            "className": "#32770",
+            "enabled": false
+          }
+        ],
+        "uiaControlCount": 0,
+        "uiaControlTypes": [],
+        "nativeControlCount": 17,
+        "nativeControlClassCounts": [
+          {
+            "className": "Button",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 8
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 4
+          },
+          {
+            "className": "SysLink",
+            "count": 2
+          }
+        ],
+        "confirmation": {
+          "method": "owned-task-dialog-IDYES",
+          "semanticButtonId": 6,
+          "exactPriorSaveHandleMatchesDisabledDialog": true,
+          "soleEnabledPrompt": true,
+          "nativeOwnedButtonSinkBranches": 2
+        }
+      },
+      {
+        "index": 5,
+        "action": "save",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 6,
+        "action": "save",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "index": 7,
+        "action": "save",
+        "status": "passed",
+        "helperExitCode": 0,
+        "ownedPidMatchesFirstLaunch": true,
+        "modalDialogs": [
+          {
+            "className": "#32770",
+            "enabled": true
+          }
+        ],
+        "uiaControlCount": 10,
+        "uiaControlTypes": [
+          "ControlType.Button",
+          "ControlType.Edit"
+        ],
+        "nativeControlCount": 47,
+        "nativeControlClassCounts": [
+          {
+            "className": "Address Band Root",
+            "count": 1
+          },
+          {
+            "className": "Breadcrumb Parent",
+            "count": 1
+          },
+          {
+            "className": "Button",
+            "count": 4
+          },
+          {
+            "className": "ComboBox",
+            "count": 2
+          },
+          {
+            "className": "CtrlNotifySink",
+            "count": 4
+          },
+          {
+            "className": "DUIViewWndClassName",
+            "count": 1
+          },
+          {
+            "className": "DirectUIHWND",
+            "count": 3
+          },
+          {
+            "className": "Edit",
+            "count": 1
+          },
+          {
+            "className": "FloatNotifySink",
+            "count": 3
+          },
+          {
+            "className": "ListBox",
+            "count": 1
+          },
+          {
+            "className": "NamespaceTreeControl",
+            "count": 1
+          },
+          {
+            "className": "ReBarWindow32",
+            "count": 1
+          },
+          {
+            "className": "SHELLDLL_DefView",
+            "count": 1
+          },
+          {
+            "className": "ScrollBar",
+            "count": 3
+          },
+          {
+            "className": "Search Box",
+            "count": 1
+          },
+          {
+            "className": "SearchEditBoxWrapperClass",
+            "count": 1
+          },
+          {
+            "className": "SeparatorBand",
+            "count": 2
+          },
+          {
+            "className": "Static",
+            "count": 5
+          },
+          {
+            "className": "SysTreeView32",
+            "count": 1
+          },
+          {
+            "className": "ToolbarWindow32",
+            "count": 5
+          },
+          {
+            "className": "TravelBand",
+            "count": 1
+          },
+          {
+            "className": "UniversalSearchBand",
+            "count": 1
+          },
+          {
+            "className": "UpBand",
+            "count": 1
+          },
+          {
+            "className": "WorkerW",
+            "count": 1
+          },
+          {
+            "className": "msctls_progress32",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "local",
+        "elevated": false,
+        "profileMode": "isolated",
+        "userDataFolderOverride": true,
+        "inheritedOverridesCleared": true,
+        "policyScope": null,
+        "webviewVersion": "154.0.4258.62",
+        "profileVerified": true,
+        "portVerified": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      },
+      {
+        "status": "closed",
+        "mode": "local",
+        "elevated": false,
+        "profileMode": "isolated",
+        "userDataFolderOverride": true,
+        "inheritedOverridesCleared": true,
+        "policyScope": null,
+        "webviewVersion": "154.0.4258.62",
+        "profileVerified": true,
+        "portVerified": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        }
+      }
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "blockedExternalRequests": [],
+    "unexpectedWriteRequests": [],
+    "networkObservationScope": "Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation."
+  },
+  "notices": {
+    "installedInventoryFilesVerified": 554,
+    "installedInventorySha256": "d2b7fbd30ad1aaa51f074c233d3f7949c8289d6949b309ee9f639a3b1b46a4d4",
+    "manifestReferencedHashesVerified": 551,
+    "mplSourceArchivesVerified": 5
+  },
+  "installation": [
+    {
+      "action": "install",
+      "status": "passed",
+      "mode": "local",
+      "elevated": false,
+      "exitCode": 0,
+      "completedAt": "2026-10-07T22:42:20.9690797Z"
+    },
+    {
+      "action": "uninstall",
+      "status": "passed",
+      "mode": "local",
+      "elevated": false,
+      "exitCode": 0,
+      "completedAt": "2026-10-07T22:42:54.5736572Z"
+    }
+  ],
+  "finalState": {
+    "folioProcessesAbsent": true,
+    "folioRegistrationsAbsent": true,
+    "webviewPoliciesAbsent": true,
+    "executionPoliciesUnchanged": true,
+    "executionPolicies": {
+      "MachinePolicy": "Undefined",
+      "UserPolicy": "Undefined",
+      "Process": "Undefined",
+      "CurrentUser": "Undefined",
+      "LocalMachine": "RemoteSigned"
+    },
+    "ownedInstalledExecutableAbsent": true,
+    "syntheticProfilesCopiesEvidenceAndTemporaryDirectoryRetained": true,
+    "remainingOwnedInstallationFiles": [
+      {
+        "name": "uninstall.exe",
+        "bytes": 85353,
+        "sha256": "16d592c71114cfa69510b71239fd8cffc0d85e53f73cd25e29e024bab1633d22"
+      }
+    ],
+    "directoryDeletionRetried": false
+  },
+  "coverageLimits": [
+    "Actual non-elevated normal-user session, fresh owned temporary installation and isolated synthetic WebView profile; no existing real default library or installation was read or changed.",
+    "The genuine default-profile upgrade and installer-created Start-menu shortcut gate ran separately on a disposable elevated CI account with synthetic data.",
+    "Actual installed-app requests from controlled reload onward; external HTTP(S)/WebSockets blocked. OS/runtime update traffic is outside this observation.",
+    "Existing Folio installations and occupied WebView debug/profile policy values were refused before installation; execution policies remained unchanged throughout the test.",
+    "This is unsigned x64 preview evidence on the recorded Windows 11/WebView2 versions, not universal device/OS/runtime assurance.",
+    "Manual keyboard-driven OS Open navigation, physical assistive technology/printers, macOS native runtime, associations and real existing-user default-library upgrades remain separate.",
+    "Synthetic evidence and temporary directories remain intentionally; no directory deletion was retried."
+  ],
+  "privacy": "Explicit whitelist only: identities, hashes, OS/runtime versions, ordered outcomes and structural ownership/cleanup. No user paths, PDF/form/text values, tokens or authenticated URLs are included. Raw synthetic evidence remains ignored."
+}
