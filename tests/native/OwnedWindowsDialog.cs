@@ -86,30 +86,67 @@ namespace FolioNativeSmoke {
       if (controlId != 1 && controlId != 2 && controlId != 6) throw new ArgumentOutOfRangeException("controlId");
       return KnownControl(ownedPid, dialogHandle, controlId, "Button").Handle;
     }
+    static bool ModernFilenameChain(uint ownedPid, IntPtr dialog, IntPtr edit) {
+      var control = edit;
+      var classes = new [] { "Edit", "ComboBox", "FloatNotifySink", "DirectUIHWND", "DUIViewWndClassName" };
+      for (int index = 0; index < classes.Length; index++) {
+        uint pid; GetWindowThreadProcessId(control, out pid);
+        if (pid != ownedPid || !IsChild(dialog, control) || !IsWindowVisible(control) || !IsWindowEnabled(control) ||
+            ClassName(control) != classes[index] || GetDlgCtrlID(control) != (index == 0 ? 1001 : 0)) return false;
+        control = GetParent(control);
+      }
+      return control == dialog;
+    }
     public static void SetFilename(uint ownedPid, long dialogHandle, string destination) {
       if (String.IsNullOrEmpty(destination) || destination.Length > 32767) throw new ArgumentException("Invalid synthetic destination length.");
       var controls = Controls(ownedPid, dialogHandle);
-      var container = new IntPtr(KnownControl(ownedPid, dialogHandle, 1148, "Edit", "ComboBox", "ComboBoxEx32").Handle);
+      var dialog = new IntPtr(dialogHandle);
+      bool legacyPresent = Array.Exists(controls, control => control.ControlId == 1148);
+      var container = IntPtr.Zero;
       var edits = new List<ControlInfo>();
-      foreach (var control in controls)
-        if (control.ClassName == "Edit" && control.Visible && control.Enabled &&
-            (control.Handle == container.ToInt64() || IsChild(container, new IntPtr(control.Handle)))) edits.Add(control);
-      if (edits.Count != 1) throw new InvalidOperationException("Expected exactly one owned Edit tied to File name control 1148.");
-      var dialog = new IntPtr(dialogHandle); var edit = new IntPtr(edits[0].Handle);
-      ValidateControl(ownedPid, dialog, container); ValidateControl(ownedPid, dialog, edit);
+      if (legacyPresent) {
+        container = new IntPtr(KnownControl(ownedPid, dialogHandle, 1148, "Edit", "ComboBox", "ComboBoxEx32").Handle);
+        foreach (var control in controls)
+          if (control.ClassName == "Edit" && control.Visible && control.Enabled &&
+              (control.Handle == container.ToInt64() || IsChild(container, new IntPtr(control.Handle)))) edits.Add(control);
+      } else {
+        // Observed Server 2025 picker: only this exact owned ID/class ancestry
+        // identifies its filename edit. Address/search/list edits are excluded.
+        foreach (var control in controls)
+          if (control.ClassName == "Edit" && control.ControlId == 1001 && ModernFilenameChain(ownedPid, dialog, new IntPtr(control.Handle))) edits.Add(control);
+      }
+      if (edits.Count != 1) throw new InvalidOperationException("Expected exactly one owned File name Edit with the required ancestry.");
+      var edit = new IntPtr(edits[0].Handle);
+      Action validateField = () => {
+        ValidateControl(ownedPid, dialog, edit);
+        if (legacyPresent) {
+          if (KnownControl(ownedPid, dialogHandle, 1148, "Edit", "ComboBox", "ComboBoxEx32").Handle != container.ToInt64())
+            throw new InvalidOperationException("Owned File name container changed.");
+          ValidateControl(ownedPid, dialog, container);
+          if (edit != container && !IsChild(container, edit)) throw new InvalidOperationException("Owned File name ancestry changed.");
+        } else {
+          var current = Controls(ownedPid, dialogHandle);
+          var matches = Array.FindAll(current, control => control.ClassName == "Edit" && control.ControlId == 1001 &&
+            ModernFilenameChain(ownedPid, dialog, new IntPtr(control.Handle)));
+          if (Array.Exists(current, control => control.ControlId == 1148) || matches.Length != 1 || matches[0].Handle != edit.ToInt64())
+            throw new InvalidOperationException("Owned File name ancestry became unavailable or ambiguous.");
+        }
+      };
+      validateField();
       UIntPtr result;
       var text = Marshal.StringToHGlobalUni(destination);
       try {
         if (SendMessageTimeout(edit, 0x000C, UIntPtr.Zero, text, 3, 2000, out result) == IntPtr.Zero || result == UIntPtr.Zero)
           throw new Win32Exception(Marshal.GetLastWin32Error(), "Set owned synthetic filename");
       } finally { Marshal.FreeHGlobal(text); }
-      ValidateControl(ownedPid, dialog, edit);
+      validateField();
       if (SendMessageTimeout(edit, 0x000E, UIntPtr.Zero, IntPtr.Zero, 3, 2000, out result) == IntPtr.Zero ||
           result.ToUInt64() != (ulong)destination.Length) throw new InvalidOperationException("Owned File name length differs from the synthetic destination.");
       var readback = new StringBuilder(destination.Length + 1);
       if (SendMessageTimeout(edit, 0x000D, new UIntPtr((uint)readback.Capacity), readback, 3, 2000, out result) == IntPtr.Zero ||
           result.ToUInt64() != (ulong)destination.Length || readback.ToString() != destination)
         throw new InvalidOperationException("Owned File name readback differs from the synthetic destination.");
+      validateField();
     }
     public static WindowInfo[] Dialogs(uint ownedPid) {
       var result = new List<WindowInfo>();
