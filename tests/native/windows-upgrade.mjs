@@ -186,6 +186,10 @@ async function workflow() {
   await page.locator('#page-total').click();
   await expect(page.locator('#recovery-status')).toHaveText('Recovery up to date on this device');
   await flow.openPdf('mixed-pages.pdf');
+  // A previous tab can satisfy generic "reader is ready" checks while the new
+  // file chooser event is still opening its document. Wait for this exact tab.
+  await expect(page.getByRole('tab',{name:'mixed-pages.pdf',exact:true})).toHaveAttribute('aria-selected','true');
+  await flow.ready();
   await page.locator('#store-local').click(); await page.getByRole('button',{name:'Enable local recovery',exact:true}).click();
   await expect(page.locator('#recovery-status')).toHaveText('Recovery up to date on this device');
   // Wait for independently parsed bytes, rather than a possibly stale status label.
@@ -221,6 +225,7 @@ async function workflow() {
     const row = page.locator('.library-row').filter({has:page.getByRole('heading',{name,exact:true})});
     if (name !== 'mixed-pages.pdf') await expect(row.locator('.recovery-badge')).toHaveText('Recovery copy available');
     await row.locator('[data-library-action="open"]').click();
+    await expect(page.getByRole('tab',{name,exact:true})).toHaveAttribute('aria-selected','true');
     await expect(active().locator('.page[data-page-number="1"]')).toHaveAttribute('data-loaded','true');
     if (name === 'form.pdf') await expect(active().locator('input[name="reader_name"]')).toHaveValue('Unexported form survives installer upgrade');
     if (name === 'text-outline.pdf') {
