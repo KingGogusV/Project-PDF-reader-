@@ -7,6 +7,7 @@
 - Separated automatic installer verification from publication. Pull requests and matching main pushes retain their read-only installed-app/artifact checks; publication now requires an explicit main-branch manual dispatch with a full matching source SHA. Default manual runs verify only.
 - Added an independent publisher policy and seven regression tests covering accidental triggers, malformed inputs, wrong branches/repositories, stale source confirmation and immutable-tag conflicts before network activity or writes.
 - Added previously missing application/build-input paths to automatic installed-reader verification. Retained exact-source Reader checks, notices, binary/artifact/checksum validation and immutable assets. Application behavior and public release identities are unchanged.
+- Reverified prepared commit `de1b19b`: 70 unit/fixture tests, eight extraction tests, type/syntax and static workflow checks passed. GitHub tree upload and PR-description update remain blocked by the session's `never` approval policy. Confirmed PR #3 remains open and remote main, release tags and asset metadata are unchanged; retained exact errors and local handoff evidence.
 
 ### Windows upgrade preservation
 
