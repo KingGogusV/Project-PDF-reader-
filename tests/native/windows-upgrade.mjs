@@ -204,7 +204,7 @@ async function workflow() {
     needsRecovery:row.needsRecovery, originalSha256:row.originalSha256, latestSha256:row.latestSha256 }));
   checked('upgrade preserves every stored byte, record, revision, usage counter, schema version and preference');
   const active = () => page.locator('.document-host:not([hidden])');
-  for (const name of ['form.pdf','text-outline.pdf','mixed-pages.pdf']) {
+  for (const name of ['mixed-pages.pdf','form.pdf','text-outline.pdf']) {
     await page.locator('#library').click();
     const row = page.locator('.library-row').filter({has:page.getByRole('heading',{name,exact:true})});
     if (name !== 'mixed-pages.pdf') await expect(row.locator('.recovery-badge')).toHaveText('Recovery copy available');
@@ -213,11 +213,20 @@ async function workflow() {
     if (name === 'form.pdf') await expect(active().locator('input[name="reader_name"]')).toHaveValue('Unexported form survives installer upgrade');
     if (name === 'text-outline.pdf') await expect(active().locator('.freeTextAnnotation')).toContainText('Unexported annotation survives upgrade');
     await page.screenshot({path:join(output,`upgraded-${name}.png`)});
-    const downloadEvent = page.waitForEvent('download'); await page.locator('#export').click();
-    const download = await downloadEvent; const path = join(output,`upgraded-${name}`); await download.saveAs(path); assert.equal(await download.failure(),null);
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      (async () => {
+        await page.locator('#export').click();
+        await expect(page.locator('#dialog-title')).toHaveText('Your PDF copy is ready');
+        await expect(page.getByRole('button',{name:'I saved the copy',exact:true})).toBeVisible();
+      })(),
+    ]);
+    const path = join(output,`upgraded-${name}`); await download.saveAs(path); assert.equal(await download.failure(),null);
     const original = before.stores.documents.find(doc => doc.name === name);
     assert.equal(sha256(await readFile(path)), original.latestSha256);
-    if (await page.getByRole('button',{name:'I saved the copy',exact:true}).count()) await page.getByRole('button',{name:'I saved the copy',exact:true}).click();
+    await page.getByRole('button',{name:'I saved the copy',exact:true}).click();
+    await expect(page.locator('#dialog')).toBeHidden();
+    await expect(page.locator('#export')).toBeEnabled();
     checked(`upgraded ${name} visibly reopens and exports its exact preserved PDF bytes`);
   }
   await stopOwned(); await startOwned(versions[1]); await upgradedPage();
