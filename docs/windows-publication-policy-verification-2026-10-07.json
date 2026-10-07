@@ -1,0 +1,74 @@
+{
+  "recordedAt": "2026-10-07T08:15:43.8914416Z",
+  "preparedCommit": "de1b19bc7f7bfa53d65cde9a6b16209685a8e328",
+  "preparedTree": "359bd2cc479126624af604d65c6cdc32b5411f0b",
+  "branch": "fix/explicit-windows-publication",
+  "verification": {
+    "node": "24.19.0",
+    "unitFixtures": {
+      "passed": 70,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5669.7493
+    },
+    "releaseExtraction": {
+      "passed": 8,
+      "failed": 0,
+      "durationSeconds": 1.01
+    },
+    "typecheck": "passed",
+    "syntaxChecks": [
+      "scripts/windows-release.mjs",
+      "scripts/windows-release-policy.mjs",
+      "tests/unit/windows-release-policy.test.mjs"
+    ],
+    "staticWorkflow": {
+      "yaml": "valid; unique keys",
+      "publicationConditionCases": 8,
+      "pushPathCases": 10,
+      "permissionSeparation": "passed",
+      "limit": "Simple equality/conjunction subset; not a GitHub Actions emulator"
+    }
+  },
+  "access": {
+    "execution": "Get-Location passed",
+    "localRepositoryFiles": "write/read/remove passed",
+    "githubLogin": "KingGogusV",
+    "repositoryPermission": "admin",
+    "approvalPolicy": "never",
+    "approvalEscalationAvailable": false,
+    "shellGitHubNetworkError": "fatal: unable to access 'https://github.com/KingGogusV/Project-PDF-reader-.git/': Failed to connect to github.com port 443 after 66 ms: Could not connect to server"
+  },
+  "blockedOperations": [
+    {
+      "operation": "GitHub create_tree",
+      "purpose": "Upload prepared commit's reviewed file tree",
+      "error": "MCP tool call requires approval, but approval policy is never"
+    },
+    {
+      "operation": "GitHub update_pull_request",
+      "purpose": "Update PR #3 title and description",
+      "error": "MCP tool call requires approval, but approval policy is never"
+    }
+  ],
+  "remote": {
+    "pullRequest": "https://github.com/KingGogusV/Project-PDF-reader-/pull/3",
+    "state": "open",
+    "merged": false,
+    "headBranch": "test/windows-upgrade-preservation",
+    "headCommit": "5ac4a1c1ed7dcbe0432de27f4248df30fa1e0736",
+    "mainCommit": "b9e3c6a8c59568a8a9e1a594dd21af5e8b17cde9",
+    "branchUpdated": false,
+    "descriptionUpdated": false,
+    "newFixCiVerified": false,
+    "releasesAndAssetMetadataUnchanged": true,
+    "tagsUnchanged": true,
+    "websiteRedeployed": false
+  },
+  "remaining": [
+    "Upload prepared fix with a non-forced fast-forward to the PR branch after rechecking remote history.",
+    "Update PR description for the upgrade and explicit publication scope.",
+    "Require successful affected CI on the uploaded fix, investigate failures, then merge PR #3.",
+    "Record actual remote results and final Git state; do not publish a new EXE, change existing release tags/assets, or redeploy unchanged website."
+  ]
+}

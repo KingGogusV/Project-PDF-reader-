@@ -1,5 +1,23 @@
 # Research record
 
+## Explicit release publication - 2026-10-07
+
+**FACT:** GitHub documents typed `workflow_dispatch` inputs, with boolean values preserved in the `inputs` context and represented as strings in `github.event.inputs`. Branch/path filters control automatic runs. References: [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [manual workflow runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
+
+**DESIGN DECISION:** Preserve automatic installer verification while requiring an explicit manual main publication request with a full matching source SHA. Independently enforce the event payload in the publisher before network access; check immutable tag conflicts before waiting for Reader checks/artifacts. Keep all existing source, native-runtime, notice and digest gates.
+
+**UNRESOLVED:** A future new-version publication still needs coherent version/tag/allowlist updates and all release gates. This automation-only change does not publish or replace the current preview. This Work session blocks GitHub mutation approval and direct outbound Git access; remote CI and merging PR #3 remain pending. See [verification](docs/verification.md).
+
+## Windows installer upgrade - 2026-10-07
+
+**FACT:** Anonymous downloads of the existing 0.1.0 and 0.1.1 installers matched recorded digests. [Run 37583640160](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640160) passed 20 upgrade/recovery checks with those exact executables. The evidence ZIP digest, before/after stores and actual exported PDFs were independently rechecked. Environment: elevated Windows Server 2025 CI, WebView2 153.0.4234.48, isolated guest profile.
+
+**FACT:** Earlier run 37583139158 lost its newest recent-file localStorage entry after abrupt old-version termination; PDF stores matched. Another attempt applied storage before the requested tab was active. The first attempt timed out awaiting a third download; its exact cause was not independently isolated.
+
+**DESIGN DECISION:** Confirm durable 0.1.0 state after restarting before upgrading; retain complete preservation checks and failed evidence. Wait for document identity and visible export confirmation. Add no application code or dependency for this verification.
+
+**UNRESOLVED:** Default-profile normal-user upgrades, older libraries, account partitions, storage failure, pending edits and recent-metadata flush guarantees need separate tests. The local Work session denies CIM inspection despite working shell/build/browser execution. See [evidence](docs/windows-upgrade-verification-2026-10-07.json).
+
 ## Final delivery evidence - 2026-10-03
 
 **FACT:** [Windows preview v0.1.0-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published from source `61adbfd1c9d582e1203606052c2443270f689366`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T12:15:32.087Z. The unsigned Windows x64 installer is 17,844,743 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666280) passed actual installation, 14 native checks, exact-byte NSIS identity, notice collection and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666271) passed 63 unit tests with zero skips, 66 E2E cases each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native build CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37121666305) built both Windows and macOS packages.

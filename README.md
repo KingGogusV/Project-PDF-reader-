@@ -18,6 +18,8 @@ Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **u
 
 Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain on your device.
 
+The published 0.1.0-to-0.1.1 upgrade preserved synthetic local-library and recovery PDFs in Windows CI; real default-profile upgrades remain a separate verification task. See [upgrade evidence](docs/windows-upgrade-verification-2026-10-07.json).
+
 ## Available workflows
 
 - Open local PDFs in up to three tabs; navigate, search, select text, use thumbnails/outlines, zoom and rotate the view.

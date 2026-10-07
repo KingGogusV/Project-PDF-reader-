@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-07
+
+### Explicit Windows release publication
+
+- Separated automatic installer verification from publication. Pull requests and matching main pushes retain their read-only installed-app/artifact checks; publication now requires an explicit main-branch manual dispatch with a full matching source SHA. Default manual runs verify only.
+- Added an independent publisher policy and seven regression tests covering accidental triggers, malformed inputs, wrong branches/repositories, stale source confirmation and immutable-tag conflicts before network activity or writes.
+- Added previously missing application/build-input paths to automatic installed-reader verification. Retained exact-source Reader checks, notices, binary/artifact/checksum validation and immutable assets. Application behavior and public release identities are unchanged.
+- Reverified prepared commit `de1b19b`: 70 unit/fixture tests, eight extraction tests, type/syntax and static workflow checks passed. GitHub tree upload and PR-description update remain blocked by the session's `never` approval policy. Confirmed PR #3 remains open and remote main, release tags and asset metadata are unchanged; retained exact errors and local handoff evidence.
+
+### Windows upgrade preservation
+
+- Added pinned published-installer downloads, guarded installation, a synthetic recovery test and read-only GitHub verification workflow. Twenty upgrade/reopen/export/restart checks passed on disposable Windows Server 2025 CI.
+- Corrected test document/export readiness races and separated durable upgrade state from pre-upgrade recent-file flush loss. Retained failures and independently checked downloaded PDF evidence.
+- Local type checking, 63 unit tests with zero skips, production client/account-worker builds and 13 Edge accessibility/responsive cases passed. Inspected native annotation and 320-pixel screenshots.
+- Updated engineering records. Application code, dependencies, hosted deployment and published assets are unchanged. Local native inspection remains restricted; normal-user Windows 11 upgrades remain unverified.
+- PR-source CI also passed 79 browser cases each on Linux Chromium/macOS WebKit, seven core cases, nine signing cases, both native package builds and the installed Windows preview gate. PR publication was skipped.
+
 ## 2026-10-03
 
 ### Accessibility pass

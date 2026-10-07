@@ -1,0 +1,16 @@
+[
+  {
+    "version": "0.1.0",
+    "tag": "v0.1.0-preview.1",
+    "source": "61adbfd1c9d582e1203606052c2443270f689366",
+    "installerSha256": "ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac",
+    "executableSha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1"
+  },
+  {
+    "version": "0.1.1",
+    "tag": "v0.1.1-preview.1",
+    "source": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+    "installerSha256": "32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2",
+    "executableSha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c"
+  }
+]

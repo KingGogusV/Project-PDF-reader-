@@ -1,6 +1,6 @@
 # Maintenance
 
-Updated: **2026-10-03 UTC**. The connected GitHub repository is the authoritative source. The existing workspace/hosting manifest belongs to this project; do not create a second application or replace established resources merely to deploy.
+Updated: **2026-10-07 UTC**. The connected GitHub repository is the authoritative source. The existing workspace/hosting manifest belongs to this project; do not create a second application or replace established resources merely to deploy.
 
 ## Startup Procedure
 
@@ -136,6 +136,12 @@ The inspected Windows environment has an isolated Rust tool cache but lacks MSVC
 
 ## Windows Download Release Pipeline
 
+Automatic pull-request and matching main-push runs **verify only**: they build the installer, exercise the installed application, prepare checksummed files and retain artifacts. Ordinary documentation-only main pushes do not match the Windows workflow's paths. Test/harness changes can merge without attempting to publish an unchanged application or reuse an immutable release tag. Application/build-input paths also trigger installed-reader verification.
+
+To deliberately publish a future preview, first update the application version, release tag, names, notes and extractor allowlist coherently and merge the reviewed change. In GitHub Actions, open **Windows download release**, choose **Run workflow** on `main`, select `publish`, and provide the full reviewed commit in `expected_source_sha`. Leave `publish` unchecked for verification-only manual runs. The workflow and publisher independently require an explicit publication dispatch on this repository's main branch with an exact matching SHA. A moved branch requires reviewing the new source; never substitute a short SHA or bypass that check.
+
+Publication still requires successful Reader **push** checks on that exact main revision; do not use `[skip ci]` for a source intended for publication. Installer verification and artifact/source/digest/notice checks remain mandatory. The current already-published tag cannot be republished from a different commit: the publisher refuses that conflict before waiting for Reader checks or downloading artifacts. Future releases need new immutable version/tag identities; this change does not create a new release.
+
 The published unsigned x64 prerelease is [`v0.1.1-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1). Native reader/close, strict packaging identity and publication gates passed. Reproduce the build with:
 
 ```sh
@@ -222,4 +228,21 @@ The current verified immutable release is `v0.1.1-preview.1`, with `Folio-0.1.1-
 
 ### Accessibility verification and recovery notes
 
-The current browser update is deployment v4. `docs/accessibility-verification-2026-10-03.json` records its exact source/build identity and both browser scan summaries. Run the repository browser suite against a production build; keep host preview failures separate from app failures. Safari’s default macOS key convention uses Option-Tab for links; the full Tab navigation setting is documented in Help. Pointer-triggered dialog focus must be checked as well as keyboard activation. Windows runtime verification waits for a nonempty CIM process-image path within its existing startup bound before collecting version/profile/port evidence; a timeout is a failure, never an excuse to waive the native release gate.
+The current browser update is deployment v4. `docs/accessibility-verification-2026-10-03.json` records its exact source/build identity and both browser scan summaries. Run the repository browser suite against a production build; keep host preview failures separate from app failures. Safari's default macOS key convention uses Option-Tab for links; the full Tab navigation setting is documented in Help. Pointer-triggered dialog focus must be checked as well as keyboard activation. Windows runtime verification waits for a nonempty CIM process-image path within its existing startup bound before collecting version/profile/port evidence; a timeout is a failure, never an excuse to waive the native release gate.
+
+### Published Windows upgrade check
+
+Run this only in a clean Windows test session with no existing Folio installation or running Folio process. Local mode requires a normal, non-elevated user, readable Windows CIM process metadata and writable HKCU registration. It refuses an occupied target, reparse points and unrelated installed apps. Do not use a user's real profile to seed the test.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm fixtures
+node tests/native/download-upgrade-installers.mjs
+node tests/native/windows-upgrade.mjs .cache/public-windows-preview-0.1.0/Folio-0.1.0-Windows-x64-Setup.exe .cache/public-windows-preview-0.1.1/Folio-0.1.1-Windows-x64-Setup.exe
+```
+
+The download helper verifies fixed published installer digests; the test also verifies installed executable digests. It creates a temporary installation and synthetic WebView profile, seeds form/text-annotation recovery plus an unchanged mixed-page PDF, terminates the owned process job, verifies the durable 0.1.0 state after restarting, upgrades using the actual 0.1.1 installer, then checks stored bytes/metadata, visible reopening, exact-byte exports and another restart. Any recent-file metadata lost before the upgrade is reported separately. No mock application assets or user PDFs are used.
+
+`.github/workflows/windows-upgrade.yml` runs the same check with `--ci` only on this repository's disposable GitHub-hosted Windows runner. CI uses the existing per-executable WebView2 overrides and owned-job cleanup. Never spoof CI environment variables locally. Reports and synthetic outputs live in `test-results/native-windows-upgrade-*`; Playwright can clear `test-results`, so copy important evidence before running a separate browser suite. The owned uninstaller uses `/UPDATE` to avoid deleting application data; synthetic profiles remain for inspection. Installer-location hints may remain, so use a disposable session for installation tests.
+
+This is a test-only path. Do not publish a new release or replace existing tags/assets for an unchanged application. Review native-workflow changes through a PR; matching `tests/native/**` main pushes verify the installer but cannot publish. The explicit publication policy has regression coverage in `tests/unit/windows-release-policy.test.mjs`.

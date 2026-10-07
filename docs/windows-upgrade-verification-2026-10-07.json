@@ -1,0 +1,245 @@
+{
+  "date": "2026-10-07",
+  "status": "passed",
+  "workflowRun": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37583640160",
+  "prHead": "0e56b6b11b912a9f044f568c32b67515d3a3984f",
+  "testedMergeSource": "19080312d057514438327a4cfb8e26051cbff3a0",
+  "environment": {
+    "os": "Microsoft Windows Server 2025 10.0.26100",
+    "runner": "windows-2025-vs2026",
+    "node": "24.21.0",
+    "webview2": "153.0.4234.48",
+    "elevated": true,
+    "profile": "fresh synthetic overridden WebView2 profile",
+    "account": "guest"
+  },
+  "startedAt": "2026-10-07T06:50:24.133Z",
+  "completedAt": "2026-10-07T06:50:59.541Z",
+  "workflowDurationMs": 35408,
+  "versions": [
+    {
+      "version": "0.1.0",
+      "tag": "v0.1.0-preview.1",
+      "source": "61adbfd1c9d582e1203606052c2443270f689366",
+      "installerSha256": "ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac",
+      "executableSha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1"
+    },
+    {
+      "version": "0.1.1",
+      "tag": "v0.1.1-preview.1",
+      "source": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+      "installerSha256": "32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2",
+      "executableSha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c"
+    }
+  ],
+  "checks": [
+    {
+      "name": "published 0.1.0 installer installs to an empty temporary directory",
+      "status": "passed"
+    },
+    {
+      "name": "published 0.1.0 starts in the same isolated profile",
+      "status": "passed",
+      "sha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1",
+      "elevated": true
+    },
+    {
+      "name": "packaged application opens without a development server",
+      "status": "passed"
+    },
+    {
+      "name": "real local form PDF renders nonblank pixels and native form widgets",
+      "status": "passed",
+      "width": 782,
+      "height": 1013,
+      "sampledNonWhitePixels": 454
+    },
+    {
+      "name": "declining storage leaves the document library empty",
+      "status": "passed"
+    },
+    {
+      "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+      "status": "passed",
+      "originalSha256": "3c68bed5cf4413357fcd633a9c88251755994e4aaf7895ebd156cbc2b425bb8b",
+      "latestSha256": "387db3549e7604337023367996e86760dcbc3624830097e1e1d149cedaf0afd8",
+      "pageCount": 1
+    },
+    {
+      "name": "reloading the actual native WebView restores the edited form from the device library",
+      "status": "passed"
+    },
+    {
+      "name": "a second real PDF searches all three pages and navigates results",
+      "status": "passed"
+    },
+    {
+      "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+      "status": "passed",
+      "observation": "Controlled reload through form recovery and search; app network requests only."
+    },
+    {
+      "name": "three 0.1.0 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF",
+      "status": "passed"
+    },
+    {
+      "name": "published 0.1.0 starts in the same isolated profile",
+      "status": "passed",
+      "sha256": "e2a239d16f9b3c33d85735d42ea2024ffda214ad0c76b1ff9f063435465290f1",
+      "elevated": true
+    },
+    {
+      "name": "completed 0.1.0 checkpoints survive an actual process restart before the installer upgrade",
+      "status": "passed"
+    },
+    {
+      "name": "normal 0.1.1 installer upgrade replaces the exact owned published executable",
+      "status": "passed"
+    },
+    {
+      "name": "published 0.1.1 starts in the same isolated profile",
+      "status": "passed",
+      "sha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c",
+      "elevated": true
+    },
+    {
+      "name": "upgrade preserves every stored byte, record, revision, usage counter, schema version and preference",
+      "status": "passed"
+    },
+    {
+      "name": "upgraded mixed-pages.pdf visibly reopens and exports its exact preserved PDF bytes",
+      "status": "passed"
+    },
+    {
+      "name": "upgraded form.pdf visibly reopens and exports its exact preserved PDF bytes",
+      "status": "passed"
+    },
+    {
+      "name": "upgraded text-outline.pdf visibly reopens and exports its exact preserved PDF bytes",
+      "status": "passed"
+    },
+    {
+      "name": "published 0.1.1 starts in the same isolated profile",
+      "status": "passed",
+      "sha256": "63c3a9d7db7059eda88350ffec3b221e0bcb821e085fd504c558b684304a3d8c",
+      "elevated": true
+    },
+    {
+      "name": "second full 0.1.1 process restart retains originals and latest PDF bytes",
+      "status": "passed"
+    }
+  ],
+  "documents": [
+    {
+      "name": "mixed-pages.pdf",
+      "needsRecoveryBeforeUpgrade": false,
+      "originalSha256": "eeaca43a81f46ed2d83fdd1f4730349c1db94fb20e2dbb0cf51fad92ef823433",
+      "latestSha256": "eeaca43a81f46ed2d83fdd1f4730349c1db94fb20e2dbb0cf51fad92ef823433",
+      "pageCount": 4,
+      "exportMatchesStoredLatest": true
+    },
+    {
+      "name": "form.pdf",
+      "needsRecoveryBeforeUpgrade": true,
+      "originalSha256": "3c68bed5cf4413357fcd633a9c88251755994e4aaf7895ebd156cbc2b425bb8b",
+      "latestSha256": "e8ecf98e9901e63351548e380dbcc9823c8fc5c9c6c385089ae0fd8fa5bbf875",
+      "pageCount": 1,
+      "exportMatchesStoredLatest": true
+    },
+    {
+      "name": "text-outline.pdf",
+      "needsRecoveryBeforeUpgrade": true,
+      "originalSha256": "d871069006137fa94fc1d0a0bf48846884888d49002eb2891952d5a1d9c18450",
+      "latestSha256": "a548172793a27fb51b1cf392e9f3a8cb1b17677f27f58499bd09102cc21b1d08",
+      "pageCount": 3,
+      "exportMatchesStoredLatest": true
+    }
+  ],
+  "preUpgradeCrash": {
+    "documentStoresPreserved": true,
+    "preferencesPreservedInPassingRun": true
+  },
+  "artifact": {
+    "id": 11465332072,
+    "sha256": "28d4646b23e74af35dd7d41666e4d10eb77748f7a326057670ea51c496f1e29a",
+    "downloadVerified": true,
+    "independentByteAndPdfRecheck": true,
+    "visualReview": [
+      "upgraded FreeText annotation",
+      "320 CSS pixel browser reflow"
+    ]
+  },
+  "cleanup": {
+    "ownedJobsEmpty": true,
+    "exactCiPolicyValuesRemoved": true,
+    "ownedUninstallRegistrationAndExecutableRemoved": "owned registration and executable removed; synthetic profile retained",
+    "syntheticProfileRetained": true
+  },
+  "errors": {
+    "page": [],
+    "console": [],
+    "externalRequests": [],
+    "unexpectedWriteRequests": []
+  },
+  "localChecks": {
+    "osVersion": "10.0.22621.0",
+    "edge": "154.0.4258.62",
+    "node": "24.19.0",
+    "typecheck": "passed",
+    "unitTests": {
+      "passed": 63,
+      "failed": 0,
+      "skipped": 0
+    },
+    "productionClientAndWorkerBuild": "passed",
+    "accessibilityAndResponsiveTests": {
+      "passed": 13,
+      "failed": 0,
+      "processExitCode": 0,
+      "previewCleanup": "Owned preview stopped explicitly after test completion because restricted-session automatic teardown stalled."
+    },
+    "nativeUpgrade": "Blocked before installation by denied Windows CIM process inspection."
+  },
+  "knownLimitations": [
+    "One earlier run lost the newest recent-file localStorage entry after abrupt process termination; PDF stores survived. This test compares upgrade state only after confirming its durable 0.1.0 baseline.",
+    "Synthetic completed checkpoints only: not pending editor drafts, real default profiles, disk failure, every PDF or normal end-user Windows 11 upgrade.",
+    "Unsigned published previews; no physical printing, macOS native, physical mobile or assistive-technology certification."
+  ],
+  "previousFailures": [
+    {
+      "run": 37582700209,
+      "reason": "Third-document download timed out; the exact cause was not independently isolated. Later test revisions wait for exact document identity and visible export confirmation."
+    },
+    {
+      "run": 37583139158,
+      "reason": "Newest recent-file entry was lost before upgrade during abrupt old-version termination."
+    },
+    {
+      "run": 37583425434,
+      "reason": "Storage action raced the new document opening; previous tab could satisfy generic readiness."
+    }
+  ],
+  "additionalCi": {
+    "nativePackages": {
+      "run": 37583640157,
+      "macOS": "success",
+      "windows": "success"
+    },
+    "testedPrHead": "0e56b6b11b912a9f044f568c32b67515d3a3984f",
+    "windowsPreview": {
+      "run": 37583640154,
+      "publication": "skipped (pull request)",
+      "installedReaderJob": "success"
+    },
+    "reader": {
+      "unitPassedPerPlatform": 63,
+      "signingPassed": 9,
+      "corePassed": 7,
+      "linuxChromiumPassed": 79,
+      "macOSWebKitPassed": 79,
+      "unitSkipped": 0,
+      "status": "success",
+      "run": 37583640162
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Folio - product record
 
-Updated: **2026-10-03 UTC**. Folio is a functioning development application with verified browser workflows and substantial remaining release/platform gates. It is not certified production-ready. [Verification](docs/verification.md) records exact runs; results from the original reader do not automatically cover later features.
+Updated: **2026-10-07 UTC**. Folio is a functioning development application with verified browser workflows and substantial remaining release/platform gates. It is not certified production-ready. [Verification](docs/verification.md) records exact runs; results from the original reader do not automatically cover later features.
 
 ## Product Overview
 
@@ -29,11 +29,15 @@ Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI 
 
 ## Windows Preview Delivery
 
+Release automation now separates verification from publication: automatic PR/matching-main runs retain installed-app verification, while a new public release requires an explicit main dispatch and exact reviewed commit confirmation. The optional dispatch defaults to verification only. See the [release procedure](MAINTENANCE.md#windows-download-release-pipeline); the current published preview remains immutable.
+
 [Windows preview v0.1.1-preview.1](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) is published from source `8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f`. All four public assets were downloaded without credentials and their sizes, SHA-256 values, provenance and tag identity verified at 2026-10-03T18:05:44.007570+00:00. The unsigned Windows x64 installer is 17,854,309 bytes. [Release CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37142162439) passed installation, 14 native workflows, exact-byte NSIS identity, cleanup, notices and publication. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37142162437) passed 63 unit tests with zero skips, 79 E2E workflows each on Linux Chromium/macOS WebKit, seven checkpoint cases and nine signing cases. [Native builds](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37142162471) passed on Windows and macOS.
 
 Download [Folio-0.1.1-Windows-x64-Setup.exe](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe), run it, and launch Folio from Start. Local reading and opt-in storage need no ChatGPT account or developer tools. Optional website accounts use managed ChatGPT/OpenAI sign-in; native mode is a guest reader. Device copies remain unencrypted and separate from website storage. Initial installation may need internet for WebView2.
 
 The installed app protects OS close with the shared save/discard flow. Completed-checkpoint recovery, form/annotation export-reopen and close cancel/discard passed in Windows CI for 0.1.1. Earlier normal-user 0.1.0 evidence remains separate. This remains a development preview: signing, associations, physical printing, macOS native runtime and physical mobile devices are separate gaps. See [maintenance](MAINTENANCE.md) and [installation](docs/windows-installation.md).
+
+The published 0.1.0-to-0.1.1 installer upgrade passed 20 checks on 2026-10-07: three synthetic guest PDFs retained originals, unexported form/text-annotation checkpoints, records, exports and restart recovery. Environment: elevated disposable Windows Server 2025, WebView2 153.0.4234.48, isolated overridden profile. This does not establish a real default Windows 11 profile upgrade. One earlier abrupt-termination run lost its newest recent-file entry while PDF stores survived. [Evidence](docs/windows-upgrade-verification-2026-10-07.json) retains boundaries and failures. Application code, hosted deployment and published installers are unchanged.
 
 ## Current Technology Stack
 

@@ -7,12 +7,38 @@ on:
     paths:
       - '.github/workflows/windows-release.yml'
       - 'scripts/windows-release.mjs'
+      - 'scripts/windows-release-policy.mjs'
       - 'scripts/unpack-release.py'
       - 'scripts/native-*'
-      - 'src-tauri/tauri.windows-release.conf.json'
       - 'tests/native/**'
+      - 'tests/release/**'
+      - 'tests/unit/windows-release-policy.test.mjs'
+      - 'src/**'
+      - 'public/**'
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'index.html'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - 'scripts/copy-assets.mjs'
+      - 'scripts/create-sw.mjs'
+      - 'scripts/generate-fixtures.mjs'
+      - 'third_party/**'
       - 'docs/releases/**'
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a new immutable preview after all verification gates
+        type: boolean
+        required: false
+        default: false
+      expected_source_sha:
+        description: Full main commit SHA required when publish is selected
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -30,6 +56,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
+      - name: Verify publication request policy
+        run: node --test tests/unit/windows-release-policy.test.mjs
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
         with:
           toolchain: '1.99.0'
@@ -100,7 +128,9 @@ jobs:
   publish:
     name: Publish verified Windows EXE
     needs: installer
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.repository == 'KingGogusV/Project-PDF-reader-'
+    # Push/PR runs verify only. Publication requires a deliberate main dispatch
+    # pinned to the reviewed source; its script independently enforces this.
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && inputs.expected_source_sha == github.sha && github.ref == 'refs/heads/main' && github.repository == 'KingGogusV/Project-PDF-reader-'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     concurrency:
