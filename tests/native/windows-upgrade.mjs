@@ -66,7 +66,7 @@ const shortcutState = join(output,'shortcut-ownership.json');
 const executable = join(target, 'folio-desktop.exe');
 const fixtures = join(repo, 'tests/fixtures/generated');
 const report = { schemaVersion:1, startedAt:new Date().toISOString(), status:'running', mode:candidateMode ? 'disposable-hosted-ci-candidate' : ci ? 'disposable-hosted-ci' : 'local-normal-user', sourceCommit:ci ? process.env.GITHUB_SHA : null,
-  ...(candidateMode ? { candidate:versions[1], baseline:versions[0], profileMode:'default', nativeDialogs:[], retainedCopies:copies,
+  ...(candidateMode ? { candidate:versions[1], baseline:versions[0], profileMode:'default', nativeDialogs:[], frontendDelivery:[], retainedCopies:copies,
     installerCleanupVerified:false, shortcutsCleanupVerified:false } : {}),
   versions, target, retainedProfile:profile, checks:[], launches:[], installations:[], pageErrors:[],
   consoleErrors:[], requests:[], blockedExternalRequests:[], unexpectedWriteRequests:[], nativeIpcRequests:[],
@@ -229,6 +229,27 @@ async function upgradedPage() {
     return route.continue();
   });
   await context.routeWebSocket('**/*',socket => { report.blockedExternalRequests.push(socket.url()); socket.close(); });
+  if (candidateMode && installedVersion === versions[1]) {
+    // Prove the first user-visible navigation is current before the harness's
+    // controlled reload; an extra test reload must not conceal a stale shell.
+    await expect(page.locator('#welcome')).toBeVisible();
+    await expect(page.locator('#export .save-label')).toHaveText('Save As');
+    const frontend = await page.evaluate(async () => {
+      const url = new URL(location.href);
+      const rootScope = new URL('/', url).href;
+      const script = new URL('/sw.js', url).href;
+      const registrations = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistrations() : [];
+      const workers = registrations.filter(registration => registration.scope === rootScope &&
+        [registration.active, registration.waiting, registration.installing].some(worker => worker?.scriptURL === script));
+      return { origin:url.origin, pathname:url.pathname, nativeQuery:url.searchParams.get('folio-native'),
+        saveAsLabel:document.querySelector('#export .save-label')?.textContent,
+        registeredFolioWorkers:workers.length,
+        remainingFolioAppCaches:'caches' in window ? (await caches.keys()).filter(key => key.startsWith('folio-app-')).length : 0 };
+    });
+    assert.deepEqual(frontend, {origin:'http://tauri.localhost',pathname:'/index.html',nativeQuery:'1',saveAsLabel:'Save As',
+      registeredFolioWorkers:0,remainingFolioAppCaches:0});
+    report.frontendDelivery.push({launchIndex:report.launches.length,firstNavigation:true,...frontend});
+  }
   await page.reload({ waitUntil:'domcontentloaded' }); await expect(page.locator('#welcome')).toBeVisible();
 }
 async function saveCandidateCopy(path) {

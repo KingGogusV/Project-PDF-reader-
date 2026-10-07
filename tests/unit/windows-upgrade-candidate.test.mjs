@@ -14,7 +14,7 @@ function inputs() {
   return {sourceCommit:source,checkoutCommit:source,
     packageJson:{version:'0.1.2',devDependencies:{'@tauri-apps/cli':'2.12.1'}},
     cargoManifest:'[package]\nname = "folio-desktop"\nversion = "0.1.2"\n[lib]\n',
-    tauriConfig:{version:'0.1.2',productName:'Folio',identifier:'app.folio.localreader'},
+    tauriConfig:{version:'0.1.2',productName:'Folio',identifier:'app.folio.localreader',app:{windows:[{label:'main',url:'index.html?folio-native=1'}]}},
     installers:['candidate.exe'],builtBytes,installerBytes};
 }
 test('candidate identity binds source, installer and every executable byte with the pinned NSIS marker rule', () => {
@@ -37,7 +37,9 @@ test('candidate refuses identity, version or CLI drift across the upgrade bounda
   const mutations = [value => {value.packageJson.version='0.1.1';},value => {value.cargoManifest=value.cargoManifest.replace('0.1.2','0.1.1');},
     value => {value.tauriConfig.version='0.1.1';},value => {value.tauriConfig.identifier='other.reader';},
     value => {value.tauriConfig.productName='Other';},value => {value.tauriConfig.mainBinaryName='other';},
-    value => {value.packageJson.devDependencies['@tauri-apps/cli']='2.13.0';}];
+    value => {value.packageJson.devDependencies['@tauri-apps/cli']='2.13.0';},
+    value => {value.tauriConfig.app.windows[0].url='index.html';},
+    value => {delete value.tauriConfig.app;}];
   for (const mutate of mutations) { const value=inputs(); mutate(value); assert.throws(() => candidateUpgradeIdentity(value)); }
 });
 test('candidate rejects wrong architecture, already patched or ambiguous bundle markers and non-executable installers', () => {

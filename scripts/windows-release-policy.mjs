@@ -79,6 +79,11 @@ export function assertCandidateUpgradeReport(report, { revision, installerSha256
         launch.webview?.profileVerified === true && launch.webview?.portVerified === true && launch.webview?.profileMode === 'default' &&
         typeof launch.webview.actualProfile === 'string' && /[\\/]app\.folio\.localreader[\\/]EBWebView$/.test(launch.webview.actualProfile) &&
         launch.webview.actualProfile === report.launches[0]?.webview?.actualProfile; })) fail();
+  if (!Array.isArray(report.frontendDelivery) || report.frontendDelivery.length !== 2 ||
+      ![2, 3].every((launchIndex, index) => { const delivered = report.frontendDelivery[index];
+        return delivered?.launchIndex === launchIndex && delivered.firstNavigation === true &&
+          delivered.origin === 'http://tauri.localhost' && delivered.pathname === '/index.html' && delivered.nativeQuery === '1' &&
+          delivered.saveAsLabel === 'Save As' && delivered.registeredFolioWorkers === 0 && delivered.remainingFolioAppCaches === 0; })) fail();
   if (!Array.isArray(report.nativeDialogs) || report.nativeDialogs.length !== 3 ||
       ![0, 1, 2].every(index => { const dialog = report.nativeDialogs[index]; return dialog?.action === 'save' && dialog.status === 0 &&
         dialog.error === undefined && typeof dialog.evidence === 'string' &&

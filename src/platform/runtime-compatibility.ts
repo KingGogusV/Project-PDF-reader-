@@ -36,15 +36,15 @@ export function missingRuntimeCapabilities(runtime: RuntimeCapabilities = global
 }
 
 /** No reader imports, storage access or private error details are needed for update guidance. */
-export function showRuntimeUpdateHelp(root: HTMLElement, native: boolean, loadFailure = false): void {
+export function showRuntimeUpdateHelp(root: HTMLElement, native: boolean, loadFailure = false, preserveExisting = false): void {
   const document = root.ownerDocument;
-  const main = document.createElement('main');
+  const main = document.createElement(preserveExisting ? 'section' : 'main');
   main.className = 'welcome';
   main.tabIndex = -1;
   main.setAttribute('aria-labelledby', 'runtime-update-title');
   const content = document.createElement('div');
   content.className = 'welcome-content';
-  const title = document.createElement('h1');
+  const title = document.createElement(preserveExisting ? 'h2' : 'h1');
   title.id = 'runtime-update-title';
   title.textContent = loadFailure ? 'Folio could not start' : 'Folio needs an update';
   const guidance = document.createElement('p');
@@ -76,6 +76,9 @@ export function showRuntimeUpdateHelp(root: HTMLElement, native: boolean, loadFa
     content.append(link);
   }
   main.append(content);
-  root.replaceChildren(main);
+  // After close ownership has passed to the reader, its mounted document,
+  // dialog and status elements must remain usable by the normal unsaved guard.
+  if (preserveExisting) root.prepend(main);
+  else root.replaceChildren(main);
   main.focus();
 }

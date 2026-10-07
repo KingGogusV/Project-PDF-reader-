@@ -89,6 +89,8 @@ function candidateReport() {
     schemaVersion: 1, status: 'passed', mode: 'disposable-hosted-ci-candidate', profileMode: 'default', sourceCommit: sha,
     baseline, candidate, versions: [structuredClone(baseline), structuredClone(candidate)], target,
     installerCleanupVerified: true, shortcutsCleanupVerified: true, preUpgradeCrash: { documentStoresPreserved: true },
+    frontendDelivery:[2,3].map(launchIndex => ({launchIndex,firstNavigation:true,origin:'http://tauri.localhost',pathname:'/index.html',
+      nativeQuery:'1',saveAsLabel:'Save As',registeredFolioWorkers:0,remainingFolioAppCaches:0})),
     checks: names.map(name => ({ name, status: 'passed' })),
     pageErrors: [], consoleErrors: [], blockedExternalRequests: [], unexpectedWriteRequests: [],
     library: ['mixed-pages.pdf', 'form.pdf', 'text-outline.pdf'].map((name, index) => ({ name,
@@ -182,6 +184,18 @@ test('candidate page/console/privacy failures cannot become a release payload', 
     ...['pageErrors', 'consoleErrors', 'blockedExternalRequests', 'unexpectedWriteRequests']
       .flatMap(field => [report => { report[field].push('synthetic observed failure'); }, report => { delete report[field]; }]),
     report => { report.status = 'failed'; }, report => { report.cleanupError = 'synthetic cleanup failure'; },
+  ]);
+});
+
+test('candidate first navigation must load the installed native UI without surviving Folio offline caches', () => {
+  rejectCandidateChanges([
+    report => { delete report.frontendDelivery; }, report => { report.frontendDelivery.pop(); },
+    report => { report.frontendDelivery.reverse(); },
+    ...['launchIndex','firstNavigation','origin','pathname','nativeQuery','saveAsLabel','registeredFolioWorkers','remainingFolioAppCaches']
+      .flatMap(field => [report => { report.frontendDelivery[0][field] = field === 'firstNavigation' ? false : 'stale'; },
+        report => { delete report.frontendDelivery[1][field]; }]),
+    report => { report.frontendDelivery[0].registeredFolioWorkers = 1; },
+    report => { report.frontendDelivery[1].remainingFolioAppCaches = 1; },
   ]);
 });
 

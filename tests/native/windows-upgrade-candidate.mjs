@@ -15,6 +15,8 @@ export function candidateUpgradeIdentity({ sourceCommit, checkoutCommit, package
   assert.equal(tauriConfig.productName, 'Folio');
   assert.equal(tauriConfig.identifier, 'app.folio.localreader');
   assert.equal(tauriConfig.mainBinaryName || 'folio-desktop', 'folio-desktop');
+  assert.equal(tauriConfig.app?.windows?.find(window => window.label === 'main')?.url, 'index.html?folio-native=1',
+    'The candidate first navigation must bypass the older native application-shell cache.');
   assert.equal(packageJson.devDependencies['@tauri-apps/cli'], '2.12.1');
   assert.equal(installers.length, 1, 'Exactly one candidate NSIS installer is required in the fixed build output directory.');
   assert.ok(Buffer.isBuffer(installerBytes) && installerBytes.length >= 64 && installerBytes.length < 200 * 1024 * 1024,

@@ -257,7 +257,12 @@ async function prepareNativeClose(): Promise<boolean> {
   return sessions.length===0;
  }finally{if(sessions.length)closingApplication=false;renderTabs();}
 }
-if(isTauri())registerNativeCloseGuard(window,prepareNativeClose,()=>invoke<void>('finish_close'),error=>{closingApplication=false;toast(`Folio remains open. ${errorText(error)}`,true);});
+if(isTauri()){
+ registerNativeCloseGuard(window,prepareNativeClose,()=>invoke<void>('finish_close'),error=>{closingApplication=false;toast(`Folio remains open. ${errorText(error)}`,true);});
+ // Claim close ownership before document interaction handlers or initialization
+ // can open a PDF. Startup must never authorize an empty close after this point.
+ window.dispatchEvent(new Event('folio-native-close-guard-ready'));
+}
 function setToolUI(tool: string) {for(const name of ['select','highlight','text','draw']){const b=$(`tool-${name}`);b.classList.toggle('active',name===tool);b.setAttribute('aria-pressed',String(name===tool));}}
 function setTool(tool:'select'|'highlight'|'text'|'draw') {const s=active();if(!s)return;s.controller.setTool(tool);setToolUI(tool);const hints={select:'',highlight:'Select text on the page to highlight it. Choose Select text to return to reading.',text:'Click or tap the page to add text. Use the editor controls to change size and color.',draw:'Draw on the page with a pointer or stylus. Switch to Select text to scroll normally.'};$('tool-hint').hidden=!hints[tool];setText('tool-hint',hints[tool]);}
 function setSidebar(show: boolean, focus: 'toggle'|'document'|'navigation'|false = false) {
@@ -368,4 +373,4 @@ $('toggle-search').setAttribute('aria-expanded','false');$('toggle-search').setA
 renderRecents();
 if(isTauri()){$('export').querySelector('.save-label')!.textContent='Save As';$('export').title='Save a new PDF copy (Ctrl or Command S)';}
 void deviceLibrary.initialize().catch(e=>toast(errorText(e),true));
-if(import.meta.env.PROD&&'serviceWorker'in navigator)navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>toast('Offline app caching is unavailable. Local PDF reading still works in this open tab.'));
+if(import.meta.env.PROD&&!isTauri()&&'serviceWorker'in navigator)navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>toast('Offline app caching is unavailable. Local PDF reading still works in this open tab.'));
