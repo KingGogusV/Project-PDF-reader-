@@ -1,0 +1,1818 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "verifiedAt": "2026-10-07T21:20:21.197Z",
+  "repository": "KingGogusV/Project-PDF-reader-",
+  "tag": "v0.1.2-preview.1",
+  "version": "0.1.2",
+  "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+  "runId": 37686535246,
+  "release": "https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.2-preview.1",
+  "anonymousDownloadsVerified": true,
+  "publicBytesEqualPrepared": true,
+  "checksumsVerified": true,
+  "tagSourceVerified": true,
+  "assets": [
+    {
+      "id": 619842972,
+      "name": "Folio-0.1.2-Windows-x64-Setup.exe",
+      "bytes": 18016393,
+      "sha256": "1ed999a56b9c4fa5b4c95d25af743ed4903cc366345ce097244a4602eee2d799",
+      "updatedAt": "2026-10-07T21:19:27Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe",
+      "status": 200
+    },
+    {
+      "id": 619842995,
+      "name": "Folio-0.1.2-Third-Party-Notices.zip",
+      "bytes": 5050020,
+      "sha256": "fe8e8e3711d932896a4cd34f0482fa56e9a5eecb4b0f98085adc24a2e9a02006",
+      "updatedAt": "2026-10-07T21:19:28Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Third-Party-Notices.zip",
+      "status": 200
+    },
+    {
+      "id": 619843023,
+      "name": "SHA256SUMS.txt",
+      "bytes": 292,
+      "sha256": "c09ad7ad13d56987a1a102ac3b1aff2c2920a1339cbcb63f6a1d8e7d2ebbebe7",
+      "updatedAt": "2026-10-07T21:19:28Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/SHA256SUMS.txt",
+      "status": 200
+    },
+    {
+      "id": 619843039,
+      "name": "release-provenance.json",
+      "bytes": 293374,
+      "sha256": "de536b2ac3dd889a63463ecd5b27bffee5eb7f14622a795aac9482bfec4c8b5c",
+      "updatedAt": "2026-10-07T21:19:29Z",
+      "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/release-provenance.json",
+      "status": 200
+    }
+  ],
+  "sourceCi": {
+    "publisher": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686535246",
+    "reader": "https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686461277",
+    "event": "workflow_dispatch",
+    "branch": "main"
+  },
+  "native": {
+    "status": "passed",
+    "checks": 17,
+    "dialogInteractions": 8,
+    "nativeCloseConfirmed": true
+  },
+  "candidateUpgrade": {
+    "status": "passed",
+    "checks": 20,
+    "dialogInteractions": 3,
+    "profileMode": "default"
+  },
+  "notices": {
+    "status": "passed",
+    "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "runId": 37686535246,
+    "checks": 17,
+    "nativeDialogInteractions": 8,
+    "nativeCloseConfirmed": true,
+    "cleanup": [
+      {
+        "status": "stopped",
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      },
+      {
+        "status": "closed",
+        "ownedJobEmpty": true,
+        "policyRemoved": true
+      }
+    ],
+    "binaryIdentity": {
+      "builtSha256": "0e992f987f0dfb48fa84f072f3d4fbb996ec16fd765bfb1eb3a0bdcad9ccf0df",
+      "installedSha256": "24565967b37b2023d6ab9d852672d18c31ce5519fd8149aa76b68c949c42531c",
+      "expectedInstalledSha256": "24565967b37b2023d6ab9d852672d18c31ce5519fd8149aa76b68c949c42531c",
+      "bundleMarkerOffset": 19087586,
+      "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+    },
+    "artifacts": [
+      {
+        "name": "Folio-0.1.2-Windows-x64-Setup.exe",
+        "bytes": 18016393,
+        "sha256": "1ed999a56b9c4fa5b4c95d25af743ed4903cc366345ce097244a4602eee2d799"
+      },
+      {
+        "name": "Folio-0.1.2-Third-Party-Notices.zip",
+        "bytes": 5050020,
+        "sha256": "fe8e8e3711d932896a4cd34f0482fa56e9a5eecb4b0f98085adc24a2e9a02006"
+      }
+    ],
+    "provenanceSha256": "de536b2ac3dd889a63463ecd5b27bffee5eb7f14622a795aac9482bfec4c8b5c",
+    "noticeCrates": 234,
+    "originalLicenseTexts": 113,
+    "platformFiles": 24,
+    "manifestReferencedHashesVerified": 551,
+    "noticeArchiveFiles": 554,
+    "mplSourceArchivesVerified": 5,
+    "cargoLockSha256": "7fe5a2adbfc326127989f5aeb235559e4925b894c0d72cd59810565cd89d5f25",
+    "checkNames": [
+      "same-account installed app starts with isolated loopback debugging",
+      "packaged application opens without a development server",
+      "real local form PDF renders nonblank pixels and native form widgets",
+      "declining storage leaves the document library empty",
+      "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+      "reloading the actual native WebView restores the edited form from the device library",
+      "a second real PDF searches all three pages and navigates results",
+      "fixtures stay unchanged; observed document workflows make no upload or external requests",
+      "OS window close asks about unsaved changes and cancellation keeps edits open",
+      "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+      "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+      "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+      "native text annotation exports as a PDF annotation and the saved copy reopens",
+      "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+      "same-account installed app starts with isolated loopback debugging",
+      "full native process termination and relaunch recover the last completed form checkpoint",
+      "explicit native discard confirmation closes the real application cleanly"
+    ]
+  },
+  "previousReleasePreserved": true,
+  "previousMetadataPreserved": true,
+  "previousAssetsVerified": 8,
+  "historical": [
+    {
+      "id": 402499007,
+      "tag": "v0.1.0-preview.1",
+      "sourceCommit": "61adbfd1c9d582e1203606052c2443270f689366",
+      "publishedAt": "2026-10-03T12:14:35Z",
+      "immutableMetadataVerified": true,
+      "tagSourceVerified": true,
+      "anonymousDownloadsVerified": true,
+      "assets": [
+        {
+          "id": 607760833,
+          "name": "Folio-0.1.0-Third-Party-Notices.zip",
+          "bytes": 5015296,
+          "sha256": "13bbe7dbc8397392062a301140c89b2f8a6e54c409028b1b6293ae80cf1941c0",
+          "updatedAt": "2026-10-03T12:14:33Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Third-Party-Notices.zip",
+          "status": 200
+        },
+        {
+          "id": 607760791,
+          "name": "Folio-0.1.0-Windows-x64-Setup.exe",
+          "bytes": 17844743,
+          "sha256": "ad33d489e9f317965b40fbc3ad473ddaa2883e503e8bd4c46e30c756414120ac",
+          "updatedAt": "2026-10-03T12:14:32Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/Folio-0.1.0-Windows-x64-Setup.exe",
+          "status": 200
+        },
+        {
+          "id": 607760857,
+          "name": "release-provenance.json",
+          "bytes": 210793,
+          "sha256": "8b44d173dfe1e87a523414a753dbbc94bce9913cd086df16e0f451160bb7770b",
+          "updatedAt": "2026-10-03T12:14:34Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/release-provenance.json",
+          "status": 200
+        },
+        {
+          "id": 607760849,
+          "name": "SHA256SUMS.txt",
+          "bytes": 292,
+          "sha256": "8eb9d0970acef6d913a2189d858ff0d72651de23990e10db968859174e6b6524",
+          "updatedAt": "2026-10-03T12:14:33Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.0-preview.1/SHA256SUMS.txt",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "id": 402629549,
+      "tag": "v0.1.1-preview.1",
+      "sourceCommit": "8b9f1683bf0c47b9c8b2da4d638168c4a1e3b00f",
+      "publishedAt": "2026-10-03T18:04:01Z",
+      "immutableMetadataVerified": true,
+      "tagSourceVerified": true,
+      "anonymousDownloadsVerified": true,
+      "assets": [
+        {
+          "id": 608274487,
+          "name": "Folio-0.1.1-Third-Party-Notices.zip",
+          "bytes": 5015301,
+          "sha256": "eaa4a0b58c2e424ae65d1e29f9d8d7747b4c6b502747410bd3b98bf5a5b36a3a",
+          "updatedAt": "2026-10-03T18:03:59Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Third-Party-Notices.zip",
+          "status": 200
+        },
+        {
+          "id": 608274462,
+          "name": "Folio-0.1.1-Windows-x64-Setup.exe",
+          "bytes": 17854309,
+          "sha256": "32e7484d4ec716a513ff09ff86c85f3a4ac4f690be9c6d7e5b56c5b70d5a6be2",
+          "updatedAt": "2026-10-03T18:03:58Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe",
+          "status": 200
+        },
+        {
+          "id": 608274512,
+          "name": "release-provenance.json",
+          "bytes": 212084,
+          "sha256": "9ef547cf89c52c30040d7caee6761fb46bf4605d725cef17f9a0badc4d71dec9",
+          "updatedAt": "2026-10-03T18:04:00Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/release-provenance.json",
+          "status": 200
+        },
+        {
+          "id": 608274504,
+          "name": "SHA256SUMS.txt",
+          "bytes": 292,
+          "sha256": "ce41e9a383688daee988667a8b111ba11c1c50b4e7cbd3ee61aa163b6ea5d3d1",
+          "updatedAt": "2026-10-03T18:03:59Z",
+          "url": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/SHA256SUMS.txt",
+          "status": 200
+        }
+      ]
+    }
+  ],
+  "signed": false,
+  "architecture": "Windows x64",
+  "sourceRelationship": {
+    "implementation": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+    "testOnlyCorrection": "d13a4c6cf9270d814c90717494ac38a098f36901",
+    "successfulPrTestMerge": "8878008e36ad57e0097eb055cf49c70d7487f0c8",
+    "releasedMainMerge": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "tree": "3383d35496ed58ae79e7efb7a53faa8a5b5ef2ee",
+    "testedPrTreeEqualsReleasedMainTree": true,
+    "laterDocumentationCommitsDoNotChangeReleasedApplication": true
+  },
+  "binaryIdentity": {
+    "builtSha256": "0e992f987f0dfb48fa84f072f3d4fbb996ec16fd765bfb1eb3a0bdcad9ccf0df",
+    "installedSha256": "24565967b37b2023d6ab9d852672d18c31ce5519fd8149aa76b68c949c42531c",
+    "expectedInstalledSha256": "24565967b37b2023d6ab9d852672d18c31ce5519fd8149aa76b68c949c42531c",
+    "bundleMarkerOffset": 19087586,
+    "transformation": "Tauri CLI 2.12.1 unsigned NSIS: UNK to NSS; all other bytes identical"
+  },
+  "reader": {
+    "runId": 37686461277,
+    "event": "push",
+    "branch": "main",
+    "testedCheckoutSource": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "engines": [
+      {
+        "job": 113015428719,
+        "name": "Linux Chromium",
+        "units": 116,
+        "passedWorkflows": 102,
+        "completedAttempts": 102,
+        "workflowFailures": 0,
+        "workflowSkips": 0,
+        "workflowOmissions": 0,
+        "workflowRetries": 0,
+        "unitFailures": 0,
+        "unitCancelled": 0,
+        "unitSkips": 0,
+        "cacheUpgradeCasesPassed": 3
+      },
+      {
+        "job": 113015428287,
+        "name": "macOS WebKit",
+        "units": 116,
+        "passedWorkflows": 102,
+        "completedAttempts": 102,
+        "workflowFailures": 0,
+        "workflowSkips": 0,
+        "workflowOmissions": 0,
+        "workflowRetries": 0,
+        "unitFailures": 0,
+        "unitCancelled": 0,
+        "unitSkips": 0,
+        "cacheUpgradeCasesPassed": 3
+      }
+    ],
+    "corePassed": 7,
+    "signingPassed": 9
+  },
+  "packageVerification": {
+    "schemaVersion": 1,
+    "status": "passed",
+    "runId": 37686461278,
+    "workflow": "Experimental desktop builds",
+    "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "event": "push",
+    "branch": "main",
+    "runAttempt": 1,
+    "jobs": [
+      {
+        "id": 113015428709,
+        "name": "macOS development application",
+        "status": "completed",
+        "conclusion": "success",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "checkoutVerifiedFromFinalJobLog": true,
+        "applicationVersion": "0.1.2",
+        "rustfmt": "passed",
+        "rustTests": {
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filteredOut": 0
+        },
+        "clippy": "locked all-targets -D warnings passed",
+        "build": "passed",
+        "bundles": [
+          "macOS ARM64 app",
+          "DMG",
+          "permissions-preserving app tar"
+        ]
+      },
+      {
+        "id": 113015429218,
+        "name": "Windows development installer",
+        "status": "completed",
+        "conclusion": "success",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "checkoutVerifiedFromFinalJobLog": true,
+        "applicationVersion": "0.1.2",
+        "rustfmt": "passed",
+        "rustTests": {
+          "passed": 19,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filteredOut": 0
+        },
+        "clippy": "locked all-targets -D warnings passed",
+        "build": "passed",
+        "bundles": [
+          "unsigned Windows x64 NSIS"
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 11511517400,
+        "name": "native-dependencies-macos-app-dmg-37686461278",
+        "sizeInBytes": 228338,
+        "declaredSha256": "53090ed2397bc3a85cfcac4747908e1f36a8e3215e2f68566ec8b4b4cbe445dc",
+        "createdAt": "2026-10-07T21:10:03Z",
+        "updatedAt": "2026-10-07T21:10:03Z",
+        "expiresAt": "2026-11-06T21:10:02Z",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "downloaded": false
+      },
+      {
+        "id": 11511172844,
+        "name": "folio-development-macos-app-dmg-37686461278",
+        "sizeInBytes": 30353840,
+        "declaredSha256": "18ded73785c54352ff47a9731d893bab0b78a7c1bc781b0219bb4b9669579d7a",
+        "createdAt": "2026-10-07T21:10:06Z",
+        "updatedAt": "2026-10-07T21:10:06Z",
+        "expiresAt": "2026-10-21T21:10:03Z",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "downloaded": false
+      },
+      {
+        "id": 11510964346,
+        "name": "folio-development-windows-nsis-37686461278",
+        "sizeInBytes": 14139601,
+        "declaredSha256": "265de86f77a0f4110176bb840aad85b22fde4b7c848bed9f3deb4025dd1000d0",
+        "createdAt": "2026-10-07T21:13:07Z",
+        "updatedAt": "2026-10-07T21:13:07Z",
+        "expiresAt": "2026-10-21T21:13:05Z",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "downloaded": false
+      },
+      {
+        "id": 11510868898,
+        "name": "native-dependencies-windows-nsis-37686461278",
+        "sizeInBytes": 228995,
+        "declaredSha256": "f70598f0b9bd1b08812daf2b8ef2d442e7496c28afdd99148d71d9c6f3a65fcb",
+        "createdAt": "2026-10-07T21:13:05Z",
+        "updatedAt": "2026-10-07T21:13:05Z",
+        "expiresAt": "2026-11-06T21:13:04Z",
+        "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+        "downloaded": false
+      }
+    ],
+    "warnings": [
+      "Pinned Node 20 actions were executed under Node 24; no Rust failures or ignored tests recorded."
+    ],
+    "claimBoundary": "Main source package/Rust verification; development package archive hashes are declared API metadata, not downloaded-byte verification. No macOS installed native UI/runtime claim."
+  },
+  "installedWindowsCi": {
+    "status": "passed",
+    "runId": 37686535246,
+    "mode": "hosted-ci",
+    "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "webviewVersion": "153.0.4234.48",
+    "checks": [
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "OS window close asks about unsaved changes and cancellation keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files",
+        "status": "passed"
+      },
+      {
+        "name": "choosing an existing synthetic PDF refuses replacement after OS confirmation and keeps edits open",
+        "status": "passed"
+      },
+      {
+        "name": "real Unicode Save As retry confirms disk bytes, clears dirty state, preserves originals and reopens edited forms",
+        "status": "passed"
+      },
+      {
+        "name": "native text annotation exports as a PDF annotation and the saved copy reopens",
+        "status": "passed"
+      },
+      {
+        "name": "real multi-chunk native binary IPC preserves an 8 MiB PDF byte-for-byte, independently parses and visibly reopens",
+        "status": "passed"
+      },
+      {
+        "name": "same-account installed app starts with isolated loopback debugging",
+        "status": "passed"
+      },
+      {
+        "name": "full native process termination and relaunch recover the last completed form checkpoint",
+        "status": "passed"
+      },
+      {
+        "name": "explicit native discard confirmation closes the real application cleanly",
+        "status": "passed"
+      }
+    ],
+    "nativeDialogs": [
+      {
+        "action": "inspect",
+        "status": 0
+      },
+      {
+        "action": "inspect",
+        "status": 0
+      },
+      {
+        "action": "cancel",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "confirm-existing",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      }
+    ],
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "isolated",
+        "elevated": true,
+        "userDataFolderOverride": true,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "isolated"
+        }
+      },
+      {
+        "status": "closed",
+        "mode": "ci",
+        "profileMode": "isolated",
+        "elevated": true,
+        "userDataFolderOverride": true,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "isolated"
+        }
+      }
+    ],
+    "nativeCloseConfirmed": true,
+    "errors": {
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "blockedExternalRequests": 0,
+      "unexpectedWriteRequests": 0
+    }
+  },
+  "candidateUpgradeCi": {
+    "status": "passed",
+    "runId": 37686535246,
+    "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "profileMode": "default",
+    "webviewVersion": "153.0.4234.48",
+    "checks": [
+      {
+        "name": "published 0.1.1 installer installs to an empty temporary directory and creates owned Start-menu shortcuts",
+        "status": "passed"
+      },
+      {
+        "name": "published 0.1.1 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "packaged application opens without a development server",
+        "status": "passed"
+      },
+      {
+        "name": "real local form PDF renders nonblank pixels and native form widgets",
+        "status": "passed"
+      },
+      {
+        "name": "declining storage leaves the document library empty",
+        "status": "passed"
+      },
+      {
+        "name": "consented guest checkpoint reopens in an independent parser and preserves original bytes/unrelated fields",
+        "status": "passed"
+      },
+      {
+        "name": "reloading the actual native WebView restores the edited form from the device library",
+        "status": "passed"
+      },
+      {
+        "name": "a second real PDF searches all three pages and navigates results",
+        "status": "passed"
+      },
+      {
+        "name": "fixtures stay unchanged; observed document workflows make no upload or external requests",
+        "status": "passed"
+      },
+      {
+        "name": "three 0.1.1 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF",
+        "status": "passed"
+      },
+      {
+        "name": "published 0.1.1 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "completed 0.1.1 checkpoints survive an actual process restart before the installer upgrade",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.2 installer upgrade replaces the exact source-bound executable and preserves owned Start-menu shortcut target",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.2 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "upgrade preserves every stored byte, record, revision, usage counter, schema version and preference",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded mixed-pages.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded form.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "upgraded text-outline.pdf visibly reopens and saves its exact preserved PDF bytes through native Save As",
+        "status": "passed"
+      },
+      {
+        "name": "candidate 0.1.2 starts in the same genuine default profile",
+        "status": "passed"
+      },
+      {
+        "name": "second full 0.1.2 process restart retains originals and latest PDF bytes",
+        "status": "passed"
+      }
+    ],
+    "frontendDelivery": [
+      {
+        "launchIndex": 2,
+        "firstNavigation": true,
+        "origin": "http://tauri.localhost",
+        "pathname": "/index.html",
+        "nativeQuery": "1",
+        "saveAsLabel": "Save As",
+        "registeredFolioWorkers": 0,
+        "remainingFolioAppCaches": 0
+      },
+      {
+        "launchIndex": 3,
+        "firstNavigation": true,
+        "origin": "http://tauri.localhost",
+        "pathname": "/index.html",
+        "nativeQuery": "1",
+        "saveAsLabel": "Save As",
+        "registeredFolioWorkers": 0,
+        "remainingFolioAppCaches": 0
+      }
+    ],
+    "nativeDialogs": [
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      },
+      {
+        "action": "save",
+        "status": 0
+      }
+    ],
+    "launches": [
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "userDataFolderOverride": false,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "default"
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "userDataFolderOverride": false,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "default"
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "userDataFolderOverride": false,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "default"
+        }
+      },
+      {
+        "status": "stopped",
+        "mode": "ci",
+        "profileMode": "default",
+        "elevated": true,
+        "userDataFolderOverride": false,
+        "inheritedOverridesCleared": true,
+        "cleanup": {
+          "ownedJobEmpty": true,
+          "policyRemoved": true
+        },
+        "webview": {
+          "version": "153.0.4234.48",
+          "profileVerified": true,
+          "portVerified": true,
+          "profileMode": "default"
+        }
+      }
+    ],
+    "installerCleanupVerified": true,
+    "shortcutsCleanupVerified": true,
+    "errors": {
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "blockedExternalRequests": 0,
+      "unexpectedWriteRequests": 0
+    },
+    "boundary": "Published 0.1.1 to exact candidate 0.1.2 with synthetic PDFs in a genuine default profile of an elevated disposable Windows CI account; no real user library."
+  },
+  "normalUserVerification": {
+    "status": "passed",
+    "record": "windows-preview-3-normal-user-verification.json",
+    "sourceCommit": "ad8b2c169d707ff9616bf115b9c977c88c09cef9",
+    "runId": 37686535246,
+    "startedAt": "2026-10-07T21:21:12.560Z",
+    "completedAt": "2026-10-07T21:21:57.672Z",
+    "runtimeSourceCommit": null,
+    "mode": "local-normal-user",
+    "webviewVersion": "154.0.4258.62",
+    "elevated": false,
+    "profileMode": "isolated",
+    "checks": 17,
+    "nativeDialogs": 8,
+    "installedNoticeFilesVerified": 554,
+    "noticeInventorySha256": "dd758cf6a0aa5e590995d98f9dd50ae0f2f65322eb5bf7d1d2c65174e5264219",
+    "runtimeEvidenceContractVerified": true,
+    "guardedUninstall": "passed",
+    "executionPoliciesUnchanged": true,
+    "finalFolioProcessesAbsent": true,
+    "finalFolioRegistrationsAbsent": true,
+    "finalWebViewPoliciesAbsent": true,
+    "boundary": "Actual non-elevated local session; fresh temporary installation and synthetic isolated WebView profile only. No real default library, existing installation, shortcuts or policies changed. Retain synthetic profiles/copies/evidence."
+  },
+  "earlierAttemptHistory": {
+    "schemaVersion": 1,
+    "purpose": "Source-qualified earlier failed attempts and their associated partial/passing gates. These runs did not publish or independently verify the final repaired application source.",
+    "repository": "KingGogusV/Project-PDF-reader-",
+    "pullRequest": 5,
+    "publishedByTheseRuns": false,
+    "failureRuns": [
+      {
+        "sequence": 1,
+        "windowsRun": 37666227062,
+        "headSource": "52e7fbaf859d37b0b02c5eca89c34f9999ed702b",
+        "testedMergeSource": "dfe48fc3c193914a60cd3f43c041962de0467bc4",
+        "stage": "Before candidate installation",
+        "failure": "A guarded metadata walk could not inspect hidden AppData because Get-Item omitted -Force.",
+        "applicationRuntimeVerified": false,
+        "runtimeCheckCount": null,
+        "repair": "Add -Force to the existing guarded metadata walk; keep ownership/reparse/path checks.",
+        "evidence": {
+          "artifactId": 11503368507,
+          "sha256": "8dae4e35a7da9b05281f78b6998ec7d4d159f5b39d4847adf0c03544f65d9808",
+          "verification": "Parent independently verified artifact; no duplicate download."
+        }
+      },
+      {
+        "sequence": 2,
+        "windowsRun": 37669408384,
+        "windowsJob": 112956947686,
+        "headSource": "d9d9929f89b73f50f7652515efb8d6e419cda451",
+        "testedMergeSource": "1243cb5038a508b958e62c769899c6b9ea0f2547",
+        "stage": "Publication/harness policy tests, before installer build or installation",
+        "failure": "Owned metadata fixture refused its temporary path before any installation.",
+        "diagnosis": "Node os.tmpdir and PowerShell GetTempPath differed on hosted Windows; fixture must be created under the queried PowerShell temp root.",
+        "policyTests": {
+          "total": 24,
+          "passed": 23,
+          "failed": 1,
+          "skipped": 0
+        },
+        "installerBuilt": false,
+        "applicationRuntimeVerified": false,
+        "repair": "Create the synthetic fixture under the actual .NET temp directory queried from PowerShell.",
+        "evidence": {
+          "record": "pr5-second-windows-guard-failure.json"
+        }
+      },
+      {
+        "sequence": 3,
+        "windowsRun": 37670116139,
+        "headSource": "3baf5af2cd7578f79c91293bfc477f6bdc0cbb3e",
+        "testedMergeSource": "5ea46f8aede63c86679392a79ce113091cfc840a",
+        "stage": "Actual published 0.1.1 to built 0.1.2 upgrade in disposable CI default profile; first candidate Save As",
+        "passedBeforeFailure": 15,
+        "failure": "No enabled owned native Save As dialog appeared within 15 seconds.",
+        "observations": {
+          "allLibraryStoresAndPreferencesPreserved": true,
+          "ownedStartMenuShortcutTargetPreserved": true,
+          "exactNewExecutableIdentityVerified": true,
+          "nativeIpcRequests": 0,
+          "oldExportCopyInterface": true,
+          "browserDownloadAcknowledgmentVisible": true,
+          "pageErrors": 0,
+          "consoleErrors": 0,
+          "blockedExternalRequests": 0,
+          "unexpectedWriteRequests": 0,
+          "installerCleanupVerified": true,
+          "shortcutsCleanupVerified": true
+        },
+        "diagnosis": "The previous browser service worker served its cached old frontend on the first navigation of the upgraded executable. This is a genuine application upgrade defect.",
+        "candidateIdentity": {
+          "version": "0.1.2",
+          "sourceCommit": "5ea46f8aede63c86679392a79ce113091cfc840a",
+          "installerSha256": "f80873fb4bca8d8c907035b42ef0f2327dde1f9dfd467c06589470722c433fd9",
+          "builtExecutableSha256": "e933f18b501985af5982c7dc83b2b517130d16ae12758a8badf878f2f86d16ba",
+          "executableSha256": "d214385797f288b0df9090fb926ffd48174b2fea83a28b8466b1a7c03ee5e8d9"
+        },
+        "repair": "First-navigation query bypass, pre-main retirement of only the exact Folio root worker and static shell caches, native service-worker registration disabled, and safe startup-close ownership. Fresh installed verification remains required.",
+        "boundary": "Published x64 0.1.1 -> source-bound built 0.1.2 candidate installer; synthetic guest library in the genuine default app.folio.localreader profile of an elevated disposable CI account. No real user library is inspected; synthetic profile retained. This is not normal-user production data or every Windows version.",
+        "evidence": {
+          "localZip": "candidate-upgrade-evidence-37670116139.zip",
+          "sha256": "e1ddfb52195dc794c55a52b2ac83c09f7c8841ef1505c818882eeb636fa9df40",
+          "sanitizedReportSource": "test-results/ci-review-37670116139/report.json"
+        }
+      }
+    ],
+    "readerResultsBySource": [
+      {
+        "testedMergeSource": "dfe48fc3c193914a60cd3f43c041962de0467bc4",
+        "run": 37666226981,
+        "linuxChromium": {
+          "job": 112946034163,
+          "units": 102,
+          "workflows": 91,
+          "testFailures": 0,
+          "testSkips": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed"
+        },
+        "macOSWebKit": {
+          "job": 112946033744,
+          "units": 102,
+          "workflows": 91,
+          "testFailures": 0,
+          "testSkips": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed"
+        },
+        "coreAndSignatures": {
+          "job": 112946034255,
+          "status": "cancelled before tests in apt mirror setup",
+          "coreTestsRun": 0,
+          "signatureTestsRun": 0,
+          "record": "pr5-first-core-setup-failure.json"
+        }
+      },
+      {
+        "testedMergeSource": "1243cb5038a508b958e62c769899c6b9ea0f2547",
+        "run": 37669408479,
+        "linuxChromium": {
+          "job": 112956947822,
+          "status": "cancelled before tests in apt mirror setup",
+          "unitTestsRun": 0,
+          "browserWorkflowsRun": 0,
+          "record": "pr5-second-reader-linux-setup-failure.json"
+        },
+        "coreAndSignatures": {
+          "job": 112956948326,
+          "status": "passed",
+          "coreTests": 7,
+          "signatureTests": 9,
+          "failures": 0,
+          "skips": 0,
+          "verification": "Previously fetched final job log, source checkout verified."
+        },
+        "macOSWebKit": {
+          "job": 112956948333,
+          "status": "success previously observed",
+          "exactCountsNotRetained": true
+        }
+      },
+      {
+        "testedMergeSource": "5ea46f8aede63c86679392a79ce113091cfc840a",
+        "run": 37670116284,
+        "coreAndSignatures": {
+          "signatureTests": 9,
+          "skips": 0,
+          "failures": 0,
+          "status": "passed",
+          "job": 112959416813,
+          "coreTests": 7
+        },
+        "macOSWebKit": {
+          "skips": 0,
+          "productionBuild": "passed",
+          "failures": 0,
+          "typecheck": "passed",
+          "workflows": 91,
+          "job": 112959417148,
+          "units": 102,
+          "status": "passed"
+        },
+        "linuxChromium": {
+          "job": 112959417251,
+          "status": "cancelled",
+          "units": 102,
+          "unitFailures": 0,
+          "unitSkips": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed",
+          "plannedWorkflows": 91,
+          "completedAttempts": 20,
+          "completedUniqueWorkflows": 16,
+          "passedUniqueWorkflows": 14,
+          "failedUniqueWorkflows": 2,
+          "passedOnRetry": 2,
+          "workflowsWithoutCompletedResult": 75,
+          "cancelledAt": "2026-10-07T19:22:45.0137271Z",
+          "failures": {
+            "libraryKeepDiscard": "First attempt exceeded45s while reopening with loading overlay; retry exceeded45s waiting stored revision to advance beyond5.",
+            "accessibilityAudit": "Both attempts exceeded existing120s test timeout; first loading overlay did not hide, retry interrupted notes fill. No recorded axe rule violation assertion."
+          },
+          "rootCause": "Unconfirmed; many unrelated passing actions were much slower than earlier runs. Does not justify ignoring failed assertions.",
+          "artifact": 11505654722,
+          "verifiedArtifactSha256": "0c84c091c6d5750bc50e92f698cae6e4dbfc57c29cecc6e4958c7205253cd7b7",
+          "artifactPath": "pr5-third-reader-linux-failure.zip"
+        },
+        "linuxTraceDiagnosis": "Overall test deadlines expired at different steps under broad slowdown; CPU/host cause unproved; fresh full suite required. No assertion or timeout change justified by these traces.",
+        "linuxDetailedRecord": "pr5-third-reader-linux-trace-diagnostics.json"
+      },
+      {
+        "testedMergeSource": "ce230d593d82943550078b32e68b564e5fc22dc7",
+        "headSource": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+        "run": 37677699531,
+        "status": "failed",
+        "linuxChromium": {
+          "job": 112985344042,
+          "status": "passed",
+          "sourceVerified": true,
+          "units": 110,
+          "unitFailures": 0,
+          "unitSkips": 0,
+          "unitCancelled": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed",
+          "plannedWorkflows": 101,
+          "passedWorkflows": 101,
+          "workflowFailures": 0,
+          "workflowSkips": 0,
+          "workflowOmissions": 0,
+          "workflowRetries": 0,
+          "duration": "3.5m"
+        },
+        "coreAndSignatures": {
+          "job": 112985344378,
+          "status": "passed",
+          "sourceVerified": true,
+          "coreTests": 7,
+          "signatureTests": 9,
+          "failures": 0,
+          "skips": 0,
+          "omissions": 0,
+          "coreDuration": "15.6s",
+          "signatureDuration": "15.7s"
+        },
+        "macOSWebKit": {
+          "job": 112985344465,
+          "status": "failed",
+          "sourceVerified": true,
+          "units": 110,
+          "unitFailures": 0,
+          "unitSkips": 0,
+          "unitCancelled": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed",
+          "plannedWorkflows": 101,
+          "passedWorkflows": 99,
+          "failedWorkflows": 2,
+          "workflowSkips": 0,
+          "workflowOmissions": 0,
+          "completedAttempts": 103,
+          "failedAttempts": 4,
+          "retriedWorkflows": 2,
+          "duration": "6.2m",
+          "failures": [
+            {
+              "test": "native upgrade bypasses persisted old shell and preserves document stores",
+              "sourceFile": "tests/e2e/native-offline-upgrade.spec.ts",
+              "line": 117,
+              "attemptsFailed": 2,
+              "assertion": "Exact user-storage snapshot equality",
+              "difference": "Synthetic foreign user cache contents empty; expected one synthetic response. No IndexedDB difference shown in final failure log."
+            },
+            {
+              "test": "native upgrade with old worker update installing",
+              "sourceFile": "tests/e2e/native-offline-upgrade.spec.ts",
+              "line": 103,
+              "attemptsFailed": 2,
+              "assertion": "No reader module request while real installation gate held",
+              "difference": "Current /assets/main-DaVcMhO1.js requested before fixture gate release."
+            }
+          ],
+          "diagnosis": "Independent local WebKit controls reproduce unrelated CacheStorage response loss before any native cleanup when the final same-origin page closes. Continuous same-origin clients preserve the exact baseline. A separate detached installation continues after unregister acknowledges true: its captured exact root /sw.js worker stays installing and can recreate a Folio app cache after gate release. This is a real helper lifecycle boundary, not a document-store deletion by Folio. Fixture continuity and bounded captured-worker settlement defense are pending fresh-source verification.",
+          "artifact": {
+            "id": 11508061580,
+            "sha256": "9044465ea7d18f85e66eaadb8b80fab59a649802cef237cac3d17f0fb182e02b",
+            "bytes": 7158602,
+            "verifiedLocalZip": "pr5-fourth-reader-webkit-failure.zip",
+            "traceRecord": "pr5-fourth-reader-webkit-trace.json"
+          },
+          "followupDiagnosis": {
+            "runtime": "Local Windows Playwright WebKit on unchanged9515 production build",
+            "foreignCacheLossBeforeNativeCleanupConfirmed": true,
+            "incognitoZeroClientLifetimeControls": [
+              "native-cache-webkit-control-false.json",
+              "native-cache-webkit-control-true.json"
+            ],
+            "continuousClientAssertions": "All exact preservation and held-install assertions pass with a continuously live same-origin client.",
+            "detachedInstallControl": "Captured exact root /sw.js worker remains installing when unregister returns true and after gate release; late reserved cache write occurs without statechange.",
+            "capturedWorkerEvidence": "native-cache-webkit-exact-false-true.json",
+            "requiredBoundary": "Existing10-second settlement deadline must fail before main/cache deletion if the captured installer never settles. Do not claim successful retirement in this detached WebKit case.",
+            "trackedSourceAtFailureStillUnchanged": true
+          },
+          "targetedLifetimeEvidence": {
+            "productionBuildSource": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+            "browser": "Local Playwright WebKit with a synthetic native HTTP startup",
+            "noNativeCleanupControls": [
+              "native-cache-webkit-control-false.json",
+              "native-cache-webkit-control-true.json"
+            ],
+            "exactOverlapControls": [
+              "native-cache-webkit-exact-false-true.json",
+              "native-cache-webkit-exact-true-true.json"
+            ],
+            "capturedWorkerLog": "native-cache-webkit-captured-state.log",
+            "foreignCacheLossBeforeCleanup": true,
+            "continuousClientsPreserveBaseline": true,
+            "detachedUnregisterCanAcknowledgeBeforeInstallSettles": true,
+            "detachedCapturedWorkerRemainsInstalling": true,
+            "successfulOverlapCleanupRemovesLegacyAndPendingCaches": true,
+            "fixtureOnlyOrderingPass": "Local WebKit 2/2 and Edge 2/2; no assertion or timeout changes",
+            "requiredDefense": "Wait for captured owned workers to reach installed, activating, activated or redundant before cache deletion/main import, under the existing 10-second deadline. Parsed and unknown states remain pending; a worker that never settles must show safe startup help and never import main or delete caches.",
+            "supportedNativeBoundary": "Mac native custom-protocol startup skips HTTP service-worker cleanup; source-bound Windows default-profile and installed-runtime evidence are separate. The synthetic HTTP WebKit failure still requires the helper defense and fresh Reader CI."
+          }
+        },
+        "record": "pr5-fourth-reader.json"
+      },
+      {
+        "headSource": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+        "testedMergeSource": "ac15f31509cc391426b2a699eca59c4b379bfb3d",
+        "status": "failed",
+        "linuxChromium": {
+          "job": 113001869484,
+          "status": "passed",
+          "sourceVerified": true,
+          "units": 116,
+          "unitFailures": 0,
+          "unitCancelled": 0,
+          "unitSkips": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed",
+          "plannedWorkflows": 102,
+          "passedWorkflows": 102,
+          "workflowFailures": 0,
+          "workflowSkips": 0,
+          "workflowOmissions": 0,
+          "workflowRetries": 0,
+          "duration": "3.5m"
+        },
+        "macOSWebKit": {
+          "job": 113001870106,
+          "status": "failed",
+          "sourceVerified": true,
+          "units": 116,
+          "unitFailures": 0,
+          "unitCancelled": 0,
+          "unitSkips": 0,
+          "typecheck": "passed",
+          "productionBuild": "passed",
+          "plannedWorkflows": 102,
+          "passedWorkflows": 101,
+          "failedWorkflows": 1,
+          "workflowSkips": 0,
+          "workflowOmissions": 0,
+          "completedAttempts": 103,
+          "failedAttempts": 2,
+          "retriedWorkflows": 1,
+          "duration": "4.9m",
+          "failure": {
+            "test": "a detached owned installation settles before retirement or reaches safe startup deadline",
+            "file": "tests/e2e/native-offline-upgrade.spec.ts",
+            "line": 161,
+            "assertion": "Pre-native foreign cache response count inferred from browserName",
+            "expected": 0,
+            "actual": 1,
+            "attemptsFailed": 2,
+            "boundary": "Before update installation or native retirement began; later safety assertions did not run in this case.",
+            "diagnosis": "macOS WebKit retains the synthetic cache response across zero-client turnover, unlike the observed Windows WebKit port. Its measured baseline must be preserved, not inferred from engine name."
+          },
+          "originalOverlapRegressions": "Both passed on this source.",
+          "artifact": {
+            "id": 11509737641,
+            "bytes": 4199923,
+            "sha256": "753d1603479ac39962a96ddb59ca3b054f8a1303c8abba77ff46fef2d641c5c3",
+            "verifiedLocalZip": "pr5-fifth-reader-webkit-failure.zip"
+          }
+        },
+        "coreAndSignatures": {
+          "job": 113001870040,
+          "status": "passed",
+          "sourceVerified": true,
+          "coreTests": 7,
+          "signatureTests": 9,
+          "failures": 0,
+          "skips": 0,
+          "omissions": 0,
+          "retries": 0,
+          "coreDuration": "16.3s",
+          "signatureDuration": "15.1s"
+        },
+        "aptSetup": {
+          "linuxAndCoreBoundsLogged": true,
+          "httpTimeoutSeconds": 30,
+          "httpsTimeoutSeconds": 30,
+          "retries": 2,
+          "rendererAndBrowserSetupCompleted": true,
+          "coreDependenciesCompleted": true,
+          "testAndJobTimeoutsUnchanged": true,
+          "beforeTestJobTimeouts": 0,
+          "azureMirrorRetriesObserved": true,
+          "archiveFallbackCompleted": true,
+          "corePackageDownloadSummary": "Fetched 32.5 MB in 4min 11s (129 kB/s)",
+          "boundary": "The configured 30-second transport timeout and two retries were logged; package setup still took several minutes and completed before all core/signature tests passed."
+        },
+        "run": 37682503907,
+        "record": "pr5-fifth-reader.json",
+        "classification": "Test fixture failed twice before native startup: platform-dependent pre-cleanup foreign cache lifetime was incorrectly inferred from engine name. No application cleanup or worker-settlement failure is established by this test result."
+      }
+    ],
+    "historicalUpgradePasses": [
+      {
+        "sourceCommit": "dfe48fc3c193914a60cd3f43c041962de0467bc4",
+        "run": 37666226931,
+        "job": 112946032522,
+        "status": "passed",
+        "checks": 20,
+        "failedChecks": 0,
+        "omittedChecks": 0,
+        "cleanedLaunches": 4,
+        "ownedJobEmptyAll": true,
+        "policyRemovedAll": true,
+        "pageErrors": 0,
+        "blockedExternalRequests": 0,
+        "unexpectedWriteRequests": 0,
+        "webviewVersion": "153.0.4234.48",
+        "ownedRegistrationAndExecutableRemoved": true,
+        "syntheticProfileRetained": true,
+        "artifact": 11502452414,
+        "verifiedArtifactSha256": "bfa1d54bfd8d5c9828baaf283f010afff1fe18f954d73b2ab7192c513084cf8e",
+        "boundary": "Published 0.1.0 to 0.1.1 with isolated synthetic profile; not candidate 0.1.2/default profile."
+      },
+      {
+        "pageErrors": 0,
+        "artifactSha256": "53825953ad9baa3bf638658fb3fdc742b9477c7f6e9dc017fb70d755acb479eb",
+        "launches": [
+          {
+            "ownedJobEmpty": true,
+            "policyRemoved": true,
+            "status": "stopped"
+          },
+          {
+            "ownedJobEmpty": true,
+            "policyRemoved": true,
+            "status": "stopped"
+          },
+          {
+            "ownedJobEmpty": true,
+            "policyRemoved": true,
+            "status": "stopped"
+          },
+          {
+            "ownedJobEmpty": true,
+            "policyRemoved": true,
+            "status": "stopped"
+          }
+        ],
+        "installerCleanup": "owned registration and executable removed; synthetic profile retained",
+        "unexpectedWriteRequests": 0,
+        "failedChecks": 0,
+        "artifact": 11504825361,
+        "sourceCommit": "1243cb5038a508b958e62c769899c6b9ea0f2547",
+        "run": 37669408416,
+        "status": "passed",
+        "checks": 20,
+        "webviewVersion": "153.0.4234.48",
+        "boundary": "Published x64 0.1.0 -> 0.1.1 installer, synthetic guest library, completed checkpoints, isolated overridden WebView2 profile; not an end-user default profile or every Windows version.",
+        "blockedExternalRequests": 0
+      },
+      {
+        "status": "passed",
+        "pageErrors": 0,
+        "blockedExternalRequests": 0,
+        "unexpectedWriteRequests": 0,
+        "launches": [
+          {
+            "status": "stopped",
+            "ownedJobEmpty": true,
+            "policyRemoved": true
+          },
+          {
+            "status": "stopped",
+            "ownedJobEmpty": true,
+            "policyRemoved": true
+          },
+          {
+            "status": "stopped",
+            "ownedJobEmpty": true,
+            "policyRemoved": true
+          },
+          {
+            "status": "stopped",
+            "ownedJobEmpty": true,
+            "policyRemoved": true
+          }
+        ],
+        "run": 37670116107,
+        "installerCleanup": "owned registration and executable removed; synthetic profile retained",
+        "checks": 20,
+        "artifactSha256": "35155c3546d7dc5d03769c8341205bc189409954edd5599fba8d01bc52e2b753",
+        "webviewVersion": "153.0.4234.48",
+        "boundary": "Published x64 0.1.0 -> 0.1.1 installer, synthetic guest library, completed checkpoints, isolated overridden WebView2 profile; not an end-user default profile or every Windows version.",
+        "failedChecks": 0,
+        "sourceCommit": "5ea46f8aede63c86679392a79ce113091cfc840a",
+        "artifact": 11505375845
+      }
+    ],
+    "claimLimits": [
+      "The historical 20-check passes cover published 0.1.0 to 0.1.1 with isolated overridden synthetic profiles; they do not verify candidate 0.1.2 in its default profile.",
+      "The first and third Linux reader inputs are identical, but an earlier 91-workflow pass cannot be carried forward as a fresh-source pass.",
+      "The third Linux run completed 14 passing unique workflows and 2 failing unique workflows; 75 planned workflows have no completed result. Do not label these 75 as passed or skipped.",
+      "The third Linux failures exhausted global test deadlines at different steps; generalized slowdown is observed, but CPU or host contention is not proven.",
+      "All remaining final-source gates and publication are pending at draft preparation; update this draft only from actual source-bound completed evidence.",
+      "Fresh Reader37677699531 on ce230d593d82943550078b32e68b564e5fc22dc7 failed two new WebKit native-cache upgrade assertions on both attempts. Independent controls now prove pre-cleanup ephemeral cache response loss and a detached installing-worker race. The 17-check Windows runtime, 20-check candidate upgrade, package/Rust and historical passes at this source do not replace the required repaired-source Reader pass or publication/local verification.",
+      "Fresh Reader37682503907 at ac15f31509cc391426b2a699eca59c4b379bfb3d completed Linux116units/102workflows and core7/signatures9, but macOS116units/101workflows plus1 fixture failure twice (103 attempts,0skips/omissions). The failing engine-name cache-count assertion ran before native startup; repaired test source still requires fresh complete gates."
+    ],
+    "sourceBoundIntermediatePasses": [
+      {
+        "sourceCommit": "ce230d593d82943550078b32e68b564e5fc22dc7",
+        "headCommit": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+        "qualifiedStatus": "Intermediate PR source passes; full Reader gate failed and lifecycle repair/new-source CI remain pending. No publication or normal-user local installation is established.",
+        "windows": {
+          "run": 37677699410,
+          "runtimeChecks": 17,
+          "successfulOwnedDialogs": 8,
+          "nativeCloseConfirmed": true,
+          "runtimeLaunchCleanup": [
+            {
+              "status": "stopped",
+              "ownedJobEmpty": true,
+              "policyRemoved": true
+            },
+            {
+              "status": "closed",
+              "ownedJobEmpty": true,
+              "policyRemoved": true
+            }
+          ],
+          "candidateUpgradeChecks": 20,
+          "candidateLaunchCleanup": [
+            {
+              "status": "stopped",
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              }
+            },
+            {
+              "status": "stopped",
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              }
+            },
+            {
+              "status": "stopped",
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              }
+            },
+            {
+              "status": "stopped",
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              }
+            }
+          ],
+          "firstNavigation": [
+            {
+              "launchIndex": 2,
+              "firstNavigation": true,
+              "origin": "http://tauri.localhost",
+              "pathname": "/index.html",
+              "nativeQuery": "1",
+              "saveAsLabel": "Save As",
+              "registeredFolioWorkers": 0,
+              "remainingFolioAppCaches": 0
+            },
+            {
+              "launchIndex": 3,
+              "firstNavigation": true,
+              "origin": "http://tauri.localhost",
+              "pathname": "/index.html",
+              "nativeQuery": "1",
+              "saveAsLabel": "Save As",
+              "registeredFolioWorkers": 0,
+              "remainingFolioAppCaches": 0
+            }
+          ],
+          "notices": {
+            "crates": 234,
+            "originalLicenseTexts": 113,
+            "archiveFiles": 554,
+            "manifestReferencedHashesVerified": 551,
+            "mplSourceArchivesVerified": 5
+          },
+          "verificationBoundary": "Parent independently downloaded/digest-checked the prepared payload and verified both pure gates, runtime report and every notice file; records retained here by reference.",
+          "records": [
+            "pr5-fourth-pure-payload-gates.json",
+            "pr5-fourth-windows-payload-verification.json"
+          ]
+        },
+        "packages": {
+          "run": 37677699710,
+          "jobs": [
+            {
+              "id": 112985344349,
+              "status": "success",
+              "rustfmt": "passed",
+              "rustTests": {
+                "passed": 17,
+                "failed": 0,
+                "ignored": 0
+              },
+              "clippy": "locked all-targets -D warnings passed",
+              "build": "passed"
+            },
+            {
+              "id": 112985344791,
+              "status": "success",
+              "rustfmt": "passed",
+              "rustTests": {
+                "passed": 19,
+                "failed": 0,
+                "ignored": 0
+              },
+              "clippy": "locked all-targets -D warnings passed",
+              "build": "passed"
+            }
+          ],
+          "artifacts": [
+            {
+              "id": 11508700781,
+              "name": "folio-development-macos-app-dmg-37677699710",
+              "sizeInBytes": 30360153,
+              "declaredSha256": "49dbc5e406f00946fc0f790f2d53537a3cc9693bb4347a3e284e4203cf58a5e7",
+              "createdAt": "2026-10-07T19:58:51Z",
+              "updatedAt": "2026-10-07T19:58:51Z",
+              "expiresAt": "2026-10-21T19:58:47Z",
+              "headCommit": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+              "downloaded": false
+            },
+            {
+              "id": 11507962296,
+              "name": "native-dependencies-windows-nsis-37677699710",
+              "sizeInBytes": 228995,
+              "declaredSha256": "135bbb4a371f138a36545007d33c6444e907f42328fab5a3691fa69386ec409a",
+              "createdAt": "2026-10-07T20:02:44Z",
+              "updatedAt": "2026-10-07T20:02:44Z",
+              "expiresAt": "2026-11-06T20:02:42Z",
+              "headCommit": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+              "downloaded": false
+            },
+            {
+              "id": 11507702645,
+              "name": "folio-development-windows-nsis-37677699710",
+              "sizeInBytes": 14128452,
+              "declaredSha256": "94588656491e0a2fb33e9170d0d0ebb1395b4d468a23c684cfe415f630782c15",
+              "createdAt": "2026-10-07T20:02:46Z",
+              "updatedAt": "2026-10-07T20:02:46Z",
+              "expiresAt": "2026-10-21T20:02:44Z",
+              "headCommit": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+              "downloaded": false
+            },
+            {
+              "id": 11507636812,
+              "name": "native-dependencies-macos-app-dmg-37677699710",
+              "sizeInBytes": 228338,
+              "declaredSha256": "28c1d9377fcde2b2e49cbd5e1e364f9399bcdb04c9b4ff7c8c53ee88b71fc156",
+              "createdAt": "2026-10-07T19:58:46Z",
+              "updatedAt": "2026-10-07T19:58:46Z",
+              "expiresAt": "2026-11-06T19:58:45Z",
+              "headCommit": "9515daafd83b7c6d5f4b37605a969f561802f04f",
+              "downloaded": false
+            }
+          ],
+          "record": "pr5-fourth-packages.json",
+          "claimBoundary": "Package/Rust verification only; no macOS native installed UI/runtime pass is inferred."
+        },
+        "historicalUpgrade": {
+          "run": 37677699343,
+          "job": 112985345161,
+          "checks": 20,
+          "launches": [
+            {
+              "iteration": 0,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 1,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 2,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 3,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            }
+          ],
+          "artifact": {
+            "id": 11507775664,
+            "name": "windows-upgrade-evidence-37677699343",
+            "sizeInBytes": 362761,
+            "declaredSha256": "0751595d352dca8cd30b171438eec8d2a8e786904f0e606a0d4b457fa59469c0",
+            "downloadedSha256": "0751595d352dca8cd30b171438eec8d2a8e786904f0e606a0d4b457fa59469c0",
+            "createdAt": "2026-10-07T19:53:10Z",
+            "expiresAt": "2026-10-21T19:53:09Z",
+            "reportMember": "native-windows-upgrade-96PkVi/report.json"
+          },
+          "record": "pr5-fourth-historical.json",
+          "claimBoundary": "Downloaded outer SHA and actual four cleanup records independently checked by release reviewer; published 0.1.0 to 0.1.1 in an isolated overridden profile, not the candidate default-profile upgrade."
+        }
+      },
+      {
+        "sourceCommit": "ac15f31509cc391426b2a699eca59c4b379bfb3d",
+        "headCommit": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+        "qualifiedStatus": "Superseded PR source passes. Reader Mac failed a fixture assertion before native startup; later corrected-source verification is separate. Publisher skipped. No public release or normal-user local installation is established.",
+        "windows": {
+          "schemaVersion": 1,
+          "status": "passed",
+          "runId": 37682503906,
+          "installerJob": 113001869376,
+          "headSource": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+          "testedCheckoutCommit": "ac15f31509cc391426b2a699eca59c4b379bfb3d",
+          "checkoutVerifiedFromFinalJobLog": true,
+          "publication": "skipped; Reader Mac test fixture failed on this source",
+          "candidateUpgradeChecks": 20,
+          "nativeChecks": 17,
+          "webviewVersion": "153.0.4234.48",
+          "rustTests": 19,
+          "policyGuardTests": {
+            "passed": 25,
+            "failed": 0,
+            "skipped": 0
+          },
+          "hostileArchiveTests": 9,
+          "nativeCleanup": [
+            {
+              "status": "stopped",
+              "ownedJobEmpty": true,
+              "policyRemoved": true,
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "status": "closed",
+              "ownedJobEmpty": true,
+              "policyRemoved": true,
+              "profileVerified": true,
+              "portVerified": true
+            }
+          ],
+          "installedExecutableSha256": "8ed2c451fba20b799fa444edabeba54f28334cb2727697f76913be7e6c004582",
+          "builtExecutableSha256": "f257cd82975fa4045bdce66c2f39b117d63e7d854440a7491803147baee88f1f",
+          "preparedFiles": [
+            {
+              "name": "Folio-0.1.2-Windows-x64-Setup.exe",
+              "bytes": 18016384,
+              "sha256": "e2a4ca7feedd3dde1852cdb8f7005da9bfab66e861128c33b97a006aca4d9ebf"
+            },
+            {
+              "name": "Folio-0.1.2-Third-Party-Notices.zip",
+              "bytes": 5050020,
+              "sha256": "7eae004b44d366ee6e1a54667c2d88fa92753d68371597040e0959c265ba679f"
+            }
+          ],
+          "artifacts": [
+            {
+              "id": 11510258305,
+              "name": "native-notice-evidence-37682503906",
+              "bytes": 246306,
+              "digest": "sha256:ab77d796eb9221bd5521066936376867190afad25148b16dcfa6b5c166bbced9"
+            },
+            {
+              "id": 11510143429,
+              "name": "folio-windows-release-37682503906",
+              "bytes": 22486023,
+              "digest": "sha256:0897ea8767dc9a0794bb7202078b90da44be412eb17f12455e81c0bc0df000d3"
+            },
+            {
+              "id": 11509424612,
+              "name": "candidate-upgrade-evidence-37682503906",
+              "bytes": 366458,
+              "digest": "sha256:ca13997017f8b8f70fc5a40377856df46fa64bec2fef1f6b2cd9c0559eeb72b9"
+            },
+            {
+              "id": 11509284748,
+              "name": "native-runtime-evidence-37682503906",
+              "bytes": 237084,
+              "digest": "sha256:bad7d24f02b711e4db00dfa241aba83e9742684bc74c01e297e0db69776637ef"
+            }
+          ],
+          "independentPayloadDownload": false,
+          "normalUserInstallation": false,
+          "verificationBoundary": "Parent verified final decoded logs/source,37 total candidate/runtime checks, native cleanup, preparation and declared artifact metadata. Superseded prepared/report archives were deliberately not independently downloaded or checksum-verified.",
+          "record": "pr5-fifth-windows.json"
+        },
+        "packages": {
+          "run": 37682503956,
+          "jobs": [
+            {
+              "id": 113001869162,
+              "name": "Windows development installer",
+              "status": "completed",
+              "conclusion": "success",
+              "testedCheckoutCommit": "ac15f31509cc391426b2a699eca59c4b379bfb3d",
+              "checkoutVerifiedFromFinalJobLog": true,
+              "applicationVersion": "0.1.2",
+              "rustfmt": "passed",
+              "rustTests": {
+                "passed": 19,
+                "failed": 0,
+                "ignored": 0,
+                "measured": 0,
+                "filteredOut": 0
+              },
+              "clippy": "locked all-targets -D warnings passed",
+              "build": "passed",
+              "bundles": [
+                "unsigned Windows x64 NSIS"
+              ]
+            },
+            {
+              "id": 113001869579,
+              "name": "macOS development application",
+              "status": "completed",
+              "conclusion": "success",
+              "testedCheckoutCommit": "ac15f31509cc391426b2a699eca59c4b379bfb3d",
+              "checkoutVerifiedFromFinalJobLog": true,
+              "applicationVersion": "0.1.2",
+              "rustfmt": "passed",
+              "rustTests": {
+                "passed": 17,
+                "failed": 0,
+                "ignored": 0,
+                "measured": 0,
+                "filteredOut": 0
+              },
+              "clippy": "locked all-targets -D warnings passed",
+              "build": "passed",
+              "bundles": [
+                "macOS ARM64 app",
+                "DMG",
+                "permissions-preserving app tar"
+              ]
+            }
+          ],
+          "artifacts": [
+            {
+              "id": 11510586943,
+              "name": "native-dependencies-windows-nsis-37682503956",
+              "sizeInBytes": 228995,
+              "declaredSha256": "c70aa6f96cfa3a4388d9f6aefcf42443fb6b4369b2a8c65445f0ce510e41e95e",
+              "createdAt": "2026-10-07T20:40:26Z",
+              "updatedAt": "2026-10-07T20:40:26Z",
+              "expiresAt": "2026-11-06T20:40:26Z",
+              "headCommit": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+              "downloaded": false
+            },
+            {
+              "id": 11509962603,
+              "name": "native-dependencies-macos-app-dmg-37682503956",
+              "sizeInBytes": 228338,
+              "declaredSha256": "8142266940132282d6423f22f04c0f423959247610057ade231b83b1184d07aa",
+              "createdAt": "2026-10-07T20:38:56Z",
+              "updatedAt": "2026-10-07T20:38:56Z",
+              "expiresAt": "2026-11-06T20:38:54Z",
+              "headCommit": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+              "downloaded": false
+            },
+            {
+              "id": 11509627754,
+              "name": "folio-development-macos-app-dmg-37682503956",
+              "sizeInBytes": 30354030,
+              "declaredSha256": "a19e8bf9a1c5b8fe890c265681bede18ea6c871a5239dae68706cb22817b0ef5",
+              "createdAt": "2026-10-07T20:38:59Z",
+              "updatedAt": "2026-10-07T20:38:59Z",
+              "expiresAt": "2026-10-21T20:38:56Z",
+              "headCommit": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+              "downloaded": false
+            },
+            {
+              "id": 11509228465,
+              "name": "folio-development-windows-nsis-37682503956",
+              "sizeInBytes": 14140545,
+              "declaredSha256": "f741fc9e854450b13a6ddca511eb57556b759c2c2fb6d7572d45918c3531f694",
+              "createdAt": "2026-10-07T20:40:28Z",
+              "updatedAt": "2026-10-07T20:40:28Z",
+              "expiresAt": "2026-10-21T20:40:27Z",
+              "headCommit": "6a0c29e20644734e8eb63963aa7c968cad84037c",
+              "downloaded": false
+            }
+          ],
+          "record": "pr5-fifth-packages.json",
+          "claimBoundary": "Package/Rust verification only; no macOS native installed UI/runtime pass is inferred. Package artifact digests are declared GitHub metadata; these package archives were not downloaded."
+        },
+        "historicalUpgrade": {
+          "run": 37682503893,
+          "job": 113001869581,
+          "checks": 20,
+          "launches": [
+            {
+              "iteration": 0,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 1,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 2,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            },
+            {
+              "iteration": 3,
+              "status": "stopped",
+              "profileMode": "isolated",
+              "elevated": true,
+              "userDataFolderOverride": true,
+              "inheritedOverridesCleared": true,
+              "cleanup": {
+                "ownedJobEmpty": true,
+                "policyRemoved": true
+              },
+              "profileVerified": true,
+              "portVerified": true
+            }
+          ],
+          "artifact": {
+            "id": 11510380923,
+            "name": "windows-upgrade-evidence-37682503893",
+            "sizeInBytes": 363751,
+            "declaredSha256": "62c27023eaaf0586a80235f2a6115d9cccf9132d2dfaec93815797e92cc7ec5b",
+            "createdAt": "2026-10-07T20:32:05Z",
+            "expiresAt": "2026-10-21T20:32:04Z",
+            "downloadedSha256": "62c27023eaaf0586a80235f2a6115d9cccf9132d2dfaec93815797e92cc7ec5b",
+            "reportMember": "native-windows-upgrade-jjjIWY/report.json"
+          },
+          "record": "pr5-fifth-historical.json",
+          "claimBoundary": "Actual20-check report/four owned stopped-launch cleanups and outer SHA independently verified by release reviewer; fixed published0.1.0-to-0.1.1 isolated overridden-profile upgrade, not new candidate/default-profile evidence."
+        }
+      }
+    ]
+  },
+  "limits": [
+    "Unsigned development preview; no trusted signing identity.",
+    "Normal-user verification used a fresh owned temporary install and isolated synthetic profile, not an existing real default library.",
+    "Disposable default-profile upgrade evidence is separate from normal-user local smoke.",
+    "Windows 10/11 x64 target is not every hardware/OS/runtime configuration.",
+    "macOS package build is not installed native runtime verification.",
+    "No global PDF speed or total-memory benchmark."
+  ],
+  "publicAuditPrecededPromotion": true,
+  "githubDownloadPromotion": {
+    "about": {
+      "status": "passed",
+      "verifiedAt": "2026-10-07T21:25:43.638Z",
+      "homepage": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe",
+      "description": "Folio: a local PDF reader for Windows. Download the EXE below; read, fill forms, annotate, and save verified PDF copies with Rust and Tauri.",
+      "anonymousRead": true
+    },
+    "readme": {
+      "path": "README.md",
+      "download": "https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe",
+      "documentationOnly": true
+    }
+  }
+}

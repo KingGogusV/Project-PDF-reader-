@@ -2,7 +2,15 @@
 
 ## 2026-10-07
 
-### Windows preview 0.1.2 preparation
+### Windows preview 0.1.2 delivered
+
+- Published immutable unsigned x64 preview [`v0.1.2-preview.1`](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.2-preview.1) from merged PR #5 source `ad8b2c169d707ff9616bf115b9c977c88c09cef9`. The [Windows EXE](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe) is 18,016,393 bytes, SHA-256 `1ed999a56b9c4fa5b4c95d25af743ed4903cc366345ce097244a4602eee2d799`.
+- Exact-main Reader checks passed 116 unit/fixture tests and 102 workflows per browser engine, seven core cases and nine signing cases, without failures or skips. Windows/macOS package checks passed formatting, warnings-denied clippy and 19/17 Rust tests. The final main tree matches the successful PR test tree; later delivery-record changes contain documentation only.
+- Explicit [publication run 37686535246](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686535246) passed all 20 synthetic default-profile upgrade checks, both first-navigation interface/cache checks, all 17 installed native checks, eight owned dialog actions, notices, binary identity and cleanup. Automatic main verification passed separately and skipped publication.
+- Independently downloaded all four public assets without credentials and verified complete prepared/public byte equality, checksums, tag/source/provenance, 554 notice files, 551 referenced hashes and five MPL source archives. Both older releases and all eight assets retained their IDs, timestamps, sizes and hashes.
+- The public installer passed all 17 normal-user checks and eight owned dialog actions on Windows 11 Pro build 22621, WebView2 154.0.4258.62 and PowerShell 7.6.5. This used a fresh temporary installation and isolated synthetic profile, verified 554 installed notice hashes, emptied both owned jobs, completed guarded uninstall and left execution policies unchanged. It does not certify a real user's existing-library upgrade. See the [delivery](docs/windows-preview-3-verification.json) and [normal-user](docs/windows-preview-3-normal-user-verification.json) records.
+
+### Windows preview 0.1.2 preparation — earlier attempt history
 
 - Merged verified native Save As PR #4 as `d6ff547`; its exact main push passed Reader, desktop-package and installed-Windows CI. The following historical development notes retain the earlier PR state and failures.
 - Prepared application version 0.1.2 and a new immutable `v0.1.2-preview.1` release with original notices. Existing release tags/assets remain unchanged. Publication and public download promotion require fresh verification of this new source.
@@ -25,8 +33,8 @@
 - Added reader Save As through a Rust-owned OS dialog, bounded binary chunks, same-folder temporary staging, disk readback/hash checks and a verified receipt. Existing destinations are never replaced. Cancellation/write failure retains edits; browser download acknowledgment stays unchanged.
 - Reserved picker/save/tab-close/application-close operations to prevent duplicate work and stale callbacks. Preserved the PDF controller, original-byte prefix validation, library schema and completed-checkpoint recovery.
 - Added native adapter tests, 12 simulated native UI cases, 19 Rust safety tests and actual installed-dialog/multi-chunk checks to Windows CI. Native build jobs now require formatting and clippy on pinned Rust 1.99.0. Added only reviewed native dependencies; existing package versions remain unchanged.
-- Final implementation `ce62ae1` passed all four fresh affected workflows: 84 unit tests, 88 workflows per browser engine, core/signing suites, Windows/macOS builds and Rust checks, 17 actual installed Windows checks with verified Save As/reopen, notice/binary/checksum/extraction gates and 20 published-upgrade checks. Independent retained-artifact verification passed; the follow-up PR remains open. Earlier native helper/CSP failures and local policy gaps remain documented.
-- Public installers, release tags/assets and hosted deployment are unchanged. Current results and runtime limitations are recorded in [verification](docs/verification.md).
+- Final implementation `ce62ae1` passed all four fresh affected workflows: 84 unit tests, 88 workflows per browser engine, core/signing suites, Windows/macOS builds and Rust checks, 17 actual installed Windows checks with verified Save As/reopen, notice/binary/checksum/extraction gates and 20 published-upgrade checks. Independent retained-artifact verification passed; at that development milestone the follow-up PR remained open. It subsequently merged as recorded above. Earlier native helper/CSP failures and local policy gaps remain documented.
+- Public installers, release tags/assets and hosted deployment were unchanged at that development milestone. Current delivery results and runtime limitations are recorded in [verification](docs/verification.md).
 
 ### Publication fix delivered
 
