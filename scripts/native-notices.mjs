@@ -11,11 +11,12 @@ const allowed = new Set(['MIT', 'Apache-2.0', 'BSD-3-Clause', 'ISC', 'Unicode-3.
 const mpl = new Set(['cssparser@0.37.0', 'cssparser-macros@0.7.1', 'dtoa-short@0.3.5', 'option-ext@0.2.0', 'selectors@0.38.0']);
 const clarifiedVersions = new Map([
   ['webview2-com', ['0.39.1']], ['webview2-com-sys', ['0.39.1']], ['webview2-com-macros', ['0.8.1']],
+  ['tauri-plugin-dialog', ['2.7.0']], ['tauri-plugin-fs', ['2.6.0']], ['tauri-plugin', ['2.7.1']],
   ['dunce', ['1.0.5']], ['alloc-stdlib', ['0.3.0']], ['brotli-decompressor', ['6.0.1']], ['cargo_toml', ['1.0.1']], ['dpi', ['0.1.2']],
   ['windows-collections', ['0.3.2']], ['windows-core', ['0.62.2']], ['windows-future', ['0.3.2']], ['windows-implement', ['0.60.2']],
   ['windows-interface', ['0.59.3']], ['windows-link', ['0.2.1']], ['windows-numerics', ['0.3.1']], ['windows-result', ['0.4.1']],
-  ['windows-strings', ['0.5.1']], ['windows-sys', ['0.59.0', '0.61.2']], ['windows-targets', ['0.52.6']],
-  ['windows-threading', ['0.2.1']], ['windows-version', ['0.1.7']], ['windows', ['0.62.2']], ['windows_x86_64_msvc', ['0.52.6']],
+  ['windows-strings', ['0.5.1']], ['windows-sys', ['0.59.0', '0.60.2', '0.61.2']], ['windows-targets', ['0.52.6', '0.53.5']],
+  ['windows-threading', ['0.2.1']], ['windows-version', ['0.1.7']], ['windows', ['0.62.2']], ['windows_x86_64_msvc', ['0.52.6', '0.53.1']],
 ]);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const key = crate => `${crate.name}@${crate.version}`;

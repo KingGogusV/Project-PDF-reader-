@@ -88,7 +88,7 @@ Shared: document logic, rendering, search, supported annotations/forms, restrict
 |---|---|---|
 | Reader | Open, scroll/single-page, thumbnails, outlines, page/search navigation, zoom/fit, view rotation, properties, adaptive controls | Broader fidelity and physical-device verification |
 | Review/forms | Text/freehand highlight, FreeText, ink; supported text, multiline, checkbox, dropdown and radio fields; editor undo/redo | No new sticky-note, underline or strikethrough tools; no PDF scripts/XFA |
-| Output | Validated new-copy download and explicit saved-copy acknowledgment; browser print/open/download handoff | Download initiation is not confirmed disk persistence; physical printing unverified |
+| Output | Browser checked-copy download/explicit acknowledgment; development native reader Save As with verified disk receipt; existing print/tool handoffs | New native flow is not in published downloads; physical printing unverified |
 | Device library | Opt-in immutable originals plus latest verified revision, recovery reopening, hash checks, quota handling and conflict refusal | Unencrypted browser-profile storage; eviction/termination can still lose uncheckpointed edits |
 | Accounts | Account-only API/UI, identity-dependent registration, database-enforced 200-account cap, guest operation | Live accounts table confirmed; actual managed sign-in/account sessions and live capacity/load unverified; no cross-device PDF sync |
 | OCR | English recognition, progress/cancel, separate text output and `.txt` download | Recognition estimates; no handwriting/multilingual guarantee, searchable-PDF export or layout reconstruction |
