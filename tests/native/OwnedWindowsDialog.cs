@@ -140,13 +140,37 @@ namespace FolioNativeSmoke {
           throw new Win32Exception(Marshal.GetLastWin32Error(), "Set owned synthetic filename");
       } finally { Marshal.FreeHGlobal(text); }
       validateField();
-      if (SendMessageTimeout(edit, 0x000E, UIntPtr.Zero, IntPtr.Zero, 3, 2000, out result) == IntPtr.Zero ||
-          result.ToUInt64() != (ulong)destination.Length) throw new InvalidOperationException("Owned File name length differs from the synthetic destination.");
-      var readback = new StringBuilder(destination.Length + 1);
-      if (SendMessageTimeout(edit, 0x000D, new UIntPtr((uint)readback.Capacity), readback, 3, 2000, out result) == IntPtr.Zero ||
-          result.ToUInt64() != (ulong)destination.Length || readback.ToString() != destination)
-        throw new InvalidOperationException("Owned File name readback differs from the synthetic destination.");
-      validateField();
+      Action verifyFilename = () => {
+        UIntPtr readResult;
+        if (SendMessageTimeout(edit, 0x000E, UIntPtr.Zero, IntPtr.Zero, 3, 2000, out readResult) == IntPtr.Zero ||
+            readResult.ToUInt64() != (ulong)destination.Length) throw new InvalidOperationException("Owned File name length differs from the synthetic destination.");
+        var readback = new StringBuilder(destination.Length + 1);
+        if (SendMessageTimeout(edit, 0x000D, new UIntPtr((uint)readback.Capacity), readback, 3, 2000, out readResult) == IntPtr.Zero ||
+            readResult.ToUInt64() != (ulong)destination.Length || readback.ToString() != destination)
+          throw new InvalidOperationException("Owned File name readback differs from the synthetic destination.");
+        validateField();
+      };
+      verifyFilename();
+      if (!legacyPresent) {
+        // The observed shell picker kept its suggested filename after WM_SETTEXT
+        // changed only the Edit. Notify the exact ComboBox parent of the change,
+        // using the documented CBN_EDITCHANGE WM_COMMAND shape.
+        var combo = GetParent(edit); var sink = GetParent(combo);
+        Action validateNotificationTarget = () => {
+          validateField();
+          ValidateControl(ownedPid, dialog, combo); ValidateControl(ownedPid, dialog, sink);
+          if (GetParent(edit) != combo || GetParent(combo) != sink || ClassName(combo) != "ComboBox" ||
+              ClassName(sink) != "FloatNotifySink" || GetDlgCtrlID(combo) != 0 || GetDlgCtrlID(sink) != 0)
+            throw new InvalidOperationException("Owned File name notification ancestry changed.");
+        };
+        validateNotificationTarget();
+        // A processed WM_COMMAND may return zero; only the timeout API's status
+        // establishes delivery. This never sends input to an unrelated window.
+        if (SendMessageTimeout(sink, 0x0111, new UIntPtr(5u << 16), combo, 3, 2000, out result) == IntPtr.Zero)
+          throw new Win32Exception(Marshal.GetLastWin32Error(), "Notify owned synthetic filename change");
+        validateNotificationTarget();
+        verifyFilename();
+      }
     }
     public static WindowInfo[] Dialogs(uint ownedPid) {
       var result = new List<WindowInfo>();

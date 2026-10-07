@@ -8,6 +8,10 @@
 
 **DESIGN DECISION:** Preserve existing OS-backed HTML PDF input and the shared controller's original-byte/output validation. Add narrowly allowlisted Rust Save As commands that retain the selected destination in Rust. Grant no JavaScript dialog or filesystem plugin permissions. Save only a new copy; reject existing files even after an OS overwrite prompt.
 
+**FACT:** Microsoft's [CBN_EDITCHANGE](https://learn.microsoft.com/en-us/windows/win32/controls/cbn-editchange) and [WM_COMMAND](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) document a ComboBox notification to its immediate parent, carrying the control ID, notification code and exact ComboBox HWND. [WM_SETTEXT](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-settext) documents displayed text changes without promising synchronization of a shell dialog's filename model. The pinned Windows dialog backend leaves the Save dialog's default overwrite prompt enabled.
+
+**INFERENCE:** Installed run 37610271900 showed exact visible filename readback followed by a successful receipt for the default filename, so visible text alone did not update that shell dialog's selected filename. The test-only modern fallback needs the narrowly owned ComboBox change notification; its actual correctness requires a new installed run. Do not relax the existing-file assertion or infer an immediate refusal from a missing overwrite prompt.
+
 **FACT:** [`NamedTempFile::persist_noclobber`](https://docs.rs/tempfile/3.27.0/tempfile/struct.NamedTempFile.html#method.persist_noclobber) preserves an existing destination. Its [Windows implementation](https://docs.rs/crate/tempfile/3.27.0/source/src/file/imp/windows.rs) uses a move without replacement. Explicit write/disk checks and flushing still matter; this API does not promise universal atomicity or power-loss durability. Abrupt termination may retain an unpublished temporary file. Actual implementation/test evidence is recorded in verification rather than inferred from documentation.
 
 ## Explicit release publication - 2026-10-07
