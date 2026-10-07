@@ -190,9 +190,21 @@ async function workflow() {
   await expect(page.locator('#recovery-status')).toHaveText('Recovery up to date on this device');
   // Wait for independently parsed bytes, rather than a possibly stale status label.
   await expect.poll(async () => { try { await verifySnapshot(await snapshot()); return true; } catch { return false; } },{timeout:20000}).toBe(true);
-  const before = await snapshot(); await verifySnapshot(before);
-  await writeFile(join(output,'before.json'),JSON.stringify(before));
+  const initial = await snapshot(); await verifySnapshot(initial);
+  await writeFile(join(output,'pre-crash.json'),JSON.stringify(initial));
   checked('three 0.1.0 library documents include two independently verified unsaved recovery PDFs and one unchanged PDF');
+  await stopOwned();
+  // Read the durable baseline from a fresh old-version process. localStorage
+  // recent-file writes can lag their synchronous API when a job is terminated;
+  // record that separately rather than attributing it to the installer upgrade.
+  await startOwned(versions[0]); await upgradedPage();
+  const before = await snapshot(); await verifySnapshot(before);
+  assert.deepEqual(before.stores,initial.stores);
+  report.preUpgradeCrash = { documentStoresPreserved:true,
+    preferencesPreserved:JSON.stringify(before.preferences) === JSON.stringify(initial.preferences),
+    initialPreferences:initial.preferences, durablePreferences:before.preferences };
+  await writeFile(join(output,'before.json'),JSON.stringify(before));
+  checked('completed 0.1.0 checkpoints survive an actual process restart before the installer upgrade');
   await stopOwned();
   installer('upgrade', versions[1]);
   assert.equal(sha256(await readFile(executable)), versions[1].executableSha256);
@@ -211,7 +223,11 @@ async function workflow() {
     await row.locator('[data-library-action="open"]').click();
     await expect(active().locator('.page[data-page-number="1"]')).toHaveAttribute('data-loaded','true');
     if (name === 'form.pdf') await expect(active().locator('input[name="reader_name"]')).toHaveValue('Unexported form survives installer upgrade');
-    if (name === 'text-outline.pdf') await expect(active().locator('.freeTextAnnotation')).toContainText('Unexported annotation survives upgrade');
+    if (name === 'text-outline.pdf') {
+      const annotation = active().locator('.freeTextAnnotation');
+      await expect(annotation).toContainText('Unexported annotation survives upgrade');
+      await annotation.scrollIntoViewIfNeeded(); await expect(annotation).toBeVisible();
+    }
     await page.screenshot({path:join(output,`upgraded-${name}.png`)});
     const [download] = await Promise.all([
       page.waitForEvent('download'),
