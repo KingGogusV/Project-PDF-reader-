@@ -28,10 +28,10 @@ $root = [IO.Path]::GetFullPath($root).TrimEnd('\') + '\'
 $exe = (Resolve-Path -LiteralPath $Executable).Path
 foreach ($path in @($exe)) {
   if (-not $path.StartsWith($root,[StringComparison]::OrdinalIgnoreCase)) { throw 'App and test profile must stay beneath the selected temporary directory.' }
-  $item = Get-Item -LiteralPath $path
+  $item = Get-Item -Force -LiteralPath $path
   while ($item.FullName.TrimEnd('\') -ne $root.TrimEnd('\')) {
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are not allowed in owned native paths.' }
-    $item = Get-Item -LiteralPath (Split-Path -Parent $item.FullName)
+    $item = Get-Item -Force -LiteralPath (Split-Path -Parent $item.FullName)
   }
 }
 $reportRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../test-results')).TrimEnd('\') + '\'
@@ -45,12 +45,12 @@ if ($ProfileMode -eq 'default') {
   foreach ($path in @($profilePath,(Join-Path $profilePath 'EBWebView'),[IO.Path]::GetFullPath($ProfileState))) {
     $itemPath=$path
     while (-not (Test-Path -LiteralPath $itemPath)) { $itemPath=Split-Path -Parent $itemPath }
-    $item=Get-Item -LiteralPath $itemPath
+    $item=Get-Item -Force -LiteralPath $itemPath
     while ($item) {
       if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are not allowed in default-profile or ownership evidence paths.' }
       $parentPath=Split-Path -Parent $item.FullName
       if (-not $parentPath) { break }
-      $item=Get-Item -LiteralPath $parentPath
+      $item=Get-Item -Force -LiteralPath $parentPath
     }
   }
   if (-not $profileFresh) {
@@ -67,10 +67,10 @@ if ($ProfileMode -eq 'default') {
 } else {
   $profilePath=(Resolve-Path -LiteralPath $Profile).Path
   if (-not $profilePath.StartsWith($root,[StringComparison]::OrdinalIgnoreCase)) { throw 'Test profile must stay beneath the selected temporary directory.' }
-  $item=Get-Item -LiteralPath $profilePath
+  $item=Get-Item -Force -LiteralPath $profilePath
   while ($item.FullName.TrimEnd('\') -ne $root.TrimEnd('\')) {
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are not allowed in owned native paths.' }
-    $item=Get-Item -LiteralPath (Split-Path -Parent $item.FullName)
+    $item=Get-Item -Force -LiteralPath (Split-Path -Parent $item.FullName)
   }
 }
 if ([IO.Path]::GetFileName($exe) -ne 'folio-desktop.exe' -or $Port -lt 1024 -or $Port -gt 65535) { throw 'Unexpected executable or port.' }

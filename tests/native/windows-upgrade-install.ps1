@@ -26,10 +26,10 @@ if ($Mode -eq 'ci') {
 }
 $targetPath = (Resolve-Path -LiteralPath $Target).Path
 if (-not $targetPath.StartsWith($root,[StringComparison]::OrdinalIgnoreCase) -or (Split-Path -Leaf $targetPath) -notlike 'FolioUpgrade-*' -or $targetPath -match '\s') { throw 'Only a uniquely named temporary upgrade installation is allowed.' }
-$item = Get-Item -LiteralPath $targetPath
+$item = Get-Item -Force -LiteralPath $targetPath
 while ($item.FullName.TrimEnd('\') -ne $root.TrimEnd('\')) {
   if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'No reparse points in installer target.' }
-  $item = Get-Item -LiteralPath (Split-Path -Parent $item.FullName)
+  $item = Get-Item -Force -LiteralPath (Split-Path -Parent $item.FullName)
 }
 if (@(Get-Process -Name folio-desktop -ErrorAction SilentlyContinue).Count) { throw 'Close existing Folio processes; never terminate user applications.' }
 $registryPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Folio'
@@ -40,12 +40,12 @@ $shortcutResult=$null
 if ($DefaultProfile -and $Action -eq 'install') {
   $defaultPath=Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'app.folio.localreader'
   if (Test-Path -LiteralPath $defaultPath) { throw 'Default Folio profile is already occupied; refusing to install or inspect it.' }
-  $ancestor=Get-Item -LiteralPath (Split-Path -Parent $defaultPath)
+  $ancestor=Get-Item -Force -LiteralPath (Split-Path -Parent $defaultPath)
   while ($ancestor) {
     if (($ancestor.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Default profile ancestors must not be reparse points.' }
     $parent=Split-Path -Parent $ancestor.FullName
     if (-not $parent) { break }
-    $ancestor=Get-Item -LiteralPath $parent
+    $ancestor=Get-Item -Force -LiteralPath $parent
   }
   foreach ($hive in @([Microsoft.Win32.Registry]::CurrentUser,[Microsoft.Win32.Registry]::LocalMachine)) {
     foreach ($name in @('UserDataFolder','AdditionalBrowserArguments')) {
@@ -61,7 +61,7 @@ if ($CheckShortcuts) {
     $itemPath=$path
     while (-not (Test-Path -LiteralPath $itemPath)) { $itemPath=Split-Path -Parent $itemPath }
     while ($itemPath) {
-      $item=Get-Item -LiteralPath $itemPath
+      $item=Get-Item -Force -LiteralPath $itemPath
       if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are not allowed in shortcut/evidence paths.' }
       $itemPath=Split-Path -Parent $item.FullName
     }

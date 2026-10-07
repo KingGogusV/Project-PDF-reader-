@@ -26,10 +26,10 @@ $exe=(Resolve-Path -LiteralPath $ExpectedExecutable).Path
 $root=(Resolve-Path -LiteralPath $TestRoot).Path.TrimEnd('\')+'\'
 foreach ($path in @($exe,$root.TrimEnd('\'))) {
   if (-not $path.StartsWith($temporaryRoot,[StringComparison]::OrdinalIgnoreCase)) { throw 'Owned executable and test files must remain beneath the temporary root.' }
-  $item=Get-Item -LiteralPath $path
+  $item=Get-Item -Force -LiteralPath $path
   while ($item.FullName.TrimEnd('\') -ne $temporaryRoot.TrimEnd('\')) {
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Reparse points are not permitted in test-owned paths.' }
-    $item=Get-Item -LiteralPath (Split-Path -Parent $item.FullName)
+    $item=Get-Item -Force -LiteralPath (Split-Path -Parent $item.FullName)
   }
 }
 $process=Get-Process -Id $OwnedPid
@@ -49,12 +49,12 @@ if (-not [IO.Path]::GetFullPath($ReportPath).StartsWith($reportRoot,[StringCompa
 if ($Action -eq 'save') {
   $Destination=[IO.Path]::GetFullPath($Destination)
   if (-not $Destination.StartsWith($root,[StringComparison]::OrdinalIgnoreCase) -or [IO.Path]::GetExtension($Destination) -ne '.pdf') { throw 'Save destination must be a synthetic PDF inside the owned test directory.' }
-  $parent=Get-Item -LiteralPath (Split-Path -Parent $Destination)
+  $parent=Get-Item -Force -LiteralPath (Split-Path -Parent $Destination)
   while ($parent.FullName.TrimEnd('\') -ne $root.TrimEnd('\')) {
     if (($parent.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Destination parent contains a reparse point.' }
-    $parent=Get-Item -LiteralPath (Split-Path -Parent $parent.FullName)
+    $parent=Get-Item -Force -LiteralPath (Split-Path -Parent $parent.FullName)
   }
-  if ((Test-Path -LiteralPath $Destination) -and ((Get-Item -LiteralPath $Destination).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Destination is a reparse point.' }
+  if ((Test-Path -LiteralPath $Destination) -and ((Get-Item -Force -LiteralPath $Destination).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Destination is a reparse point.' }
 }
 try {
   Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,WindowsBase -ErrorAction Stop

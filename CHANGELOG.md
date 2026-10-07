@@ -8,6 +8,7 @@
 - Prepared application version 0.1.2 and a new immutable `v0.1.2-preview.1` release with original notices. Existing release tags/assets remain unchanged. Publication and public download promotion require fresh verification of this new source.
 - Added a WebView2 dependency floor and a pre-reader capability check with accessible update help and safe native closing. Switched Windows dialog verification to the available PowerShell 7 APIs without changing execution policy.
 - The new release gate requires all 17 installed checks, successful dialog outcomes, verified saved copies and complete process/policy cleanup. A separate candidate upgrade check exercises the published 0.1.1 installer, genuine disposable-CI default profile and exact owned Start-menu shortcut before the fresh installation check.
+- The first candidate run stopped before installation when a metadata guard could not read hidden `AppData`; literal metadata reads now include hidden/system items while retaining reparse refusal, with an actual Windows regression. Its separate Reader core/signature job timed out during Ubuntu mirror setup before tests ran. Fresh affected CI remains required; neither failed setup is counted as a runtime pass.
 - No code-signing identity is available; this release remains an unsigned preview. Reader rendering and document engines remain unchanged, with Rust handling bounded native copy writes rather than a PDF-engine rewrite.
 
 ### Native Save As development pass

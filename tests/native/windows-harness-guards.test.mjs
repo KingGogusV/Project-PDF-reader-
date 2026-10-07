@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { mkdir, mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -15,4 +18,20 @@ test('default-profile and shortcut modes reject local use before reading any pro
       {windowsHide:true,encoding:'utf8',timeout:15000,maxBuffer:64000});
     assert.ifError(result.error); assert.notEqual(result.status,0); assert.ok((result.stdout + result.stderr).includes(message));
   }
+});
+test('native ancestor metadata guards read hidden directories while preserving reparse refusal', async () => {
+  const root=await mkdtemp(join(tmpdir(),'FolioPathGuard-'));
+  await mkdir(join(root,'HiddenParent','VisibleChild'),{recursive:true});
+  await mkdir(join(root,'OwnedJunctionTarget'));
+  const result=spawnSync('pwsh.exe',['-NoProfile','-NonInteractive','-File',
+    fileURLToPath(new URL('windows-path-guards-fixture.ps1',import.meta.url)),'-TestRoot',root],
+    {windowsHide:true,encoding:'utf8',timeout:15000,maxBuffer:64000});
+  assert.ifError(result.error); assert.equal(result.status,0,result.stderr || result.stdout);
+  const evidence=JSON.parse(result.stdout);
+  assert.equal(evidence.hiddenSystemAncestor,true); assert.equal(evidence.unforcedReadRejected,true);
+  assert.equal(evidence.forcedReadAccepted,true); assert.equal(evidence.productionHiddenWalkAccepted,true);
+  assert.equal(evidence.productionReparseWalkRejected,true); assert.equal(evidence.literalReadsAllForced,true);
+  assert.ok(evidence.literalReadCount >= 19);
+  // Retain only newly created synthetic metadata fixtures. No directory cleanup
+  // or actual profile/installer/app operation belongs to this regression.
 });
