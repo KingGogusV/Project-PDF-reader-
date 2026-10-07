@@ -1,15 +1,24 @@
 # Experimental desktop wrapper
 
-The [Windows preview](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.0-preview.1) is published and its actual reader/export/recovery/OS-close checks passed locally and in CI. [Installation help](../docs/windows-installation.md) contains the direct EXE and checksum. macOS packaging passed; macOS native runtime remains unverified. Older diagnostics below describe historical sources.
+The [Windows preview](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) is published and its actual reader/export/recovery/OS-close checks passed locally and in CI. [Installation help](../docs/windows-installation.md) contains the direct EXE and checksum. The development Save As changes below are not a new public release. macOS packaging passed; macOS native runtime remains unverified. Older diagnostics below describe historical sources.
 
 This Tauri 2 shell embeds the existing `dist/client/` web app and its local PDF.js worker.
-It adds no separate document engine. Its only command, `finish_close`, is limited
-to the local main window and completes the shared save/discard flow after a native
-close request. `capabilities/default.json` grants only `allow-finish-close`;
-no filesystem, shell or network plugin is enabled. Ordinary
-HTML file inputs remain the initial opening mechanism; native file associations,
-atomic native saves, OS share sheets and automatic updates are not implemented.
+It adds no separate document engine. Five local-main-window commands implement
+verified new-copy saving and the shared save/discard close handshake. Rust owns
+the Save As dialog and its destination; JavaScript receives no filesystem,
+shell, network or dialog plugin permissions. HTML file inputs use the WebView's
+OS opening chooser. Native file associations, OS share sheets and automatic
+updates are not implemented.
 Do not register it as a default PDF handler until those lifecycle paths are tested.
+
+Reader Save As transfers at most 1 MiB per binary chunk and 256 MiB per copy,
+flushes and verifies a same-folder temporary file, publishes without replacing
+any existing path, then verifies the final disk bytes before acknowledging the
+exported revision. Cancel/error leaves changes open. Explicit cleanup failures
+are reported; abrupt termination may leave an unpublished temporary file.
+Completed device checkpoints remain recoverable, but pending edits and universal
+power-loss durability are not promised. Browser and tool-specific downloads keep
+their existing handoffs.
 
 The app identifier `app.folio.localreader` is an internal development identifier,
 not evidence of a registered product name or domain. Final release identity and
@@ -32,7 +41,7 @@ preserve it and review any dependency-resolution change. Native CI build success
 document correctness, installer trust or release readiness.
 
 `.github/workflows/native-build.yml` defines Windows and macOS jobs using Node 24,
-pnpm 11.25.0 and stable Rust. The job generates `Cargo.lock` only when absent, then
+pnpm 11.25.0 and pinned Rust 1.99.0 with rustfmt/clippy. The job generates `Cargo.lock` only when absent, then
 runs `cargo metadata --locked` followed by
 `node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles nsis -- --locked` (Windows), or the
 same build command with `--bundles app,dmg` (macOS).

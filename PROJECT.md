@@ -25,7 +25,7 @@ Cross-platform design; local processing; fast startup; accurate rendering; priva
 | iOS/iPadOS | Experimental browser target | Responsive/touch emulation is not physical-device, Safari or screen-reader verification |
 | Android | Experimental browser target | Physical file pickers, memory, selection, printing and sharing unverified |
 
-Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. An isolated Rust tool cache exists, but missing MSVC/Windows SDK still prevent local Windows compilation. A downloaded, checksum-verified CI installer can run without those SDKs. Actual Windows native workflows passed; these remain unsigned development packages, not trusted production releases.
+Tauri Windows NSIS and macOS app/DMG artifacts were built by verified remote CI and are linked in verification. The current Windows session also has Rust 1.99.0, MSVC 14.51.36231 and Windows SDK 10.0.26100.0; local compilation and linking now pass. Earlier missing-prerequisite results remain historical. These remain unsigned development packages, not trusted production releases.
 
 ## Windows Preview Delivery
 
@@ -80,7 +80,7 @@ Page organization creates a separate page-only PDF after conservative eligibilit
 
 ## Platform Abstraction
 
-Shared: document logic, rendering, search, supported annotations/forms, restrictions, checkpoint validation and local tools. Browser-adapted: file selection, downloads, local storage, account requests, cached assets, selection and print-copy handoff. The native wrapper currently reuses these browser flows; native filesystem writes, associations, update delivery and share sheets are not implemented.
+Shared: document logic, rendering, search, supported annotations/forms, restrictions, checkpoint validation and local tools. Opening uses the WebView's HTML file input and operating-system chooser. Browser output retains downloads and explicit saved-copy acknowledgment. Development desktop reader output uses a Rust-owned Save As dialog, bounded binary transfer, no-overwrite publication and a verified disk receipt before acknowledging the exported revision. Tool-specific outputs and printing retain their existing browser handoffs. Associations, update delivery and share sheets remain unimplemented.
 
 ## Feature Status
 

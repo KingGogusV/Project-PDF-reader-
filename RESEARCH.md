@@ -1,5 +1,13 @@
 # Research record
 
+## Native Save As design - 2026-10-07
+
+**FACT:** The official [Tauri dialog guide](https://v2.tauri.app/plugin/dialog/) supports Rust-owned OS save dialogs. [Pinned dialog 2.7.0](https://docs.rs/tauri-plugin-dialog/2.7.0/tauri_plugin_dialog/struct.FileDialogBuilder.html) supports a parent window and cancellation callback, and its [manifest](https://docs.rs/crate/tauri-plugin-dialog/2.7.0/source/Cargo.toml) is compatible with existing Tauri 2.12.1. The installed Tauri/API 2.12.1 sources document raw binary request bodies and invoke headers, permitting bounded chunks instead of JSON byte arrays.
+
+**DESIGN DECISION:** Preserve existing OS-backed HTML PDF input and the shared controller's original-byte/output validation. Add narrowly allowlisted Rust Save As commands that retain the selected destination in Rust. Grant no JavaScript dialog or filesystem plugin permissions. Save only a new copy; reject existing files even after an OS overwrite prompt.
+
+**FACT:** [`NamedTempFile::persist_noclobber`](https://docs.rs/tempfile/3.27.0/tempfile/struct.NamedTempFile.html#method.persist_noclobber) preserves an existing destination. Its [Windows implementation](https://docs.rs/crate/tempfile/3.27.0/source/src/file/imp/windows.rs) uses a move without replacement. Explicit write/disk checks and flushing still matter; this API does not promise universal atomicity or power-loss durability. Abrupt termination may retain an unpublished temporary file. Actual implementation/test evidence is recorded in verification rather than inferred from documentation.
+
 ## Explicit release publication - 2026-10-07
 
 **FACT:** GitHub documents typed `workflow_dispatch` inputs, with boolean values preserved in the `inputs` context and represented as strings in `github.event.inputs`. Branch/path filters control automatic runs. References: [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [manual workflow runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).

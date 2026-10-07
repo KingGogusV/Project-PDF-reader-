@@ -1,9 +1,9 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The local reader may finish its own confirmed close. No filesystem, shell or network plugins.",
+  "description": "The local reader may save a verified new PDF copy to a Rust dialog-selected destination and finish its own confirmed close. No plugin filesystem, shell, network or dialog permissions.",
   "windows": [
     "main"
   ],
-  "permissions": ["allow-finish-close"]
+  "permissions": ["allow-finish-close", "allow-begin-pdf-save", "allow-append-pdf-save", "allow-finish-pdf-save", "allow-cancel-pdf-save"]
 }

@@ -17,3 +17,8 @@ tauri-build = { version = "=2.7.1", features = [] }
 
 [dependencies]
 tauri = { version = "=2.12.1", features = [] }
+tauri-plugin-dialog = { version = "=2.7.0", default-features = false }
+serde = { version = "=1.0.229", features = ["derive"] }
+sha2 = "=0.10.9"
+uuid = { version = "=1.27.0", features = ["v4"] }
+tempfile = "=3.27.0"

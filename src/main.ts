@@ -1,7 +1,8 @@
 import './style.css';
 import { icon } from './ui/icons';
 import type { ReaderController, ReaderState } from './core/document-controller';
-import { pickFiles, downloadPdf, printPdf, reservePrintWindow, getRecent, rememberRecent, clearRecent } from './platform/browser';
+import { pickFiles, downloadPdf, exportedPdfName, printPdf, reservePrintWindow, getRecent, rememberRecent, clearRecent } from './platform/browser';
+import { saveNativePdfCopy } from './platform/native-save';
 import { createDeviceLibrary } from './features/device-library';
 import { createDocumentTools } from './features/document-tools';
 import { isTauri, invoke } from '@tauri-apps/api/core';
@@ -159,7 +160,7 @@ function renderTabs() {
   const dot=tab.querySelector('.dirty-dot');
   if(s.controller.dirty&&!dot){const marker=document.createElement('span');marker.className='dirty-dot';marker.title='Changes not confirmed saved';marker.setAttribute('aria-hidden','true');tab.append(marker);}else if(!s.controller.dirty)dot?.remove();
  }
- const current=active();const close=$<HTMLButtonElement>('close-active-document');close.disabled=!current||!!current.state?.loading||!!current.closing;close.setAttribute('aria-label',current?`Close ${current.name}`:'Close active document');
+ const current=active();const close=$<HTMLButtonElement>('close-active-document');close.disabled=!current||!!current.state?.loading||!!current.closing||opening||exporting||closingApplication;close.setAttribute('aria-label',current?`Close ${current.name}`:'Close active document');
 }
 function applyState(session: Session, state: ReaderState) {
  session.state=state; deviceLibrary.onState(session,state); if(session.id!==activeId)return;
@@ -201,12 +202,22 @@ function activate(id: number) {
  setToolUI('select');
  featureHooks.refreshStatus();
 }
-async function choose() { try { const files=await pickFiles();await openFiles(files); }catch(e){toast(errorText(e),true);} }
+function fileTaskBusy() { return closingApplication||opening||exporting||sessions.some(s=>s.closing)||$<HTMLDialogElement>('dialog').open; }
+async function choose() {
+ if(fileTaskBusy()){toast('Finish or cancel the current task before opening another PDF.');return;}
+ // Reserve before awaiting the OS picker, including its cancellation path.
+ opening=true;renderTabs();
+ try { await loadSelectedFiles(await pickFiles()); }catch(e){toast(errorText(e),true);}
+ finally{opening=false;renderTabs();}
+}
 async function openFiles(files: File[]) {
- if(closingApplication){toast('Folio is finishing its close checks.');return;}
- if(opening){toast('Wait for the current document to finish opening.');return;}
- opening=true;
- try { const {ReaderController}=await import('./core/document-controller');for(const file of files){
+ if(fileTaskBusy()){toast('Finish or cancel the current task before opening another PDF.');return;}
+ opening=true;renderTabs();
+ try { await loadSelectedFiles(files); }finally{opening=false;renderTabs();}
+}
+async function loadSelectedFiles(files: File[]) {
+ if(!files.length)return;
+ const {ReaderController}=await import('./core/document-controller');for(const file of files){
   if(!/\.pdf$/i.test(file.name)){toast('Choose a PDF file to open in Folio.',true);continue;}
   if(sessions.length>=3){toast('Up to three documents can stay open. Close a tab before opening another.',true);break;}
   const id=nextId++;const panel=document.createElement('div');panel.className='document-panel';panel.id=`document-${id}`;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',`tab-${id}`);
@@ -216,17 +227,23 @@ async function openFiles(files: File[]) {
   try { await s.controller.open(file,askPassword);try{rememberRecent(file);}catch(e){toast(errorText(e),true);}await renderSidebar();if(activeId===id&&!document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))focusWorkspace(); }
   catch(e){const index=sessions.indexOf(s);if(index>=0)sessions.splice(index,1);await s.controller.destroy();panel.remove();activate(sessions.at(-1)?.id||0);focusWorkspace();toast(errorText(e),true);}
   finally{$('loading').hidden=true;}
- }}finally{opening=false;}
+ }
 }
-async function closeSession(id: number) {
+async function closeSession(id: number, fromApplication = false) {
  const s=sessions.find(x=>x.id===id);if(!s||s.closing)return;
- s.controller.flushPendingEdits();
- let discard=false;
- if(s.controller.dirty){const answer=await dialog('Keep your changes?',copy('Export a PDF copy or keep your validated changes in the device library. Discard restores the version opened in this tab.'),[{label:'Keep open',value:'cancel'},{label:'Discard changes',value:'discard'},...(deviceLibrary.isStored(s.id)?[{label:'Keep in library',value:'library'}]:[]),{label:'Export copy',value:'export',primary:true}]);if(answer==='export'){activate(id);await exportCopy();return;}if(answer!=='discard'&&answer!=='library')return;discard=answer==='discard';}
- s.closing=true;s.host.inert=true;
- try { await deviceLibrary.beforeClose(s,discard); }
- catch(error){s.closing=false;s.host.inert=false;throw error;}
- sessions.splice(sessions.indexOf(s),1);await s.controller.destroy();s.host.remove();s.panel.remove();if(id===activeId){activate(sessions.at(-1)?.id||0);if(active())$(`tab-${activeId}`).focus();else focusWorkspace();}else renderTabs();
+ if(opening||exporting||sessions.some(x=>x.closing)||(!fromApplication&&closingApplication)||$<HTMLDialogElement>('dialog').open){toast('Finish or cancel the current task before closing this PDF.');return;}
+ // Reserve before the unsaved dialog so duplicate close requests cannot replace it.
+ s.closing=true;renderTabs();
+ try {
+  s.controller.flushPendingEdits();
+  let discard=false;
+  if(s.controller.dirty){const answer=await dialog('Keep your changes?',copy('Export a PDF copy or keep your validated changes in the device library. Discard restores the version opened in this tab.'),[{label:'Keep open',value:'cancel'},{label:'Discard changes',value:'discard'},...(deviceLibrary.isStored(s.id)?[{label:'Keep in library',value:'library'}]:[]),{label:'Export copy',value:'export',primary:true}]);if(answer==='export'){activate(id);s.closing=false;await exportCopy(true);return;}if(answer!=='discard'&&answer!=='library')return;discard=answer==='discard';}
+  s.host.inert=true;
+  await deviceLibrary.beforeClose(s,discard);
+  // Keep the live session available if worker cleanup fails.
+  await s.controller.destroy();
+  sessions.splice(sessions.indexOf(s),1);s.host.remove();s.panel.remove();if(id===activeId){activate(sessions.at(-1)?.id||0);if(active())$(`tab-${activeId}`).focus();else focusWorkspace();}else renderTabs();
+ }finally{if(sessions.includes(s)){s.closing=false;s.host.inert=false;}renderTabs();}
 }
 async function prepareNativeClose(): Promise<boolean> {
  if(opening||exporting||sessions.some(s=>s.closing)||$<HTMLDialogElement>('dialog').open){toast('Finish or cancel the current task before closing Folio.');return false;}
@@ -234,11 +251,11 @@ async function prepareNativeClose(): Promise<boolean> {
  try {
   for(const session of [...sessions]){
    activate(session.id); // Show the document whose edits the close dialog describes.
-   await closeSession(session.id);
+   await closeSession(session.id,true);
    if(sessions.includes(session))return false; // Cancel/export keeps the native app open.
   }
   return sessions.length===0;
- }finally{if(sessions.length)closingApplication=false;}
+ }finally{if(sessions.length)closingApplication=false;renderTabs();}
 }
 if(isTauri())registerNativeCloseGuard(window,prepareNativeClose,()=>invoke<void>('finish_close'),error=>{closingApplication=false;toast(`Folio remains open. ${errorText(error)}`,true);});
 function setToolUI(tool: string) {for(const name of ['select','highlight','text','draw']){const b=$(`tool-${name}`);b.classList.toggle('active',name===tool);b.setAttribute('aria-pressed',String(name===tool));}}
@@ -273,21 +290,32 @@ async function showProperties(origin: HTMLElement = $('properties')) {
  for(const [key,value]of pairs){const dt=document.createElement('dt');dt.textContent=key;const dd=document.createElement('dd');dd.textContent=value;dl.append(dt,dd);}body.append(dl);
  await dialog('Document properties',body,[{label:'Done',value:'done',primary:true}],origin);
 }
-async function exportCopy() {
- const s=active();if(!s||exporting)return;exporting=true;$<HTMLButtonElement>('export').disabled=true;
- try { const bytes=await s.controller.exportBytes();const result=downloadPdf(bytes,s.name);const answer=await dialog('Your PDF copy is ready',copy(`${result.message} Your original is unchanged. Confirm only after you have checked that the copy was saved.`),[{label:'Keep changes marked',value:'cancel'},{label:'I saved the copy',value:'saved',primary:true}]);if(answer==='saved')s.controller.markExported();renderTabs(); }
+async function exportCopy(fromClose = false) {
+ const s=active();if(!s||exporting||opening||sessions.some(x=>x.closing)||(!fromClose&&closingApplication)||$<HTMLDialogElement>('dialog').open)return;exporting=true;$<HTMLButtonElement>('export').disabled=true;renderTabs();
+ try {
+  const bytes=await s.controller.exportBytes();
+  if(isTauri()){
+   const receipt=await saveNativePdfCopy(bytes,exportedPdfName(s.name),invoke);
+   if(receipt){s.controller.markExported();toast(`Saved new PDF copy: ${receipt.filename}. Your original is unchanged.`);}
+   else toast('Save As cancelled. Your changes remain open.');
+  }else{
+   const result=downloadPdf(bytes,s.name);const answer=await dialog('Your PDF copy is ready',copy(`${result.message} Your original is unchanged. Confirm only after you have checked that the copy was saved.`),[{label:'Keep changes marked',value:'cancel'},{label:'I saved the copy',value:'saved',primary:true}]);if(answer==='saved')s.controller.markExported();
+  }
+  renderTabs();
+ }
  catch(e){toast(`Export failed. Your changes remain open. ${errorText(e)}`,true);}
- finally{exporting=false;$<HTMLButtonElement>('export').disabled=false;}
+ finally{exporting=false;$<HTMLButtonElement>('export').disabled=false;renderTabs();}
 }
 async function printCopy() {
- const s=active();if(!s||exporting)return;if(s.state?.canPrint===false){toast('This PDF does not permit printing.',true);return;}exporting=true;
+ const s=active();if(!s||fileTaskBusy())return;if(s.state?.canPrint===false){toast('This PDF does not permit printing.',true);return;}exporting=true;renderTabs();
  let reserved:Window|undefined;
- try{reserved=reservePrintWindow();const bytes=await s.controller.exportBytes();const result=printPdf(bytes,s.name,reserved);toast(result.message);}catch(e){reserved?.close();toast(errorText(e),true);}finally{exporting=false;}
+ try{reserved=reservePrintWindow();const bytes=await s.controller.exportBytes();const result=printPdf(bytes,s.name,reserved);toast(result.message);}catch(e){reserved?.close();toast(errorText(e),true);}finally{exporting=false;renderTabs();}
 }
 function toggleSearch(show=!$('searchbar').hidden?false:true){clearTimeout(searchTimer);$('searchbar').hidden=!show;$('toggle-search').setAttribute('aria-expanded',String(show));if(show)$<HTMLInputElement>('search-input').focus();else{$<HTMLInputElement>('search-input').value='';active()?.controller.clearSearch();$('toggle-search').focus();}}
 function runSearch(previous=false){const query=$<HTMLInputElement>('search-input').value;active()?.controller.search(query,previous);}
 on('open',choose);on('choose',choose);on('clear-recent',()=>{clearRecent();renderRecents();});
-on('library',()=>deviceLibrary.showLibrary($('library')));on('account',()=>deviceLibrary.showAccount($('account')));on('store-local',()=>deviceLibrary.storeActive($('store-local')));on('document-tools',()=>documentTools.showTools());
+function startFeature(task: () => unknown) { if(fileTaskBusy()){toast('Finish or cancel the current task first.');return;}return task(); }
+on('library',()=>startFeature(()=>deviceLibrary.showLibrary($('library'))));on('account',()=>startFeature(()=>deviceLibrary.showAccount($('account'))));on('store-local',()=>startFeature(()=>deviceLibrary.storeActive($('store-local'))));on('document-tools',()=>startFeature(()=>documentTools.showTools()));
 on('close-active-document',async()=>{const s=active();if(s)await closeSession(s.id);});
 on('demo',async()=>{const r=await fetch(`${import.meta.env.BASE_URL}demo.pdf`);if(!r.ok)throw new Error('The field guide could not load. You can open a local PDF instead.');await openFiles([new File([await r.blob()],'Folio field guide.pdf',{type:'application/pdf'})]);});
 on('toggle-sidebar',()=>{const show=!!$('sidebar').hidden;setSidebar(show,show?'navigation':'toggle');return renderSidebar();});on('sidebar-close',()=>setSidebar(false,'toggle'));
@@ -338,5 +366,6 @@ matchMedia('(max-width: 900px)').addEventListener('change',event=>{if(event.matc
 setSidebar(innerWidth>900);
 $('toggle-search').setAttribute('aria-expanded','false');$('toggle-search').setAttribute('aria-controls','searchbar');
 renderRecents();
+if(isTauri()){$('export').querySelector('.save-label')!.textContent='Save As';$('export').title='Save a new PDF copy (Ctrl or Command S)';}
 void deviceLibrary.initialize().catch(e=>toast(errorText(e),true));
 if(import.meta.env.PROD&&'serviceWorker'in navigator)navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(()=>toast('Offline app caching is unavailable. Local PDF reading still works in this open tab.'));

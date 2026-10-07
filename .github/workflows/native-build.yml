@@ -37,11 +37,14 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
         with:
-          toolchain: stable
+          toolchain: '1.99.0'
+          components: rustfmt, clippy
       - name: Install pinned package manager and dependencies
         run: |
           npm install --global pnpm@11.25.0
           pnpm install --frozen-lockfile
+      - name: Verify Rust formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
       - name: Resolve native dependency lockfile
         working-directory: src-tauri
         shell: bash
@@ -53,6 +56,10 @@ jobs:
       - name: Build development native package
         # Invoke Node directly: pnpm's Windows wrapper consumes the Cargo separator.
         run: node node_modules/@tauri-apps/cli/tauri.js build --no-sign --bundles ${{ matrix.bundles }} -- --locked
+      - name: Verify Rust file safety and lint checks
+        run: |
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+          cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
       - name: Archive macOS application preserving file permissions
         if: runner.os == 'macOS'
         run: tar -czf src-tauri/target/release/bundle/Folio-macos-app.tar.gz -C src-tauri/target/release/bundle/macos Folio.app

@@ -16,6 +16,8 @@ Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **u
 
 **Status:** public web application and verified Windows preview. The release passed installation, native reader/export/recovery/close tests and exact-source CI. macOS packages build, but macOS native runtime remains unverified. See [verification](docs/verification.md).
 
+The development branch adds desktop **Save As** for a verified new PDF copy. Use **Open PDF**, edit, then **Save As** or Ctrl+S and choose a new filename. Cancellation or a failed write keeps the document open with its changes. Existing files are always protected, including after the operating system asks about replacement. This feature is not in the published installer yet; existing download links remain unchanged.
+
 Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain on your device.
 
 The published 0.1.0-to-0.1.1 upgrade preserved synthetic local-library and recovery PDFs in Windows CI; real default-profile upgrades remain a separate verification task. See [upgrade evidence](docs/windows-upgrade-verification-2026-10-07.json).

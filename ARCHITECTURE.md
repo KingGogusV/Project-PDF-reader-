@@ -45,6 +45,10 @@ The static client builds to `dist/client`; the account worker is built separatel
 
 `src/platform/browser.ts` owns file selection, downloads, print handoff and bounded recent metadata. Downloads report initiation, not disk completion. Print reserves a window during user activation and offers a local PDF to the browser's native viewer or download route. Physical printers and platform share sheets remain separate verification gates. Browser selection/clipboard and native text editing retain platform conventions.
 
+`src/platform/native-save.ts` sends an immutable validated reader snapshot to four narrowly scoped save commands; `finish_close` is the fifth native command. Rust alone chooses the destination through an owned OS dialog; IPC accepts no destination path. Chunks are binary and at most 1 MiB, with exact offsets, total length and SHA-256. Save output is capped at 256 MiB; the unchanged reader input cap is 150 MiB. A same-folder temporary file is flushed and read back before no-clobber publication, then the final file is read back before returning its filename, size and hash. Every existing destination is refused, including a file created during the transfer. Neither dialog nor filesystem plugin permissions are exposed to JavaScript.
+
+The shell reserves opening before awaiting the picker and coalesces competing open/save/close requests. Rust reserves save selection, write work and final close separately, invalidates stale work on page reload/exit, and refuses close during a pending save. Normal cancellation/error cleanup failures are surfaced. Abrupt termination can leave an unpublished `.folio-save-*.tmp` file and lose edits without a completed device checkpoint; no universal crash or power-loss durability is claimed.
+
 ## Document Controller and Lifecycle
 
 `src/core/document-controller.ts` owns retained original bytes, loading/document proxies, viewer/link/find/editor managers, restrictions, dirty/revision state and serialized output.
@@ -75,7 +79,7 @@ Annotation undo/redo delegates to PDF.js. Browser field/text editing keeps its n
 
 All serialization goes through one controller queue. It takes an immutable storage snapshot, serializes supported changes, requires the exact original byte prefix, reopens output, checks page count/relevant geometry and verifies changed form values and annotation objects. Failure retains live edits and yields no successful output.
 
-`exportBytes` tracks the exported snapshot; user acknowledgment marks only that version saved. Later edits remain dirty. `createCheckpoint` returns validated bytes/revision without acknowledging a save, and refuses unfinished editor/stroke states. Read-only output preserves original bytes. Prefix/object checks are complemented by fixture, browser and independent-reader tests; they do not establish universal visual fidelity.
+`exportBytes` tracks the exported snapshot; browser user acknowledgment or a matching native disk receipt marks only that version saved. Later edits remain dirty. `createCheckpoint` returns validated bytes/revision without acknowledging a save, and refuses unfinished editor/stroke states. Read-only output preserves original bytes. Prefix/object checks are complemented by fixture, browser and independent-reader tests; they do not establish universal visual fidelity.
 
 There is no native atomic overwrite path. Neither downloads nor device checkpoints replace an external original file.
 
