@@ -57,9 +57,10 @@ async function nativeDialog(action,destination,expectedSaveDialogHandle) {
   if(action==='confirm-existing')assert.ok(Number.isSafeInteger(expectedSaveDialogHandle)&&expectedSaveDialogHandle>0,'Confirmation must follow a known owned Save dialog.');
   else assert.equal(expectedSaveDialogHandle,undefined);
   const evidence=join(output,`save-dialog-${report.nativeDialogs.length}.json`);
-  // Windows PowerShell supplies the desktop UIAutomation assemblies. No global
-  // keyboard/mouse input, production mocks, or command-selected paths are used.
-  const shell=join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
+  // Use the PowerShell 7 runner already used by the owned launcher/close helpers.
+  // The dialog helper checks desktop UIAutomation support and leaves execution
+  // policies unchanged; no global keyboard/mouse input is used.
+  const shell='pwsh.exe';
   // Keep Node free to continue Playwright's intercepted local IPC while the OS
   // dialog helper waits. A synchronous child can prevent that dialog opening.
   let result;

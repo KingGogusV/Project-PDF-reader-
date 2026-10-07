@@ -2,6 +2,14 @@
 
 ## 2026-10-07
 
+### Windows preview 0.1.2 preparation
+
+- Merged verified native Save As PR #4 as `d6ff547`; its exact main push passed Reader, desktop-package and installed-Windows CI. The following historical development notes retain the earlier PR state and failures.
+- Prepared application version 0.1.2 and a new immutable `v0.1.2-preview.1` release with original notices. Existing release tags/assets remain unchanged. Publication and public download promotion require fresh verification of this new source.
+- Added a WebView2 dependency floor and a pre-reader capability check with accessible update help and safe native closing. Switched Windows dialog verification to the available PowerShell 7 APIs without changing execution policy.
+- The new release gate requires all 17 installed checks, successful dialog outcomes, verified saved copies and complete process/policy cleanup. A separate candidate upgrade check exercises the published 0.1.1 installer, genuine disposable-CI default profile and exact owned Start-menu shortcut before the fresh installation check.
+- No code-signing identity is available; this release remains an unsigned preview. Reader rendering and document engines remain unchanged, with Rust handling bounded native copy writes rather than a PDF-engine rewrite.
+
 ### Native Save As development pass
 
 - Added reader Save As through a Rust-owned OS dialog, bounded binary chunks, same-folder temporary staging, disk readback/hash checks and a verified receipt. Existing destinations are never replaced. Cancellation/write failure retains edits; browser download acknowledgment stays unchanged.

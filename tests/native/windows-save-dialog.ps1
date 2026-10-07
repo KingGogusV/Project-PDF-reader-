@@ -12,6 +12,7 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 if ($env:OS -ne 'Windows_NT') { throw 'Windows required.' }
+if ($PSVersionTable.PSEdition -ne 'Core' -or $PSVersionTable.PSVersion.Major -lt 7) { throw 'The owned Save As helper requires PowerShell 7 (pwsh.exe). Execution policies must already permit this script; no policy changes are supported.' }
 if (($Action -eq 'confirm-existing') -ne ($ExpectedSaveDialogHandle -gt 0)) { throw 'Only existing-file confirmation requires the prior owned Save dialog handle.' }
 if ($Mode -eq 'ci') {
   if ($env:GITHUB_ACTIONS -ne 'true' -or $env:CI -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:GITHUB_REPOSITORY -ne 'KingGogusV/Project-PDF-reader-') { throw 'Disposable repository CI only.' }
@@ -34,7 +35,7 @@ foreach ($path in @($exe,$root.TrimEnd('\'))) {
 $process=Get-Process -Id $OwnedPid
 if ($process.Path -ne $exe -or $process.ProcessName -ne 'folio-desktop' -or $process.SessionId -ne (Get-Process -Id $PID).SessionId) { throw 'Owned process identity/session mismatch.' }
 if ($ExpectedSha256 -notmatch '^[a-f0-9]{64}$') { throw 'Owned executable hash mismatch.' }
-# A Windows PowerShell child can inherit a different module search path. Keep
+# A PowerShell child can inherit a different module search path. Keep
 # the executable identity check independent of cmdlet/module availability.
 $digestAlgorithm=[Security.Cryptography.SHA256]::Create()
 try {
@@ -55,8 +56,13 @@ if ($Action -eq 'save') {
   }
   if ((Test-Path -LiteralPath $Destination) -and ((Get-Item -LiteralPath $Destination).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Destination is a reparse point.' }
 }
+try {
+  Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes,WindowsBase -ErrorAction Stop
+  foreach ($typeName in @('Windows.Automation.AutomationElement','Windows.Automation.ValuePattern','Windows.Automation.InvokePattern')) {
+    if (-not ($typeName -as [type])) { throw 'Required desktop UI Automation type is unavailable.' }
+  }
+} catch { throw 'PowerShell 7 could not load the required Windows desktop UI Automation APIs. Use a PowerShell 7 runtime for Windows supplying UIAutomationClient, UIAutomationTypes, and WindowsBase; execution policies are left unchanged.' }
 Add-Type -Path (Join-Path $PSScriptRoot 'OwnedWindowsDialog.cs')
-Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes
 $result=[ordered]@{ action=$Action; ownedPid=$OwnedPid; status='running'; dialogs=@(); controls=@(); nativeControls=@() }
 try {
   $deadline=[DateTime]::UtcNow.AddSeconds(15)

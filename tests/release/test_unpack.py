@@ -12,8 +12,8 @@ import zipfile
 PROJECT = pathlib.Path(__file__).resolve().parents[2]
 EXTRACTOR = PROJECT / "scripts" / "unpack-release.py"
 PAYLOAD = {
-    "Folio-0.1.1-Windows-x64-Setup.exe": b"MZ synthetic installer fixture\x00\x01",
-    "Folio-0.1.1-Third-Party-Notices.zip": b"opaque synthetic notice archive",
+    "Folio-0.1.2-Windows-x64-Setup.exe": b"MZ synthetic installer fixture\x00\x01",
+    "Folio-0.1.2-Third-Party-Notices.zip": b"opaque synthetic notice archive",
     "SHA256SUMS.txt": b"synthetic checksum fixture\n",
     "release-provenance.json": b'{"synthetic":true}\n',
 }
@@ -65,6 +65,11 @@ class ReleaseExtractionTests(unittest.TestCase):
 
     def test_missing_required_member_is_rejected_before_extraction(self):
         self.archive_entries(list(PAYLOAD.items())[:-1])
+        self.rejected("Unexpected release archive entries")
+        self.assert_no_payload_extracted()
+
+    def test_previous_preview_payload_cannot_be_reused_for_the_new_release(self):
+        self.archive_entries([(name.replace("0.1.2", "0.1.1"), data) for name, data in PAYLOAD.items()])
         self.rejected("Unexpected release archive entries")
         self.assert_no_payload_extracted()
 

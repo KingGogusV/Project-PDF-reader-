@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Folio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "app.folio.localreader",
   "build": {
     "frontendDist": "../dist/client",
@@ -33,6 +33,7 @@
     "targets": ["nsis", "app", "dmg"],
     "shortDescription": "A private local PDF reading workspace",
     "category": "Productivity",
+    "windows": { "minimumWebview2Version": "125.0.0.0" },
     "macOS": { "minimumSystemVersion": "13.0" },
     "icon": [
       "icons/32x32.png",
