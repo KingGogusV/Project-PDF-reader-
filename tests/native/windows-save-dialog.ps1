@@ -55,7 +55,7 @@ if ($Action -eq 'save') {
 }
 Add-Type -Path (Join-Path $PSScriptRoot 'OwnedWindowsDialog.cs')
 Add-Type -AssemblyName UIAutomationClient,UIAutomationTypes
-$result=[ordered]@{ action=$Action; ownedPid=$OwnedPid; status='running'; dialogs=@(); controls=@() }
+$result=[ordered]@{ action=$Action; ownedPid=$OwnedPid; status='running'; dialogs=@(); controls=@(); nativeControls=@() }
 try {
   $deadline=[DateTime]::UtcNow.AddSeconds(15)
   do {
@@ -68,6 +68,7 @@ try {
   $result.dialogs=$windows
   if ($available.Count -ne 1) { throw 'No enabled owned native dialog appeared within 15 seconds.' }
   $window=$available[0]
+  $result.nativeControls=@([FolioNativeSmoke.OwnedWindowsDialog]::Controls($OwnedPid,$window.Handle))
   $element=[Windows.Automation.AutomationElement]::FromHandle([IntPtr]$window.Handle)
   $all=@($element.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.Condition]::TrueCondition))
   # Names/values can contain real MRU filenames in a local OS dialog. Keep only
@@ -75,22 +76,36 @@ try {
   $result.controls=@($all | Where-Object { $_.Current.ControlType -in @([Windows.Automation.ControlType]::Edit,[Windows.Automation.ControlType]::Button) } | ForEach-Object { [ordered]@{ id=$_.Current.AutomationId; type=$_.Current.ControlType.ProgrammaticName; enabled=$_.Current.IsEnabled; handle=$_.Current.NativeWindowHandle } })
   if ($Action -eq 'save') {
     $edits=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Edit -and $_.Current.AutomationId -eq '1148' })
-    if ($edits.Count -ne 1) { $edits=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Edit -and $_.Current.Name -match '^File name:?' }) }
-    if ($edits.Count -ne 1) { throw 'Expected exactly one owned File name edit control.' }
-    $value=$edits[0].GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
-    $value.SetValue($Destination)
+    if ($edits.Count -gt 1) { throw 'Ambiguous owned File name edit controls.' }
+    if ($edits.Count -eq 0) { $edits=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Edit -and $_.Current.Name -match '^File name:?' }) }
+    if ($edits.Count -gt 1) { throw 'Ambiguous owned File name edit controls.' }
+    if ($edits.Count -eq 1) {
+      if ($edits[0].Current.ProcessId -ne $OwnedPid) { throw 'UI Automation edit does not belong to the owned process.' }
+      if ($edits[0].Current.IsOffscreen -or -not $edits[0].Current.IsEnabled) { throw 'Owned File name edit is not visible and enabled.' }
+      $value=$edits[0].GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+      $value.SetValue($Destination)
+      if ($value.Current.Value -cne $Destination) { throw 'Owned File name readback differs from the synthetic destination.' }
+    } else {
+      [FolioNativeSmoke.OwnedWindowsDialog]::SetFilename($OwnedPid,$window.Handle,$Destination)
+    }
   }
   if ($Action -ne 'inspect') {
     $buttonId=if ($Action -eq 'cancel') { '2' } elseif ($Action -eq 'confirm-existing') { '6' } else { '1' }
     $buttons=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Button -and $_.Current.AutomationId -in @($buttonId,"CommandButton_$buttonId") -and $_.Current.IsEnabled })
-    if ($buttons.Count -ne 1) { throw "Expected exactly one owned dialog button with ID $buttonId." }
-    if ($buttons[0].Current.ProcessId -ne $OwnedPid) { throw 'UI Automation button does not belong to the owned process.' }
-    if ($buttons[0].Current.NativeWindowHandle -ne 0) {
-      [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttons[0].Current.NativeWindowHandle)
+    if ($buttons.Count -gt 1) { throw "Ambiguous owned dialog buttons with ID $buttonId." }
+    if ($buttons.Count -eq 0) {
+      $buttonHandle=[FolioNativeSmoke.OwnedWindowsDialog]::Button($OwnedPid,$window.Handle,[int]$buttonId)
+      [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttonHandle)
     } else {
-      # Modern Windows confirmation buttons can be virtual UI Automation controls.
-      $invoke=$buttons[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern)
-      $invoke.Invoke()
+      if ($buttons[0].Current.ProcessId -ne $OwnedPid) { throw 'UI Automation button does not belong to the owned process.' }
+      if ($buttons[0].Current.IsOffscreen) { throw 'Owned dialog button is not visible.' }
+      if ($buttons[0].Current.NativeWindowHandle -ne 0) {
+        [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttons[0].Current.NativeWindowHandle)
+      } else {
+        # Modern Windows confirmation buttons can be virtual UI Automation controls.
+        $invoke=$buttons[0].GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern)
+        $invoke.Invoke()
+      }
     }
   }
   $result.status='passed'
