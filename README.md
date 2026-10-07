@@ -2,23 +2,27 @@
 
 ## Download for Windows
 
-**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.1-preview.1/Folio-0.1.1-Windows-x64-Setup.exe)**
+**[Download Folio for Windows (.exe)](https://github.com/KingGogusV/Project-PDF-reader-/releases/download/v0.1.2-preview.1/Folio-0.1.2-Windows-x64-Setup.exe)**
 
-Open the installer, then launch **Folio** from Start. Windows x64 Intel/AMD; **unsigned development preview**. No ChatGPT account, subscription or developer tools are required for reading or device storage. If your Windows policy blocks unsigned apps, use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
+Open the installer, launch **Folio** from Start, then choose **Open PDF**. Windows 10/11 x64 Intel/AMD; **unsigned development preview 0.1.2**. Reading and device storage need no ChatGPT account, subscription, terminal, PowerShell or developer tools. Initial Microsoft WebView2 Runtime setup or updating can need internet. If your Windows policy blocks unsigned apps, use the [website](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
-[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.1-preview.1) · [Installation help](docs/windows-installation.md)
+[Release and checksums](https://github.com/KingGogusV/Project-PDF-reader-/releases/tag/v0.1.2-preview.1) · [Installation help](docs/windows-installation.md)
 
 An original, local-first PDF workspace for reading, review, forms and everyday document tools. Original repository purpose: "Project to create free pdf reader that does not suck."
 
 **Use Folio in your browser:** [folio-local-pdf.gogoi-ronnie.chatgpt.site](https://folio-local-pdf.gogoi-ronnie.chatgpt.site).
 
-**Status:** public web application and verified Windows preview. The release passed installation, native reader/export/recovery/close tests and exact-source CI. macOS packages build, but macOS native runtime remains unverified. See [verification](docs/verification.md).
+**Status:** public web application and a published unsigned Windows 0.1.2 preview from source `ad8b2c169d707ff9616bf115b9c977c88c09cef9`. [Reader CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686461277), [publication CI](https://github.com/KingGogusV/Project-PDF-reader-/actions/runs/37686535246) and the [delivery record](docs/windows-preview-3-verification.json) verify the exact release. All 17 installed reader/Save As/recovery/close checks passed in Windows CI and again in a normal-user local session with an isolated synthetic profile. A separate 20-check candidate upgrade passed in disposable Windows CI. macOS packages build; macOS native runtime remains unverified.
 
-The development branch adds desktop **Save As** for a verified new PDF copy. Use **Open PDF**, edit, then **Save As** or Ctrl+S and choose a new filename. Cancellation or a failed write keeps the document open with its changes. Existing files are always protected, including after the operating system asks about replacement. This feature is not in the published installer yet; existing download links remain unchanged.
+Use **Save As** or **Ctrl+S** to save supported form or annotation edits to a new PDF filename. Folio checks the completed disk copy before clearing its unsaved marker. Cancellation or a failed write keeps the document open with its changes; existing files remain protected even after a Windows replacement confirmation. Saving from the close prompt returns to the document so you can check the copy before closing again. Native saving uses bounded chunks and verified disk receipts; no speed or total-memory benchmark is claimed.
+
+Desktop updates bypass the older Folio offline interface and load the reader from the installed files. Startup retires only Folio's old offline app shell; stored PDFs, completed recovery copies and preferences stay in their separate stores. The desktop reader uses packaged offline assets, and website offline caching keeps its existing behavior. If startup fails, Folio shows restart or runtime-update help without erasing those stored documents.
 
 Only optional website accounts currently use ChatGPT/OpenAI sign-in. PDFs remain on your device.
 
-The published 0.1.0-to-0.1.1 upgrade preserved synthetic local-library and recovery PDFs in Windows CI; real default-profile upgrades remain a separate verification task. See [upgrade evidence](docs/windows-upgrade-verification-2026-10-07.json).
+The 20-check 0.1.1-to-0.1.2 candidate upgrade preserved synthetic library/recovery PDFs in the genuine default app profile of an elevated disposable CI account, checked installer-created Start-menu shortcuts, and showed the current reader on the first navigation of both upgraded launches. The 17-check normal-user local run used a separate isolated profile; neither test certifies upgrades of a real user's library. Earlier 0.1.0-to-0.1.1 evidence used an overridden profile and remains [recorded separately](docs/windows-upgrade-verification-2026-10-07.json).
+
+Keep Microsoft Edge WebView2 Evergreen current. The installer requests **125.0.0.0 or newer**, following the bundled legacy PDF.js dependency target; the recorded actual installed-app tests use WebView2 153/154. No installed Folio test at 125 is claimed. Runtime requirements, checksums, unsigned-app limitations and earlier releases are in [installation help](docs/windows-installation.md).
 
 ## Available workflows
 
@@ -27,7 +31,7 @@ The published 0.1.0-to-0.1.1 upgrade preserved synthetic local-library and recov
 - Opt in to a device library with preserved originals, validated recovery copies and conflict/quota handling.
 - Recognize English text locally and download it; extract, reorder, delete, rotate or merge eligible pages into a new copy.
 - Review a local P12/PFX certificate and create an invisible RSA/SHA-256 signature with integrity checks.
-- Use responsive keyboard/touch controls, cached offline reading and a browser print/download handoff.
+- Use responsive keyboard/touch controls, packaged desktop offline reading, cached browser offline reading and a browser print/download handoff.
 
 Reading needs no account. Optional **managed ChatGPT sign-in** supports up to **200 registered Folio accounts**; that is a registration cap, not a concurrent-user benchmark. Only account metadata goes to the service. Stored PDFs remain **unencrypted in this device/browser profile**, may be lost if browser storage is cleared/evicted, and do not synchronize between devices.
 
@@ -52,7 +56,7 @@ Build before starting preview; run `pnpm test:e2e` in another terminal. Do not r
 
 ## Repository
 
-TypeScript/DOM + Vite + PDF.js; bounded pdf-lib page operations; local Tesseract OCR; LibPDF/PKI.js signing; IndexedDB device storage; account-only worker/SQLite; experimental shared Tauri wrapper.
+TypeScript/DOM + Vite + PDF.js; bounded pdf-lib page operations; local Tesseract OCR; LibPDF/PKI.js signing; IndexedDB device storage; account-only worker/SQLite; Tauri wrapper with bounded Rust new-copy file I/O.
 
 `src/` contains the application; `server/`, `db/` and `drizzle/` contain accounts; `src-tauri/` contains native packaging; `tests/`, `scripts/`, `third_party/` and `docs/` contain verification, build tools, notices and project records.
 
