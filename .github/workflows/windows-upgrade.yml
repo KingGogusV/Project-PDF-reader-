@@ -1,0 +1,42 @@
+name: Published Windows upgrade preservation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/windows-upgrade.yml'
+      - 'tests/native/**'
+      - 'scripts/generate-fixtures.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade:
+    if: github.repository == 'KingGogusV/Project-PDF-reader-'
+    runs-on: windows-latest
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install existing test dependencies and generate synthetic PDFs
+        run: |
+          npm install --global pnpm@11.25.0
+          pnpm install --frozen-lockfile
+          pnpm fixtures
+      - name: Download and verify both published installers
+        run: node tests/native/download-upgrade-installers.mjs
+      - name: Exercise actual installer upgrade and preserved library
+        run: node tests/native/windows-upgrade.mjs --ci .cache/public-windows-preview-0.1.0/Folio-0.1.0-Windows-x64-Setup.exe .cache/public-windows-preview-0.1.1/Folio-0.1.1-Windows-x64-Setup.exe
+      - name: Retain synthetic recovery PDFs and runtime evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-upgrade-evidence-${{ github.run_id }}
+          path: test-results/native-windows-upgrade-*/
+          if-no-files-found: warn
+          retention-days: 14
