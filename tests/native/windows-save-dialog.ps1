@@ -6,11 +6,13 @@ param(
   [Parameter(Mandatory=$true)][string]$TestRoot,
   [Parameter(Mandatory=$true)][string]$ReportPath,
   [Parameter(Mandatory=$true)][ValidateSet('inspect','cancel','save','confirm-existing')][string]$Action,
-  [string]$Destination
+  [string]$Destination,
+  [long]$ExpectedSaveDialogHandle
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 if ($env:OS -ne 'Windows_NT') { throw 'Windows required.' }
+if (($Action -eq 'confirm-existing') -ne ($ExpectedSaveDialogHandle -gt 0)) { throw 'Only existing-file confirmation requires the prior owned Save dialog handle.' }
 if ($Mode -eq 'ci') {
   if ($env:GITHUB_ACTIONS -ne 'true' -or $env:CI -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:GITHUB_REPOSITORY -ne 'KingGogusV/Project-PDF-reader-') { throw 'Disposable repository CI only.' }
   $temporaryRoot=[IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\')+'\'
@@ -69,6 +71,10 @@ try {
   if ($available.Count -ne 1) { throw 'No enabled owned native dialog appeared within 15 seconds.' }
   $window=$available[0]
   $result.nativeControls=@([FolioNativeSmoke.OwnedWindowsDialog]::Controls($OwnedPid,$window.Handle))
+  if ($Action -eq 'confirm-existing') {
+    [FolioNativeSmoke.OwnedWindowsDialog]::ValidateConfirmationOwner($OwnedPid,$window.Handle,$ExpectedSaveDialogHandle)
+    $result['expectedSaveDialogHandle']=$ExpectedSaveDialogHandle
+  }
   $element=[Windows.Automation.AutomationElement]::FromHandle([IntPtr]$window.Handle)
   $all=@($element.FindAll([Windows.Automation.TreeScope]::Descendants,[Windows.Automation.Condition]::TrueCondition))
   # Names/values can contain real MRU filenames in a local OS dialog. Keep only
@@ -91,14 +97,19 @@ try {
   }
   if ($Action -ne 'inspect') {
     $buttonId=if ($Action -eq 'cancel') { '2' } elseif ($Action -eq 'confirm-existing') { '6' } else { '1' }
-    $buttons=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Button -and $_.Current.AutomationId -in @($buttonId,"CommandButton_$buttonId") -and $_.Current.IsEnabled })
+    $buttons=@($all | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::Button -and $_.Current.AutomationId -in @($buttonId,"CommandButton_$buttonId") })
     if ($buttons.Count -gt 1) { throw "Ambiguous owned dialog buttons with ID $buttonId." }
     if ($buttons.Count -eq 0) {
-      $buttonHandle=[FolioNativeSmoke.OwnedWindowsDialog]::Button($OwnedPid,$window.Handle,[int]$buttonId)
-      [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttonHandle)
+      if ($Action -eq 'confirm-existing' -and @($result.nativeControls | Where-Object ControlId -eq 6).Count -eq 0) {
+        [FolioNativeSmoke.OwnedWindowsDialog]::ConfirmExisting($OwnedPid,$window.Handle,$ExpectedSaveDialogHandle)
+        $result['confirmationMethod']='owned-task-dialog-IDYES'
+      } else {
+        $buttonHandle=[FolioNativeSmoke.OwnedWindowsDialog]::Button($OwnedPid,$window.Handle,[int]$buttonId)
+        [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttonHandle)
+      }
     } else {
       if ($buttons[0].Current.ProcessId -ne $OwnedPid) { throw 'UI Automation button does not belong to the owned process.' }
-      if ($buttons[0].Current.IsOffscreen) { throw 'Owned dialog button is not visible.' }
+      if ($buttons[0].Current.IsOffscreen -or -not $buttons[0].Current.IsEnabled) { throw 'Owned dialog button is not visible and enabled.' }
       if ($buttons[0].Current.NativeWindowHandle -ne 0) {
         [FolioNativeSmoke.OwnedWindowsDialog]::Click($OwnedPid,$window.Handle,$buttons[0].Current.NativeWindowHandle)
       } else {

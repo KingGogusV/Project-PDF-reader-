@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace FolioNativeSmoke {
   public static class OwnedWindowsDialog {
@@ -24,6 +25,7 @@ namespace FolioNativeSmoke {
     [DllImport("user32.dll")] static extern bool EnumWindows(EnumWindowProc callback, IntPtr parameter);
     [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr parent, EnumWindowProc callback, IntPtr parameter);
     [DllImport("user32.dll")] static extern IntPtr GetParent(IntPtr window);
+    [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr window, uint relationship);
     [DllImport("user32.dll")] static extern int GetDlgCtrlID(IntPtr window);
     [DllImport("user32.dll")] static extern IntPtr GetDlgItem(IntPtr dialog, int controlId);
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr window, out uint pid);
@@ -85,6 +87,56 @@ namespace FolioNativeSmoke {
     public static long Button(uint ownedPid, long dialogHandle, int controlId) {
       if (controlId != 1 && controlId != 2 && controlId != 6) throw new ArgumentOutOfRangeException("controlId");
       return KnownControl(ownedPid, dialogHandle, controlId, "Button").Handle;
+    }
+    public static void ValidateConfirmationOwner(uint ownedPid, long dialogHandle, long saveDialogHandle) {
+      var dialog = new IntPtr(dialogHandle); var save = new IntPtr(saveDialogHandle);
+      ValidateDialog(ownedPid, dialog);
+      uint pid; GetWindowThreadProcessId(save, out pid);
+      if (save == IntPtr.Zero || save == dialog || pid != ownedPid || ClassName(save) != "#32770" ||
+          !IsWindowVisible(save) || IsWindowEnabled(save) || GetWindow(dialog, 4) != save)
+        throw new InvalidOperationException("Confirmation is not owned by the known disabled Save dialog.");
+      var dialogs = Dialogs(ownedPid);
+      if (dialogs.Length != 2 || Array.FindAll(dialogs, window => window.Enabled).Length != 1 ||
+          !Array.Exists(dialogs, window => window.Handle == dialogHandle && window.Enabled) ||
+          !Array.Exists(dialogs, window => window.Handle == saveDialogHandle && !window.Enabled))
+        throw new InvalidOperationException("Expected only the known Save dialog and its owned confirmation.");
+    }
+    public static void ConfirmExisting(uint ownedPid, long dialogHandle, long saveDialogHandle) {
+      var dialog = new IntPtr(dialogHandle);
+      Func<ControlInfo[]> confirmationControls = () => {
+        ValidateConfirmationOwner(ownedPid, dialogHandle, saveDialogHandle);
+        var controls = Controls(ownedPid, dialogHandle);
+        if (Array.Exists(controls, control => control.ControlId == 6))
+          throw new InvalidOperationException("Legacy confirmation ID is present; refusing the task-dialog fallback.");
+        var roots = Array.FindAll(controls, control => control.ClassName == "DirectUIHWND" && control.ParentHandle == dialogHandle);
+        var buttons = Array.FindAll(controls, control => control.ClassName == "Button");
+        if (roots.Length != 1 || roots[0].ControlId != 0 || buttons.Length != 2)
+          throw new InvalidOperationException("Confirmation does not match the observed task-dialog control tree.");
+        var direct = new IntPtr(roots[0].Handle); ValidateControl(ownedPid, dialog, direct);
+        var parents = new HashSet<long>();
+        foreach (var button in buttons) {
+          var handle = new IntPtr(button.Handle); var sink = GetParent(handle);
+          ValidateControl(ownedPid, dialog, handle); ValidateControl(ownedPid, dialog, sink);
+          if (button.ControlId != 0 || GetDlgCtrlID(handle) != 0 || ClassName(handle) != "Button" ||
+              ClassName(sink) != "CtrlNotifySink" || GetDlgCtrlID(sink) != 0 || GetParent(sink) != direct ||
+              !parents.Add(sink.ToInt64()))
+            throw new InvalidOperationException("Confirmation buttons lack the exact owned task-dialog ancestry.");
+        }
+        return new [] { roots[0], buttons[0], buttons[1] };
+      };
+      var selected = confirmationControls();
+      var current = confirmationControls();
+      foreach (var selectedControl in selected)
+        if (!Array.Exists(current, control => control.Handle == selectedControl.Handle && control.ParentHandle == selectedControl.ParentHandle))
+          throw new InvalidOperationException("Owned confirmation control identity changed.");
+      // Task-dialog button HWNDs have ID 0. Use the documented semantic IDYES,
+      // rather than choosing either child by its name or enumeration order.
+      UIntPtr result;
+      if (SendMessageTimeout(dialog, 0x0466, new UIntPtr(6), IntPtr.Zero, 3, 2000, out result) == IntPtr.Zero)
+        throw new Win32Exception(Marshal.GetLastWin32Error(), "Confirm owned existing synthetic destination");
+      var deadline = DateTime.UtcNow.AddSeconds(3);
+      while (IsWindowVisible(dialog) && DateTime.UtcNow < deadline) Thread.Sleep(50);
+      if (IsWindowVisible(dialog)) throw new InvalidOperationException("Owned existing-file confirmation did not close.");
     }
     static bool ModernFilenameChain(uint ownedPid, IntPtr dialog, IntPtr edit) {
       var control = edit;

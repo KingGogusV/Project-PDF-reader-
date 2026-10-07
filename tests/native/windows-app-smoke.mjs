@@ -53,7 +53,9 @@ function requestWindowClose(captureOnly=false) {
   assert.equal(result.status,0,result.stderr || 'OS close request failed');
   if(captureOnly)mainWindowHandle=JSON.parse(result.stdout).mainWindowHandle;
 }
-async function nativeDialog(action,destination) {
+async function nativeDialog(action,destination,expectedSaveDialogHandle) {
+  if(action==='confirm-existing')assert.ok(Number.isSafeInteger(expectedSaveDialogHandle)&&expectedSaveDialogHandle>0,'Confirmation must follow a known owned Save dialog.');
+  else assert.equal(expectedSaveDialogHandle,undefined);
   const evidence=join(output,`save-dialog-${report.nativeDialogs.length}.json`);
   // Windows PowerShell supplies the desktop UIAutomation assemblies. No global
   // keyboard/mouse input, production mocks, or command-selected paths are used.
@@ -64,7 +66,8 @@ async function nativeDialog(action,destination) {
   try {
     const completed=await execFileAsync(shell,['-NoProfile','-NonInteractive','-File',join(repo,'tests/native/windows-save-dialog.ps1'),
     '-Mode',local?'local':'ci','-OwnedPid',String(ownedPid),'-ExpectedExecutable',executable,'-ExpectedSha256',executableSha256,
-    '-TestRoot',copies,'-ReportPath',evidence,'-Action',action,...(destination?['-Destination',destination]:[])],
+    '-TestRoot',copies,'-ReportPath',evidence,'-Action',action,...(destination?['-Destination',destination]:[]),
+    ...(expectedSaveDialogHandle?['-ExpectedSaveDialogHandle',String(expectedSaveDialogHandle)]:[])],
     {windowsHide:true,encoding:'utf8',timeout:25000,maxBuffer:256000});
     result={...completed,status:0};
   } catch(error) {
@@ -185,8 +188,11 @@ async function workflow() {
   checked('real Save As cancellation and duplicate save/open/OS-close requests preserve pending edits and create no files');
 
   const existing=join(copies,'existing.pdf');await writeFile(existing,flow.originalInput);
-  await page.locator('#export').click();await nativeDialog('save',existing);await nativeDialog('confirm-existing');
+  await page.locator('#export').click();const existingChooser=await nativeDialog('save',existing);
+  assert.equal(existingChooser.dialogs.length,1);
+  await nativeDialog('confirm-existing',undefined,existingChooser.dialogs[0].Handle);
   await expect(page.locator('#export')).toBeEnabled();
+  await expect(page.locator('#toast')).toHaveText('Export failed. Your changes remain open. A file or folder already has that name. Choose a new name; Folio never overwrites an existing file.');
   await expect(page.locator('.tab.active .dirty-dot')).toHaveCount(1);
   assert.deepEqual(await readFile(existing),flow.originalInput);
   assert.deepEqual(await readdir(copies),['existing.pdf']);
